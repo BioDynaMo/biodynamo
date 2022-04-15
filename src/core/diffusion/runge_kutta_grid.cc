@@ -82,4 +82,15 @@ void RungeKuttaGrid::DiffuseWithOpenEdge(double dt) {
       "Open Edge Diffusion is not implemented, please use the EulerGrid.");
 }
 
+void RungeKuttaGrid::DiffuseWithDirichlet(double dt) {
+  Log::Fatal(
+      "RungeKuttaGrid::DiffuseWithDirichlet",
+      "Dirichlet Diffusion is not implemented, please use the EulerGrid.");
+}
+
+void RungeKuttaGrid::DiffuseWithNeumann(double dt) {
+  Log::Fatal("RungeKuttaGrid::DiffuseWithNeumann",
+             "Neumann Diffusion is not implemented, please use the EulerGrid.");
+}
+
 }  // namespace bdm

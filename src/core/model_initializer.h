@@ -405,6 +405,16 @@ struct ModelInitializer {
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->AddInitializer(function);
   }
+
+  template <typename F>
+  static void AddBoundaryConditions(size_t substance_id, BoundaryConditionType bc_type, F function) {
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
+    diffusion_grid->SetBoundaryConditionType(bc_type);
+    diffusion_grid->SetBoundaryCondition(function);
+  }
+
 };
 
 }  // namespace bdm

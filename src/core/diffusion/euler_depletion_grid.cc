@@ -61,4 +61,18 @@ void EulerDepletionGrid::DiffuseWithOpenEdge(double dt) {
   ApplyDepletion(dt);
 }
 
+  void EulerDepletionGrid::DiffuseWithDirichlet(double dt) {
+    // Update concentration without depletion (c1 is modified)
+    EulerGrid::DiffuseWithDirichlet(dt);
+
+    ApplyDepletion(dt);
+  }
+
+  void EulerDepletionGrid::DiffuseWithNeumann(double dt) {
+    // Update concentration without depletion (c1 is modified)
+    EulerGrid::DiffuseWithNeumann(dt);
+
+    ApplyDepletion(dt);
+  }
+
 }  // namespace bdm

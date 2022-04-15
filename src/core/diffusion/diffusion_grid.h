@@ -29,6 +29,9 @@
 
 namespace bdm {
 
+/// Available boundary conditions
+enum BoundaryConditionType { kDirichlet, kNeumann, kOpenBoundaries };
+
 class DiffusionGrid {
  public:
   DiffusionGrid() = default;
@@ -55,6 +58,8 @@ class DiffusionGrid {
 
   virtual void DiffuseWithClosedEdge(double dt) = 0;
   virtual void DiffuseWithOpenEdge(double dt) = 0;
+  virtual void DiffuseWithDirichlet(double dt) = 0;
+  virtual void DiffuseWithNeumann(double dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -171,6 +176,14 @@ class DiffusionGrid {
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
+template <typename F>
+void SetBoundaryCondition(F function) {
+  boundary_conditions_ = function;
+}
+
+// Sets boundary condition type
+void SetBoundaryConditionType(BoundaryConditionType bc_type) { bc_type_ = bc_type; }
+
  private:
   friend class RungeKuttaGrid;
   friend class EulerGrid;
@@ -239,6 +252,10 @@ class DiffusionGrid {
       {};  //!
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
+  /// Type of boundary conditions
+  BoundaryConditionType bc_type_ = kDirichlet;
+  /// Function that updates boundary conditions
+  std::function<double(size_t, size_t, size_t, size_t)> boundary_conditions_;
 
   BDM_CLASS_DEF(DiffusionGrid, 1);
 };

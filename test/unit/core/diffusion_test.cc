@@ -660,6 +660,104 @@ TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
   // dgrids are deleted by rm's destructor
 }
 
+TEST(DiffusionTest, EulerDirichletBoundaries) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Dirichlet";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 10.0;
+  int res = 20;
+  // Depleting substance is fixed, i.e. no diff and no decay
+  auto* dgrid =
+      new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+
+  dgrid->Initialize();
+  dgrid->SetBoundaryConditionType(kDirichlet);
+
+  struct SetMyBoundaries {
+    SetMyBoundaries() {}
+    double operator()(size_t x, size_t y, size_t z, size_t n) { return 0.0; }
+  };
+
+  dgrid->SetBoundaryCondition(SetMyBoundaries());
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddDiffusionGrid(dgrid);
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100;
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+  }
+
+  auto conc = dgrid->GetAllConcentrations();
+
+  double expected_solution = 0.0;
+
+  EXPECT_FLOAT_EQ(0.0, expected_solution);
+
+  // dgrids are deleted by rm's destructor
+}
+
+TEST(DiffusionTest, EulerNeumannBoundaries) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Neumann";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 10.0;
+  int res = 20;
+  double init = 1e5;
+  Double3 source = {{0, 0, 0}};
+
+  auto* dgrid =
+      new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+
+  struct SetMyBoundaries {
+    SetMyBoundaries() {}
+    double operator()(size_t x, size_t y, size_t z, size_t n) { return 0.0; }
+  };
+
+  dgrid->Initialize();
+  dgrid->ChangeConcentrationBy(source, init);
+  dgrid->SetBoundaryConditionType(kNeumann);
+  dgrid->SetBoundaryCondition(SetMyBoundaries());
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddDiffusionGrid(dgrid);
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100;
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+  }
+
+  double expected_solution = 0.0;
+  auto conc = dgrid->GetAllConcentrations();
+
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++)
+  {
+    expected_solution+=conc[i];
+  }
+  
+  EXPECT_FLOAT_EQ(init, expected_solution);
+
+  // dgrids are deleted by rm's destructor
+}
+
 TEST(DiffusionTest, DynamicTimeStepping) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;

@@ -74,6 +74,10 @@ void DiffusionGrid::Diffuse(double dt) {
     DiffuseWithClosedEdge(dt);
   } else if (param->diffusion_boundary_condition == "open") {
     DiffuseWithOpenEdge(dt);
+  } else if (param->diffusion_boundary_condition == "Dirichlet") {
+    DiffuseWithDirichlet(dt);
+  } else if (param->diffusion_boundary_condition == "Neumann") {
+    DiffuseWithNeumann(dt);
   } else {
     Log::Error(
         "EulerGrid::Diffuse", "Boundary condition of type '",

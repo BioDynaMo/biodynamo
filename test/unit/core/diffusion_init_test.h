@@ -31,6 +31,10 @@ class TestGrid : public DiffusionGrid {
 
   void DiffuseWithOpenEdge(double dt) override { return; };
 
+  void DiffuseWithDirichlet(double dt) override { return; };
+
+  void DiffuseWithNeumann(double dt) override { return; };
+
   void Swap() { c1_.swap(c2_); }
 
   // Check if the entries of c1_ and c2_ are equal for each position.

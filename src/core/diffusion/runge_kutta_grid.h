@@ -54,6 +54,9 @@ class RungeKuttaGrid : public DiffusionGrid {
 
   void DiffuseWithClosedEdge(double dt) override;
   void DiffuseWithOpenEdge(double dt) override;
+  void DiffuseWithDirichlet(double dt) override;  
+  void DiffuseWithNeumann(double dt) override;
+  
 
  private:
   /// Buffers for Runge Kutta

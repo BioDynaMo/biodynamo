@@ -49,8 +49,9 @@ class EulerGrid : public DiffusionGrid {
                       resolution) {}
 
   virtual void DiffuseWithClosedEdge(double dt) override;
-
   virtual void DiffuseWithOpenEdge(double dt) override;
+  virtual void DiffuseWithDirichlet(double dt) override;
+  virtual void DiffuseWithNeumann(double dt) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(EulerGrid, 1);

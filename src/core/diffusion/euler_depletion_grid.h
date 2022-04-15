@@ -43,8 +43,9 @@ class EulerDepletionGrid : public EulerGrid {
         binding_substances_(std::move(binding_substances)) {}
 
   void DiffuseWithClosedEdge(double dt) override;
-
   void DiffuseWithOpenEdge(double dt) override;
+  void DiffuseWithDirichlet(double dt) override;
+  void DiffuseWithNeumann(double dt) override;
 
   // To avoid missing substances or coefficients, name of the sub and binding
   // coefficient must be set at the same time

@@ -170,4 +170,113 @@ void EulerGrid::DiffuseWithOpenEdge(double dt) {
   c1_.swap(c2_);
 }
 
+void EulerGrid::DiffuseWithDirichlet(double dt) {
+  const auto nx = resolution_;
+  const auto ny = resolution_;
+  const auto nz = resolution_;
+
+  const double ibl2 = 1 / (box_length_ * box_length_);
+  const double d = 1 - dc_[0];
+
+#define YBF 16
+#pragma omp parallel for collapse(2)
+  for (size_t yy = 0; yy < ny; yy += YBF) {
+    for (size_t z = 0; z < nz; z++) {
+      size_t ymax = yy + YBF;
+      if (ymax >= ny) {
+        ymax = ny;
+      }
+      for (size_t y = yy; y < ymax; y++) {
+        size_t x = 0;
+        int c, n, s, b, t;
+        c = x + y * nx + z * nx * ny;
+#pragma omp simd
+        for (x = 0; x < nx; x++) {
+          if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
+              z == (nz - 1)) {
+            c2_[c] = boundary_conditions_(x, y, z, nx - 1);
+            continue;
+          }
+
+          n = c - nx;
+          s = c + nx;
+          b = c - nx * ny;
+          t = c + nx * ny;
+
+          c2_[c] = c1_[c] * (1 - mu_ * dt) +
+                   (d * dt * ibl2) *
+                       (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] + c1_[s] -
+                        2 * c1_[c] + c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t]);
+          ++c;
+        }
+      }  // tile ny
+    }    // tile nz
+  }      // block ny
+  c1_.swap(c2_);
+}
+
+void EulerGrid::DiffuseWithNeumann(double dt) {
+  const auto nx = resolution_;
+  const auto ny = resolution_;
+  const auto nz = resolution_;
+
+  const double ibl2 = 1 / (box_length_ * box_length_);
+  const double d = 1 - dc_[0];
+
+#define YBF 16
+#pragma omp parallel for collapse(2)
+  for (size_t yy = 0; yy < ny; yy += YBF) {
+    for (size_t z = 0; z < nz; z++) {
+      size_t ymax = yy + YBF;
+      if (ymax >= ny) {
+        ymax = ny;
+      }
+      for (size_t y = yy; y < ymax; y++) {
+        size_t x = 0;
+        int c, n, s, b, t;
+        c = x + y * nx + z * nx * ny;
+#pragma omp simd
+        for (x = 0; x < nx; x++) {
+          n = c - nx;
+          s = c + nx;
+          b = c - nx * ny;
+          t = c + nx * ny;
+
+          double i_comp = 0, j_comp = 0, k_comp = 0;
+
+          if (x == 0) {
+            i_comp = -2*box_length_*boundary_conditions_(x, y, z, nx - 1) - 2 * c1_[c] + 2*c1_[c + 1];
+          } else if (x == (nx - 1)) {
+            i_comp = 2*box_length_*boundary_conditions_(x, y, z, nx - 1) - 2 * c1_[c] + 2*c1_[c - 1];
+          } else {
+            i_comp = c1_[c - 1] - 2 * c1_[c] + c1_[c + 1];
+          }
+
+          if (y == 0) {
+            j_comp = -2*box_length_*boundary_conditions_(x, y, z, nx - 1) - 2 * c1_[c] + 2*c1_[n];
+          } else if (y == (ny - 1)) {
+            j_comp = 2*box_length_*boundary_conditions_(x, y, z, nx - 1) - 2 * c1_[c] + 2*c1_[s];
+          } else {
+            j_comp = c1_[s] - 2 * c1_[c] + c1_[n];
+          }
+
+          if (z == 0) {
+            k_comp = -2*box_length_*boundary_conditions_(x, y, z, nx - 1) - 2 * c1_[c] + 2*c1_[t];
+          } else if (z == (nz - 1)) {
+            k_comp = 2*box_length_*boundary_conditions_(x, y, z, nx - 1) - 2 * c1_[c] + 2*c1_[b];
+          } else {
+            k_comp = c1_[b] - 2 * c1_[c] + c1_[t];
+          }
+
+          c2_[c] = c1_[c] * (1 - mu_ * dt) +
+                   (d * dt * ibl2) * (i_comp + j_comp + k_comp);
+
+          ++c;
+        }
+      }  // tile ny
+    }    // tile nz
+  }      // block ny
+  c1_.swap(c2_);
+}
+
 }  // namespace bdm
