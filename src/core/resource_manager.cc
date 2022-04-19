@@ -551,10 +551,13 @@ void ResourceManager::RemoveAgents(
       start_del += lowest[nid];
       end_del += lowest[nid];
 
+      auto* uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
       for (uint64_t i = start_del; i < end_del; ++i) {
         Agent* agent = agents_[nid][i];
-        assert(toberemoved.find(agent->GetUid()) != toberemoved.end());
-        uid_ah_map_.Remove(agent->GetUid());
+        auto uid = agent->GetUid();
+        assert(toberemoved.find(uid) != toberemoved.end());
+        uid_ah_map_.Remove(uid);
+        uid_generator->ReuseAgentUid(uid);
         if (type_index_) {
           // TODO parallelize type_index removal
 #pragma omp critical

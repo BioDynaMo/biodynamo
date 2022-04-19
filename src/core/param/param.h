@@ -476,24 +476,6 @@ struct Param {
   ///     cache_neighbors = false
   bool cache_neighbors = false;
 
-  /// If the utilization in the AgentUidMap inside ResourceManager falls below
-  /// this watermark, defragmentation will be turned on.\n
-  /// Default value: `0.5`\n
-  /// TOML config file:
-  ///
-  ///     [performance]
-  ///     agent_uid_defragmentation_low_watermark = 0.5
-  double agent_uid_defragmentation_low_watermark = 0.5;
-
-  /// If the utilization in the AgentUidMap inside ResourceManager rises above
-  /// this watermark, defragmentation will be turned off.\n
-  /// Default value: `0.9`\n
-  /// TOML config file:
-  ///
-  ///     [performance]
-  ///     agent_uid_defragmentation_high_watermark = 0.9
-  double agent_uid_defragmentation_high_watermark = 0.9;
-
   /// Use the BioDynaMo memory manager.
   /// Default value: `true`\n
   /// TOML config file:

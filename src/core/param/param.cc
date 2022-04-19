@@ -341,12 +341,6 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(detect_static_agents,
                           "performance.detect_static_agents");
   BDM_ASSIGN_CONFIG_VALUE(cache_neighbors, "performance.cache_neighbors");
-  BDM_ASSIGN_CONFIG_VALUE(
-      agent_uid_defragmentation_low_watermark,
-      "performance.agent_uid_defragmentation_low_watermark");
-  BDM_ASSIGN_CONFIG_VALUE(
-      agent_uid_defragmentation_high_watermark,
-      "performance.agent_uid_defragmentation_high_watermark");
   BDM_ASSIGN_CONFIG_VALUE(use_bdm_mem_mgr, "performance.use_bdm_mem_mgr");
   BDM_ASSIGN_CONFIG_VALUE(mem_mgr_aligned_pages_shift,
                           "performance.mem_mgr_aligned_pages_shift");

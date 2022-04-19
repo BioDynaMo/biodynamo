@@ -92,7 +92,6 @@
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
     <class pattern="std::vector<bdm::memory_manager_detail::*>" />
-    <class pattern="bdm::SharedData*" />
     <class name="bdm::MemoryManager" />
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />
@@ -167,5 +166,10 @@
     <class name="bdm::neuroscience::SideNeuriteExtensionEvent" />
     <class name="bdm::neuroscience::SplitNeuriteElementEvent" />
     <class name="bdm::neuroscience::NeuriteElement::MechanicalForcesFunctor" />
+    <class name="bdm::SharedData<std::vector<bdm::AgentUid>>" />
+    <class name="bdm::SharedData<uint64_t>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,3>>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,4>>" />
+    <class pattern="bdm::SharedData<*>::AlignedT" />
   </exclusion>
 </lcgdict>
