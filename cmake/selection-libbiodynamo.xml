@@ -68,6 +68,8 @@
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
+    <class name="bdm::VectorTypeWrapper<bdm::Agent*>" />
+    <class name="bdm::VectorTypeWrapper<int>" />
     <class name="bdm::experimental::TimeSeries" />
     <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
     <class name="bdm::experimental::Reducer<uint64_t>" />
@@ -97,7 +99,6 @@
     <class name="bdm::UserDefinedDist" />
     <class name="bdm::detail::ExtractUid" />
     <class name="bdm::TFileRaii" />
-    <class name="bdm::VectorTypeWrapper<bdm::Agent*>" />
     <class name="bdm::NewAgentEventUidGenerator" />
     <class name="bdm::NewAgentEvent" />
     <class name="bdm::InteractionForce" />
