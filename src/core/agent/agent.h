@@ -208,7 +208,12 @@ class Agent {
   AgentPointer<TAgent> GetAgentPtr() const {
     static_assert(!std::is_pointer<TAgent>::value,
                   "Cannot be of pointer type!");
-    return AgentPointer<TAgent>(uid_);
+    if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      return AgentPointer<TAgent>(uid_);
+    } else {
+      return AgentPointer<TAgent>(
+          const_cast<TAgent*>(Cast<const Agent, const TAgent>(this)));
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -268,6 +273,18 @@ class Agent {
   uint32_t box_idx_ = std::numeric_limits<uint32_t>::max();
   /// collection of behaviors which define the internal behavior
   InlineVector<Behavior*, 2> behaviors_;
+
+  template <typename TFrom, typename TTo>
+  typename std::enable_if<std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
+      TFrom* agent) const {
+    return static_cast<TTo*>(agent);
+  }
+
+  template <typename TFrom, typename TTo>
+  typename std::enable_if<!std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
+      TFrom* agent) const {
+    return dynamic_cast<TTo*>(agent);
+  }
 
  private:
   Spinlock lock_;  //!

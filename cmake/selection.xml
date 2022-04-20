@@ -1,5 +1,6 @@
 <lcgdict>
   <selection>
+    <class pattern="bdm::AgentPointer*" noStreamer="true" />
     <class pattern="bdm::InlineVector*" noStreamer="true" />
     <class pattern="bdm::*" />
     <class pattern="std::vector<bdm::*>" />
@@ -32,8 +33,8 @@
          -> all selected classes from libbiodynamo-selection.xml -->
     <class name="bdm::neuroscience::NeuronSoma" />
     <class name="bdm::neuroscience::NeuriteElement" />
-    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
-    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" noStreamer="true" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" noStreamer="true" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::EulerGrid" />
     <class name="bdm::RungeKuttaGrid" />
