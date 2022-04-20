@@ -144,6 +144,10 @@ class InPlaceExecutionContext : public ExecutionContext {
   /// Pointer to new agents
   std::vector<Agent*> new_agents_;
 
+  /// Contains unique ids of agents that will be removed at the end of each
+  /// iteration. AgentUids are separated by numa node.
+  std::vector<AgentUid> remove_;
+
   /// prevent race conditions for cached Agents
   std::atomic_flag mutex_ = ATOMIC_FLAG_INIT;
 
@@ -165,9 +169,6 @@ class InPlaceExecutionContext : public ExecutionContext {
       const std::vector<ExecutionContext*>& all_exec_ctxts);
 
  private:
-  /// Contains unique ids of agents that will be removed at the end of each
-  /// iteration. AgentUids are separated by numa node.
-  std::vector<AgentUid> remove_;
   /// Used to determine which agents must not be updated from different threads.
   std::vector<AgentPointer<>> critical_region_;
   /// Used to determine which agents must not be updated from different threads.
