@@ -65,7 +65,7 @@ TEST(Reduce, GenericReducer) {
     return result;
   };
 
-  // without post processing
+  // without filter and post processing
   {
     GenericReducer<uint64_t> reducer(sum_data, combine_tl_results);
     rm->ForEachAgentParallel(reducer);
@@ -73,10 +73,21 @@ TEST(Reduce, GenericReducer) {
     EXPECT_EQ(1999000u, result);
   }
 
+  // with filter, without post processing
+  {
+    auto filter = [](Agent* a) {
+      return bdm_static_cast<TestAgent*>(a)->GetData() <= 1000;
+    };
+    GenericReducer<uint64_t> reducer(sum_data, combine_tl_results, filter);
+    rm->ForEachAgentParallel(reducer);
+    auto result = reducer.GetResult();
+    EXPECT_EQ(500500u, result);
+  }
+
   // with post processing and reset
   {
     auto post_process = [](uint64_t result) { return result / 2; };
-    GenericReducer<uint64_t> reducer(sum_data, combine_tl_results,
+    GenericReducer<uint64_t> reducer(sum_data, combine_tl_results, nullptr,
                                      post_process);
     rm->ForEachAgentParallel(reducer);
     auto result = reducer.GetResult();
@@ -93,7 +104,7 @@ TEST(Reduce, GenericReducer) {
   {
     auto post_process = [](double result) { return result / 2.3; };
     GenericReducer<uint64_t, double> reducer(sum_data, combine_tl_results,
-                                             post_process);
+                                             nullptr, post_process);
     rm->ForEachAgentParallel(reducer);
     auto result = reducer.GetResult();
     EXPECT_EQ(typeid(result), typeid(double));
@@ -191,14 +202,18 @@ TEST_F(IOTest, GenericReducer) {
     return result;
   };
   auto post_process = [](uint64_t result) { return result / 2; };
-  GenericReducer<uint64_t> reducer(sum_data, combine_tl_results, post_process);
+  auto filter = [](Agent* a) {
+    return bdm_static_cast<TestAgent*>(a)->GetData() <= 1000;
+  };
+  GenericReducer<uint64_t> reducer(sum_data, combine_tl_results, filter,
+                                   post_process);
 
   GenericReducer<uint64_t>* restored;
   BackupAndRestore(reducer, &restored);
 
   rm->ForEachAgentParallel(*restored);
   auto result = restored->GetResult();
-  EXPECT_EQ(999500u, result);
+  EXPECT_EQ(250250u, result);
 }
 
 // -----------------------------------------------------------------------------
