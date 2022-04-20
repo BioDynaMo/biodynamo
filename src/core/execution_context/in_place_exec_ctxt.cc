@@ -171,8 +171,8 @@ void InPlaceExecutionContext::Execute(
       for (auto aptr : critical_region_) {
         locks_.push_back(aptr->GetLock());
       }
-      for (auto* l : locks_) {
-        l->lock();
+      for (uint64_t i = 0; i < locks_.size(); ++i) {
+        locks_[i]->lock();
       }
       agent->CriticalRegion(&critical_region_2_);
       // Sort such that the locks further down are acquired in a sorted order
@@ -193,8 +193,8 @@ void InPlaceExecutionContext::Execute(
       if (critical_region_ == critical_region_2_) {
         break;
       }
-      for (auto* l : locks_) {
-        l->unlock();
+      for (int i = locks_.size() - 1; i >= 0; --i) {
+        locks_[i]->unlock();
       }
     }
     neighbor_cache_.clear();
@@ -202,8 +202,8 @@ void InPlaceExecutionContext::Execute(
     for (auto& op : operations) {
       (*op)(agent);
     }
-    for (auto* l : locks_) {
-      l->unlock();
+    for (int i = locks_.size() - 1; i >= 0; --i) {
+      locks_[i]->unlock();
     }
   } else if (param->thread_safety_mechanism ==
              Param::ThreadSafetyMechanism::kAutomatic) {
