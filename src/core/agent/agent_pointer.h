@@ -29,15 +29,27 @@ namespace bdm {
 
 class Agent;
 
-// TODO documentation
+/// Class `AgentPointer` supports two different modes:
+/// First, an indirect mode in which the AgentUid is used to determine
+/// an agent.\n
+/// Second, a direct mode in which the raw `Agent*` is used.
+/// The indirect mode is necessary if the `Agent*` changes during the
+/// simulation. This can happen due to sorting and balancing operation
+/// to improve the memory layout, or in a distributed runtime, where an
+/// agent might reside in a different address space.
+/// If the `Agent*` of an agent does not change during a simulation,
+/// the direct mode can be used to achieve better performance.
 enum AgentPointerMode { kIndirect, kDirect };
-// TODO documentation
+/// Global variable to select the agent pointer mode. \n
+/// Replacing the global variable with an attribute in `Param`
+/// is too costly in terms of performance.
+/// \see AgentPointerMode
 extern AgentPointerMode gAgentPointerMode;
 
-/// Agent pointer. Required to point to an agent with
-/// throughout the whole simulation. Raw pointers cannot be used, because
-/// an agent might be copied to a different NUMA domain, or if it resides
-/// on a different address space in case of a distributed runtime.
+/// Agent pointer. Required to point to an agent
+/// throughout the whole simulation. \n
+/// This class provides a common interface for different modes.
+/// See `AgentPointerMode` for more details.
 /// Benefit compared to AgentHandle is, that the compiler knows
 /// the type returned by `Get` and can therefore inline the code from the callee
 /// and perform optimizations.
