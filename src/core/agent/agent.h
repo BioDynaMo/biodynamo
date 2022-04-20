@@ -211,7 +211,8 @@ class Agent {
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
       return AgentPointer<TAgent>(uid_);
     } else {
-      return AgentPointer<TAgent>(const_cast<TAgent*>(Cast<const Agent, const TAgent>(this)));
+      return AgentPointer<TAgent>(
+          const_cast<TAgent*>(Cast<const Agent, const TAgent>(this)));
     }
   }
 
@@ -272,7 +273,7 @@ class Agent {
   uint32_t box_idx_ = std::numeric_limits<uint32_t>::max();
   /// collection of behaviors which define the internal behavior
   InlineVector<Behavior*, 2> behaviors_;
-  
+
   template <typename TFrom, typename TTo>
   typename std::enable_if<std::is_base_of<TFrom, TTo>::value, TTo*>::type Cast(
       TFrom* agent) const {
