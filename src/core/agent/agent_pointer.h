@@ -178,6 +178,9 @@ class AgentPointer {
   TAgent* operator->() {
     assert(*this != nullptr);
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      if (d_.uid == AgentUid()) {
+        return nullptr;
+      }
       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
       return Cast<Agent, TAgent>(ctxt->GetAgent(d_.uid));
     } else {
@@ -188,6 +191,9 @@ class AgentPointer {
   const TAgent* operator->() const {
     assert(*this != nullptr);
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      if (d_.uid == AgentUid()) {
+        return nullptr;
+      }
       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
       return Cast<const Agent, const TAgent>(ctxt->GetConstAgent(d_.uid));
     } else {
