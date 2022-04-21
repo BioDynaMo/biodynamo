@@ -1,0 +1,15 @@
+{
+  "bdm::Param": {
+    "export_visualization": true,
+    "remove_output_dir_contents": true,
+    "statistics": true,
+    "unschedule_default_operations": [],
+    "use_progress_bar": true,
+    "visualize_agents": {
+      "ContinuumRetrieverAgent": [
+        "my_continuum_value_"
+      ]
+    },
+    "visualization_interval": 20
+  }
+}
