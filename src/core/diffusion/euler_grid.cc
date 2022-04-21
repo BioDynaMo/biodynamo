@@ -256,10 +256,10 @@ void EulerGrid::DiffuseWithNeumann(double dt) {
 
           if (y == 0) {
             j_comp = -2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[n];
+                     2 * c1_[c] + 2 * c1_[s];
           } else if (y == (ny - 1)) {
             j_comp = 2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[s];
+                     2 * c1_[c] + 2 * c1_[n];
           } else {
             j_comp = c1_[s] - 2 * c1_[c] + c1_[n];
           }

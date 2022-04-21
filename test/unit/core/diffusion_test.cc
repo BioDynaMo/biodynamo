@@ -750,7 +750,9 @@ TEST(DiffusionTest, EulerNeumannBoundaries) {
     expected_solution += conc[i];
   }
 
-  EXPECT_FLOAT_EQ(init, expected_solution);
+  // Expect total final conc to coincide with +/- 0.01% of
+  // initial conc.
+  EXPECT_LT(std::abs(init - expected_solution) / init, 0.0001);
 
   // dgrids are deleted by rm's destructor
 }
