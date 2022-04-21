@@ -177,7 +177,8 @@ inline void GenericReducer<T, TResult>::Streamer(TBuffer& R__b) {
 /// auto result = Reduce(sim, sum_data, combine_tl_results);
 /// \endcode
 /// The optional argument `filter` allows to reduce only a subset of
-/// all agents.
+/// all agents.\n
+/// NB: For better performance consider using `GenericReducer` instead.
 template <typename T>
 inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
                 Functor<T, const SharedData<T>&>& reduce_partial_results,
@@ -311,7 +312,8 @@ inline void Counter<TResult>::Streamer(TBuffer& R__b) {
 /// auto num_infected = Count(sim, is_infected));
 /// \endcode
 /// The optional argument `filter` allows to count only a subset of
-/// all agents.
+/// all agents.\n
+/// NB: For better performance consider using `Counter` instead.
 inline uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition,
                       Functor<bool, Agent*>* filter = nullptr) {
   // The thread-local (partial) results

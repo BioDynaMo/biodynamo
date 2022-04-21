@@ -124,20 +124,25 @@ class TimeSeries {
   /// Adds a reducer collector which is executed at each iteration.\n
   /// The benefit (in comparison with `AddCollector` using a function pointer
   /// to collect y-values) is that multiple reducers can be combined.
-  /// Thus the result can be calculated faster.\n
+  /// This mechanism is more cache-friendly and calculates the result 
+  /// much faster.\n
+  /// `Update` calculates the values for reducers before function pointers.
+  /// Thus, a function pointer collector can use the result of a reducer
+  /// collector. This is illustrated in the example below.
   /// Let's assume we want to track the fraction of infected agents in an
   /// epidemiological simulation.
   /// \code
   /// auto is_infected = [](Agent* a) {
   ///   return bdm_static_cast<Person*>(a)->state_ == State::kInfected;
   /// };
-  /// auto post_process = [](double count) {
-  ///   auto* rm = Simulation::GetActive()->GetResourceManager();
-  ///   auto num_agents = rm->GetNumAgents();
+  /// ts->AddCollector("infected", new Counter<double>(is_infected);
+  ///
+  /// auto infected_rate = [](Simulation* sim) {
+  ///   auto num_agents = sim->GetResourceManager()->GetNumAgents();
+  ///   auto count = ts->GetYValues("infected").back();
   ///   return count / static_cast<double>(num_agents);
   /// };
-  /// ts->AddCollector("infected", new Counter<double>(is_infected,
-  ///                                                  post_process));
+  /// ts->AddCollector("infected_rate", infected_rate); 
   /// \endcode
   void AddCollector(const std::string& id, Reducer<double>* y_reducer_collector,
                     double (*xcollector)(Simulation*) = nullptr);
