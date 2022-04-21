@@ -12,31 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "unit/core/container/shared_data_test.h"
-#include <gtest/gtest.h>
-#include <vector>
-#include "core/container/shared_data.h"
-#include "unit/test_util/io_test.h"
+#include "core/agent/agent_pointer.h"
 
 namespace bdm {
-namespace shared_data_test {
 
-// Test if resize and size method work correctly.
-TEST(SharedDataTest, ReSize) {
-  SharedData<int> sdata(10);
-  EXPECT_EQ(10u, sdata.size());
-  sdata.resize(20);
-  EXPECT_EQ(20u, sdata.size());
-}
+AgentPointerMode gAgentPointerMode = AgentPointerMode::kIndirect;
 
-// Test if shared data is occupying full cache lines.
-TEST(SharedDataTest, CacheLineAlignment) { RunCacheLineAlignmentTest(); }
-
-#ifdef USE_DICT
-
-TEST_F(IOTest, SharedData) { RunIOTest(); }
-
-#endif  // USE_DICT
-
-}  // namespace shared_data_test
 }  // namespace bdm

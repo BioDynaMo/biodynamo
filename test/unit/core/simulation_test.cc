@@ -80,8 +80,6 @@ class SimulationTest : public ::testing::Test {
       "scheduling_batch_size = 123\n"
       "detect_static_agents = true\n"
       "cache_neighbors = true\n"
-      "agent_uid_defragmentation_low_watermark = 0.123\n"
-      "agent_uid_defragmentation_high_watermark = 0.456\n"
       "use_bdm_mem_mgr = false\n"
       "mem_mgr_aligned_pages_shift = 7\n"
       "mem_mgr_growth_rate = 1.123\n"
@@ -178,10 +176,6 @@ class SimulationTest : public ::testing::Test {
     EXPECT_EQ(123u, param->scheduling_batch_size);
     EXPECT_TRUE(param->detect_static_agents);
     EXPECT_TRUE(param->cache_neighbors);
-    EXPECT_NEAR(0.123, param->agent_uid_defragmentation_low_watermark,
-                abs_error<double>::value);
-    EXPECT_NEAR(0.456, param->agent_uid_defragmentation_high_watermark,
-                abs_error<double>::value);
     EXPECT_FALSE(param->use_bdm_mem_mgr);
     EXPECT_EQ(7u, param->mem_mgr_aligned_pages_shift);
     EXPECT_NEAR(1.123, param->mem_mgr_growth_rate, abs_error<double>::value);

@@ -5,8 +5,8 @@
   <selection>
     <class name="bdm::neuroscience::NeuronSoma" />
     <class name="bdm::neuroscience::NeuriteElement" />
-    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" />
-    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" noStreamer="true" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" noStreamer="true" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::EulerGrid" />
     <class name="bdm::EulerDepletionGrid" />
@@ -132,5 +132,12 @@
     <class name="bdm::neuroscience::SplitNeuriteElementEvent" />
     <class name="bdm::neuroscience::NeuriteElement::MechanicalForcesFunctor" />
     <class name="bdm::Spinlock" />
+    <class name="bdm::SharedData<std::vector<bdm::AgentUid>>" />
+    <class name="bdm::SharedData<uint64_t>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,3>>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,4>>" />
   </selection>
+  <exclusion>
+    <class pattern="bdm::SharedData<*>::AlignedT" />
+  </exclusion>
 </lcgdict>

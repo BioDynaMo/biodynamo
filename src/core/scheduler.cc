@@ -463,6 +463,9 @@ void Scheduler::Initialize(uint64_t steps) {
     progress_bar_ = new ProgressBar(steps);
   }
 
+  // Update the uid generator in case the number of threads has changed.
+  sim->GetAgentUidGenerator()->Update();
+
   // We force-update the environment in this function because users may apply
   // certain operations such as shifting them in space in between two Simulate()
   // or SimulateUntil() calls. In contrast to adding or removing agents, such

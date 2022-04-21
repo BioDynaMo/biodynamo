@@ -1,5 +1,6 @@
 <lcgdict>
   <selection>
+    <class pattern="bdm::AgentPointer*" noStreamer="true" />
     <class pattern="bdm::InlineVector*" noStreamer="true" />
     <class pattern="bdm::*" />
     <class pattern="std::vector<bdm::*>" />
@@ -32,8 +33,8 @@
          -> all selected classes from libbiodynamo-selection.xml -->
     <class name="bdm::neuroscience::NeuronSoma" />
     <class name="bdm::neuroscience::NeuriteElement" />
-    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" />
-    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" noStreamer="true" />
+    <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" noStreamer="true" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::EulerGrid" />
     <class name="bdm::EulerDepletionGrid" />
@@ -93,7 +94,6 @@
     <!-- list of biodynamo classes that should be ignored  -->
     <class pattern="bdm::memory_manager_detail::*" />
     <class pattern="std::vector<bdm::memory_manager_detail::*>" />
-    <class pattern="bdm::SharedData*" />
     <class name="bdm::MemoryManager" />
     <class name="bdm::Operation" />
     <class name="bdm::SoVisitor" />
@@ -168,5 +168,10 @@
     <class name="bdm::neuroscience::SideNeuriteExtensionEvent" />
     <class name="bdm::neuroscience::SplitNeuriteElementEvent" />
     <class name="bdm::neuroscience::NeuriteElement::MechanicalForcesFunctor" />
+    <class name="bdm::SharedData<std::vector<bdm::AgentUid>>" />
+    <class name="bdm::SharedData<uint64_t>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,3>>" />
+    <class name="bdm::SharedData<bdm::MathArray<double,4>>" />
+    <class pattern="bdm::SharedData<*>::AlignedT" />
   </exclusion>
 </lcgdict>
