@@ -124,7 +124,7 @@ class TimeSeries {
   /// Adds a reducer collector which is executed at each iteration.\n
   /// The benefit (in comparison with `AddCollector` using a function pointer
   /// to collect y-values) is that multiple reducers can be combined.
-  /// This mechanism is more cache-friendly and calculates the result 
+  /// This mechanism is more cache-friendly and calculates the result
   /// much faster.\n
   /// `Update` calculates the values for reducers before function pointers.
   /// Thus, a function pointer collector can use the result of a reducer
@@ -142,7 +142,7 @@ class TimeSeries {
   ///   auto count = ts->GetYValues("infected").back();
   ///   return count / static_cast<double>(num_agents);
   /// };
-  /// ts->AddCollector("infected_rate", infected_rate); 
+  /// ts->AddCollector("infected_rate", infected_rate);
   /// \endcode
   void AddCollector(const std::string& id, Reducer<double>* y_reducer_collector,
                     double (*xcollector)(Simulation*) = nullptr);
