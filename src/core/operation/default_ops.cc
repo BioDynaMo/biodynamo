@@ -14,7 +14,7 @@
 
 #include "core/analysis/time_series.h"
 #include "core/operation/bound_space_op.h"
-#include "core/operation/diffusion_op.h"
+#include "core/operation/continuum_op.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/operation/load_balancing_op.h"
 #include "core/operation/mechanical_forces_op.h"
@@ -27,7 +27,7 @@ namespace bdm {
 
 BDM_REGISTER_OP(BoundSpace, "bound space", kCpu);
 
-BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
+BDM_REGISTER_OP(ContinuumOp, "continuum", kCpu);
 
 // By default run load balancing only in the first iteration.
 BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,

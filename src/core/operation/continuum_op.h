@@ -32,7 +32,7 @@
 namespace bdm {
 
 /// A class that sets up diffusion grids of the substances in this simulation
-class DiffusionOp : public StandaloneOperationImpl {
+class ContinuumOp : public StandaloneOperationImpl {
  protected:
   /// Last time when the operation was executed
   real_t last_time_run_ = 0.0;
@@ -41,7 +41,7 @@ class DiffusionOp : public StandaloneOperationImpl {
   real_t delta_t_ = 0.0;
 
  public:
-  BDM_OP_HEADER(DiffusionOp);
+  BDM_OP_HEADER(ContinuumOp);
 
   void operator()() override {
     // Get active simulation and related pointers

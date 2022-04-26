@@ -419,7 +419,7 @@ TEST_F(SchedulerTest, GetOps) {
   sim.GetResourceManager()->AddAgent(new Cell(10));
   auto* scheduler = sim.GetScheduler();
 
-  std::vector<std::string> def_ops = {"mechanical forces", "diffusion"};
+  std::vector<std::string> def_ops = {"mechanical forces", "continuum"};
 
   for (auto& def_op : def_ops) {
     auto ops = scheduler->GetOps(def_op);
@@ -454,7 +454,7 @@ TEST_F(SchedulerTest, ScheduleOrder) {
   std::vector<std::string> agent_ops = {"update staticness", "bound space",
                                         "behavior", "mechanical forces",
                                         "discretization"};
-  std::vector<std::string> sa_ops = {"diffusion"};
+  std::vector<std::string> sa_ops = {"continuum"};
 
   int i = 0;
   ASSERT_EQ(agent_ops.size(), GetListOfScheduledAgentOps().size());

@@ -601,8 +601,8 @@ TEST(DiffusionTest, DynamicTimeStepping) {
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
-  auto diff_op = scheduler->GetOps("diffusion")[0];
-  diff_op->frequency_ = 2;
+  auto cm_op = scheduler->GetOps("continuum")[0];
+  cm_op->frequency_ = 2;
 
   // Create one cell at a random position
   auto construct = [](const Real3& position) {
@@ -638,12 +638,12 @@ TEST(DiffusionTest, DynamicTimeStepping) {
   // the update.
   auto* dgrid = rm->GetDiffusionGrid(0);
   EXPECT_FLOAT_EQ(0.2, dgrid->GetLastTimestep());
-  diff_op->frequency_ = 5;
+  cm_op->frequency_ = 5;
   scheduler->Simulate(3);
   EXPECT_FLOAT_EQ(0.3, dgrid->GetLastTimestep());
   scheduler->Simulate(5);
   EXPECT_FLOAT_EQ(0.5, dgrid->GetLastTimestep());
-  diff_op->frequency_ = 3;
+  cm_op->frequency_ = 3;
   scheduler->Simulate(2);
   EXPECT_FLOAT_EQ(0.2, dgrid->GetLastTimestep());
   scheduler->Simulate(3);

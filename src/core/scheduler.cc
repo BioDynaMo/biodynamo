@@ -19,7 +19,7 @@
 #include <utility>
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/operation/bound_space_op.h"
-#include "core/operation/diffusion_op.h"
+#include "core/operation/continuum_op.h"
 #include "core/operation/mechanical_forces_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
@@ -46,7 +46,7 @@ Scheduler::Scheduler() {
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
       "mechanical forces", "discretization", "propagate staticness agentop",
-      "diffusion"};
+      "continuum"};
 
   std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
                                                       "propagate staticness"};
