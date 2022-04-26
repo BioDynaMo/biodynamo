@@ -35,7 +35,7 @@ struct RetrieveContinuumValue : public Behavior {
     if (!continuum_model_) {
       // Get the continuum model in the first iteration.
       auto* rm = sim->GetResourceManager();
-      auto* cm = rm->GetContinuumModel(0);
+      auto* cm = rm->GetContinuum(0);
       continuum_model_ = dynamic_cast<ScalarField*>(cm);
       if (!continuum_model_) {
         Log::Fatal("Continuum model not found.");

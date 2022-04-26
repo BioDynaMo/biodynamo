@@ -49,7 +49,7 @@ inline int Simulate(int argc, const char** argv) {
   ac->SetContinuumId(continuum_id);
   ac->SetContinuumName(continuum_name);
   auto* rm = simulation.GetResourceManager();
-  rm->AddContinuumModel(ac);
+  rm->AddContinuum(ac);
 
   // Run simulation with roughly 100000 agents for 500 timestep
   simulation.GetScheduler()->Simulate(500);

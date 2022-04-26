@@ -470,7 +470,7 @@ void Scheduler::Initialize(uint64_t steps) {
   // an operation would not mark the environment as OutOfSync and hence the
   // forced update at this place.
   env->ForcedUpdate();
-  rm->ForEachContinuumModel([](ContinuumModel* cm) {
+  rm->ForEachContinuum([](Continuum* cm) {
     // Create data structures, whose size depend on the env dimensions
     cm->Initialize();
     auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);

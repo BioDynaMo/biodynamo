@@ -114,7 +114,7 @@ TEST(DiffusionInitTest, InitBothArrays) {
   // Define the substances in our simulation
   DiffusionGrid* d_grid = nullptr;
   d_grid = new TestGrid(kSubstance, "Substance", 0.0, 0.0, 26);
-  rm->AddContinuumModel(d_grid);
+  rm->AddContinuum(d_grid);
 
   // Initialize the substance according to a GaussianBand along the x-axis
   auto SetValues = [&](real_t x, real_t y, real_t z) { return 0.5; };

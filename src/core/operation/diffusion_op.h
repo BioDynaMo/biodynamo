@@ -60,7 +60,7 @@ class DiffusionOp : public StandaloneOperationImpl {
       return;
     }
 
-    rm->ForEachContinuumModel([&](ContinuumModel* cm) {
+    rm->ForEachContinuum([&](Continuum* cm) {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway

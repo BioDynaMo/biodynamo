@@ -9,7 +9,7 @@
     <class name="bdm::AgentPointer<bdm::neuroscience::NeuronOrNeurite>" noStreamer="true" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::ScalarField" />
-    <class name="bdm::ContinuumModel" />
+    <class name="bdm::Continuum" />
     <class name="bdm::EulerGrid" />
     <class name="bdm::RungeKuttaGrid" />
     <class name="bdm::DiffusionGrid" />
@@ -27,7 +27,7 @@
     <class name="bdm::OptimizationParamType"/>
     <class name="bdm::experimental::MPIObject" />
     <class name="bdm::Cell" />
-    <class name="std::unordered_map<uint64_t, bdm::ContinuumModel*>" />
+    <class name="std::unordered_map<uint64_t, bdm::Continuum*>" />
     <class name="std::unordered_map<uint64_t, bdm::AgentHandle>" />
     <class name="bdm::RuntimeVariables"/>
     <class name="bdm::Behavior"/>

@@ -22,11 +22,11 @@
 
 namespace bdm {
 
-class ContinuumModel {
+class Continuum {
  public:
-  ContinuumModel() = default;
-  explicit ContinuumModel(const TRootIOCtor *) {}
-  virtual ~ContinuumModel() = default;
+  Continuum() = default;
+  explicit Continuum(const TRootIOCtor *) {}
+  virtual ~Continuum() = default;
 
   void IntegrateTimeAsynchronously(double dt);
 
@@ -49,10 +49,10 @@ class ContinuumModel {
   double time_to_simulate_ = 0.0;
   int continuum_id_ = -1;
 
-  BDM_CLASS_DEF(ContinuumModel, 1);  // NOLINT
+  BDM_CLASS_DEF(Continuum, 1);  // NOLINT
 };
 
-class ScalarField : public ContinuumModel {
+class ScalarField : public Continuum {
  public:
   ScalarField() = default;
   explicit ScalarField(const TRootIOCtor *) {}
@@ -64,7 +64,7 @@ class ScalarField : public ContinuumModel {
   BDM_CLASS_DEF_OVERRIDE(ScalarField, 1);  // NOLINT
 };
 
-class VectorField : public ContinuumModel {
+class VectorField : public Continuum {
  public:
   VectorField() = default;
   explicit VectorField(const TRootIOCtor *) {}

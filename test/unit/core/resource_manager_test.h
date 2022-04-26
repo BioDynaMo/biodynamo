@@ -606,8 +606,8 @@ inline void RunIOTest() {
 
   DiffusionGrid* dgrid_1 = new EulerGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new EulerGrid(1, "Natrium", 0.2, 0.1, 1);
-  rm->AddContinuumModel(dgrid_1);
-  rm->AddContinuumModel(dgrid_2);
+  rm->AddContinuum(dgrid_1);
+  rm->AddContinuum(dgrid_2);
 
   // backup
   WritePersistentObject(ROOTFILE, "rm", *rm, "new");

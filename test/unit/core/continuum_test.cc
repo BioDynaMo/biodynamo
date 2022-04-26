@@ -21,7 +21,7 @@
 
 namespace bdm {
 
-class TestField : public ContinuumModel {
+class TestField : public Continuum {
  public:
   void Initialize() final {}
   void Update() final {}
@@ -66,9 +66,9 @@ TEST(ContinuumTest, AsynchronousUpdates) {
   tf3->SetContinuumName("TestField2");
 
   auto* rm = simulation.GetResourceManager();
-  rm->AddContinuumModel(tf1);
-  rm->AddContinuumModel(tf2);
-  rm->AddContinuumModel(tf3);
+  rm->AddContinuum(tf1);
+  rm->AddContinuum(tf2);
+  rm->AddContinuum(tf3);
 
   uint64_t n_sim_steps = 20;
   simulation.GetScheduler()->Simulate(n_sim_steps);
