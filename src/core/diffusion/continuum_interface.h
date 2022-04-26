@@ -95,10 +95,7 @@ class Continuum {
   /// Returns the time simulated by the continuum.
   double GetSimulatedTime() const { return simulated_time_; }
 
-  /// Sets the time step for the continuum. WARNING: We recommend not to mix
-  /// the the different scheduling options for the continuum model, i.e. avoid
-  /// using both, the time step and the frequency of the diffusion operation,
-  /// at the same time.
+  /// Sets the (max.) time step for the continuum time integration with `Step`.
   void SetTimeStep(double dt);
 
   /// Returns the time step for the continuum. If no time time step was set, it

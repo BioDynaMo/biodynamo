@@ -71,6 +71,10 @@ TEST(ContinuumTest, AsynchronousUpdates) {
   rm->AddContinuum(tf3);
 
   uint64_t n_sim_steps = 20;
+  size_t frequency = 2;
+  auto* scheduler = simulation.GetScheduler();
+  auto* op = scheduler->GetOps("continuum")[0];
+  op->frequency_ = frequency;
   simulation.GetScheduler()->Simulate(n_sim_steps);
 
   auto* param = simulation.GetParam();
@@ -80,13 +84,13 @@ TEST(ContinuumTest, AsynchronousUpdates) {
 
   EXPECT_EQ(param->simulation_time_step * n_sim_steps / ts1, tf1->GetNSteps());
   EXPECT_EQ(param->simulation_time_step * n_sim_steps / ts2, tf2->GetNSteps());
-  EXPECT_EQ(n_sim_steps, tf3->GetNSteps());
+  EXPECT_EQ(n_sim_steps / frequency, tf3->GetNSteps());
   EXPECT_DOUBLE_EQ(n_sim_steps * param->simulation_time_step,
                    tf1->GetSimulatedTime());
   EXPECT_DOUBLE_EQ(n_sim_steps * param->simulation_time_step,
                    tf2->GetSimulatedTime());
   EXPECT_DOUBLE_EQ(n_sim_steps * param->simulation_time_step,
-                   tf2->GetSimulatedTime());
+                   tf3->GetSimulatedTime());
 }
 
 }  // namespace bdm
