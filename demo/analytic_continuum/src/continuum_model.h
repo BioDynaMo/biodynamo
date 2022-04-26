@@ -54,6 +54,7 @@ class AnalyticContinuum : public ScalarField {
   /// omit this function.
   virtual Double3 GetGradient(const Double3 &position) const final {
     // Not implemented
+    Log::Warning("AnalyticContinuum::GetGradient() not implemented");
     return {0, 0, 0};
   };
 
