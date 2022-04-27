@@ -246,7 +246,7 @@ class Agent {
 
   virtual void SetDiameter(double diameter) = 0;
 
-  virtual void RemoveFromSimulation() const;
+  virtual void RemoveFromSimulation();
 
   void* operator new(size_t size) {  // NOLINT
     auto* mem_mgr = Simulation::GetActive()->GetMemoryManager();
