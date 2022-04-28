@@ -246,30 +246,30 @@ void EulerGrid::DiffuseWithNeumann(double dt) {
 
           if (x == 0) {
             i_comp = -2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[c + 1];
+                     1 * c1_[c] + 1 * c1_[c + 1];
           } else if (x == (nx - 1)) {
             i_comp = 2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[c - 1];
+                     1 * c1_[c] + 1 * c1_[c - 1];
           } else {
             i_comp = c1_[c - 1] - 2 * c1_[c] + c1_[c + 1];
           }
 
           if (y == 0) {
             j_comp = -2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[s];
+                     1 * c1_[c] + 1 * c1_[s];
           } else if (y == (ny - 1)) {
             j_comp = 2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[n];
+                     1 * c1_[c] + 1 * c1_[n];
           } else {
             j_comp = c1_[s] - 2 * c1_[c] + c1_[n];
           }
 
           if (z == 0) {
             k_comp = -2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[t];
+                     1 * c1_[c] + 1 * c1_[t];
           } else if (z == (nz - 1)) {
             k_comp = 2 * box_length_ * boundary_conditions_(x, y, z, nx - 1) -
-                     2 * c1_[c] + 2 * c1_[b];
+                     1 * c1_[c] + 1 * c1_[b];
           } else {
             k_comp = c1_[b] - 2 * c1_[c] + c1_[t];
           }

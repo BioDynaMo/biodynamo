@@ -721,40 +721,45 @@ TEST(DiffusionTest, EulerNeumannBoundaries) {
   double diff_coef = 10.0;
   int res = 20;
   double init = 1e5;
-  Double3 source = {{0, 0, 0}};
-
-  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  std::vector<Double3> sources;
+  sources.push_back({0, 0, 0});
+  sources.push_back({50, 50, 50});
+  sources.push_back({-50, -50, -50});
 
   struct SetMyBoundaries {
     SetMyBoundaries() {}
     double operator()(size_t x, size_t y, size_t z, size_t n) { return 0.0; }
   };
 
-  dgrid->Initialize();
-  dgrid->ChangeConcentrationBy(source, init);
-  dgrid->SetBoundaryConditionType(kNeumann);
-  dgrid->SetBoundaryCondition(SetMyBoundaries());
-  dgrid->SetUpperThreshold(1e15);
-  rm->AddDiffusionGrid(dgrid);
+  // Test multiple positions for the source
+  for (size_t s = 0; s < sources.size(); s++) {
+    auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+    dgrid->Initialize();
+    dgrid->ChangeConcentrationBy(sources[s], init);
+    dgrid->SetBoundaryConditionType(kNeumann);
+    dgrid->SetBoundaryCondition(SetMyBoundaries());
+    dgrid->SetUpperThreshold(1e15);
+    rm->AddDiffusionGrid(dgrid);
 
-  // Simulate diffusion / exponential decay for `tot` timesteps
-  int tot = 100;
-  for (int t = 0; t < tot; t++) {
-    dgrid->Diffuse(simulation_time_step);
+    // Simulate diffusion / exponential decay for `tot` timesteps
+    int tot = 10000;
+    auto conc = dgrid->GetAllConcentrations();
+    for (int t = 0; t < tot; t++) {
+      dgrid->Diffuse(simulation_time_step);
+      double total_concentration = 0.0;
+      for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+        total_concentration += conc[i];
+      }
+    }
+
+    double expected_solution = 0.0;
+
+    for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+      expected_solution += conc[i];
+    }
+    EXPECT_LT(std::abs(init - expected_solution) / init, 0.0001);
+    rm->RemoveDiffusionGrid(0);
   }
-
-  double expected_solution = 0.0;
-  auto conc = dgrid->GetAllConcentrations();
-
-  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
-    expected_solution += conc[i];
-  }
-
-  // Expect total final conc to coincide with +/- 0.01% of
-  // initial conc.
-  EXPECT_LT(std::abs(init - expected_solution) / init, 0.0001);
-
-  // dgrids are deleted by rm's destructor
 }
 
 TEST(DiffusionTest, DynamicTimeStepping) {
