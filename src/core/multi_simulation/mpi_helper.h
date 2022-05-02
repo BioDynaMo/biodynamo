@@ -15,6 +15,8 @@
 #ifndef CORE_MULTI_SIMULATION_MPI_HELPER_H_
 #define CORE_MULTI_SIMULATION_MPI_HELPER_H_
 
+// TODO move to core/util/mpi.h
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -75,6 +77,16 @@ T* MPI_Recv_Obj_ROOT(int size, int source, int tag,
 }
 
 #endif  // __ROOTCLING__
+
+// Class used to establish and close a MPI connection
+class MPI {
+ public:
+  static MPI* GetInstance();
+  void Init(int* argc, char*** argv);
+
+ private:
+  static int init_counter_;
+};
 
 }  // namespace experimental
 }  // namespace bdm

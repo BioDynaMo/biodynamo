@@ -37,6 +37,7 @@
 #include "core/environment/uniform_grid_environment.h"
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/gpu/gpu_helper.h"
+#include "core/multi_simulation/mpi_helper.h"
 #include "core/param/command_line_options.h"
 #include "core/param/param.h"
 #include "core/resource_manager.h"
@@ -368,6 +369,9 @@ void Simulation::InitializeMembers() {
   }
   scheduler_ = new Scheduler();
   time_series_ = new experimental::TimeSeries();
+
+  // TODO pass command line options
+  experimental::MPI::GetInstance()->Init(nullptr, nullptr);
 }
 
 void Simulation::SetEnvironment(Environment* env) {
