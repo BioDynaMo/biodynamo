@@ -504,6 +504,20 @@ class UniformGridEnvironment : public Environment {
     process_batch();
   }
 
+  /// @brief      Applies the given functor to each neighbor of the specified
+  ///             agent that is within the same box as the query agent
+  ///             or in the 26 surrounding boxes.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  functor    The operation as a functor
+  /// @param[in]      query      The query object
+  /// @param[in]      criteria   This parameter is ignored. Pass a nullptr.
+  ///
+  void ForEachNeighbor(Functor<void, Agent*>& functor, const Agent& query,
+                       void* criteria) override;
+
   /// @brief      Return the box index in the one dimensional array of the box
   ///             that contains the position
   ///

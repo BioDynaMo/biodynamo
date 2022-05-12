@@ -88,6 +88,66 @@ TEST(UniformGridEnvironmentTest, SetupGrid) {
   EXPECT_EQ(expected_63, neighbors[AgentUid(63)]);
 }
 
+TEST(UniformGridEnvironmentTest, ForEachNeighborWithoutDistance) {
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  auto* grid =
+      static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
+
+  CellFactory(rm, 4);
+
+  grid->Update();
+
+  std::unordered_map<AgentUid, std::vector<AgentUid>> neighbors;
+  neighbors.reserve(rm->GetNumAgents());
+
+  // Lambda that fills a vector of neighbors for each cell (excluding itself)
+  rm->ForEachAgent([&](Agent* agent) {
+    auto uid = agent->GetUid();
+    auto fill_neighbor_list = L2F([&](Agent* neighbor) {
+      auto nuid = neighbor->GetUid();
+      neighbors[uid].push_back(nuid);
+    });
+
+    grid->ForEachNeighbor(fill_neighbor_list, *agent, nullptr);
+  });
+
+  std::vector<AgentUid> expected_0 = {
+      AgentUid(1),  AgentUid(2),  AgentUid(4),  AgentUid(5),  AgentUid(6),
+      AgentUid(8),  AgentUid(9),  AgentUid(10), AgentUid(16), AgentUid(17),
+      AgentUid(18), AgentUid(20), AgentUid(21), AgentUid(22), AgentUid(24),
+      AgentUid(25), AgentUid(26), AgentUid(32), AgentUid(33), AgentUid(34),
+      AgentUid(36), AgentUid(37), AgentUid(38), AgentUid(40), AgentUid(41),
+      AgentUid(42)};
+  // expected_4 is symmetric.
+  std::vector<AgentUid> expected_4 = expected_0;
+  // remove itself and add AgentUid(0);
+  expected_4[2] = AgentUid(0);
+  std::sort(expected_4.begin(), expected_4.end());
+
+  // expected_42: all agents are neighbors
+  std::vector<AgentUid> expected_42;
+  for (int i = 0; i < 64; ++i) {
+    if (i != 42) {
+      expected_42.push_back(AgentUid(i));
+    }
+  }
+
+  std::vector<AgentUid> expected_63 = {AgentUid(42), AgentUid(43), AgentUid(46),
+                                       AgentUid(47), AgentUid(58), AgentUid(59),
+                                       AgentUid(62)};
+
+  std::sort(neighbors[AgentUid(0)].begin(), neighbors[AgentUid(0)].end());
+  std::sort(neighbors[AgentUid(4)].begin(), neighbors[AgentUid(4)].end());
+  std::sort(neighbors[AgentUid(42)].begin(), neighbors[AgentUid(42)].end());
+  std::sort(neighbors[AgentUid(63)].begin(), neighbors[AgentUid(63)].end());
+
+  EXPECT_EQ(expected_0, neighbors[AgentUid(0)]);
+  EXPECT_EQ(expected_4, neighbors[AgentUid(4)]);
+  EXPECT_EQ(expected_42, neighbors[AgentUid(42)]);
+  EXPECT_EQ(expected_63, neighbors[AgentUid(63)]);
+}
+
 void RunUpdateGridTest(Simulation* simulation) {
   auto* rm = simulation->GetResourceManager();
   auto* grid =
@@ -114,10 +174,10 @@ void RunUpdateGridTest(Simulation* simulation) {
 
   std::vector<AgentUid> expected_0 = {AgentUid(4), AgentUid(5), AgentUid(16),
                                       AgentUid(17), AgentUid(20)};
-  std::vector<AgentUid> expected_5 = {
-      AgentUid(0),  AgentUid(2),  AgentUid(4),  AgentUid(6),  AgentUid(8),
-      AgentUid(9),  AgentUid(10), AgentUid(17), AgentUid(20), AgentUid(21),
-      AgentUid(22), AgentUid(25)};
+  std::vector<AgentUid> expected_5 = {AgentUid(0),  AgentUid(2),  AgentUid(4),
+                                      AgentUid(6),  AgentUid(8),  AgentUid(9),
+                                      AgentUid(10), AgentUid(17), AgentUid(20),
+                                      AgentUid(21), AgentUid(22), AgentUid(25)};
   std::vector<AgentUid> expected_41 = {
       AgentUid(21), AgentUid(24), AgentUid(25), AgentUid(26), AgentUid(29),
       AgentUid(36), AgentUid(37), AgentUid(38), AgentUid(40), AgentUid(44),
