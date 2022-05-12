@@ -511,12 +511,19 @@ class UniformGridEnvironment : public Environment {
     process_batch();
   };
 
-  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
-                       void* criteria) override {
-    Log::Fatal("UniformGridEnvironment::ForEachNeighbor",
-               "You tried to call a specific ForEachNeighbor in an "
-               "environment that does not yet support it.");
-  }
+  /// @brief      Applies the given functor to each neighbor of the specified
+  ///             agent that is within the same box as the query agent
+  ///             or in the 26 surrounding boxes.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  functor    The operation as a functor
+  /// @param[in]      query      The query object
+  /// @param[in]      criteria   This parameter is ignored. Pass a nullptr.
+  ///
+  void ForEachNeighbor(Functor<void, Agent*>& functor, const Agent& query,
+                       void* criteria) override;
 
   // NeighborMutex ---------------------------------------------------------
 

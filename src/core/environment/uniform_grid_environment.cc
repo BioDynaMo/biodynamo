@@ -281,4 +281,43 @@ NeighborMutex* GridNeighborMutexBuilder::GetMutex(uint64_t box_idx) {
   return mutex;
 }
 
+// -----------------------------------------------------------------------------
+void UniformGridEnvironment::ForEachNeighbor(Functor<void, Agent*>& functor,
+                                             const Agent& query,
+                                             void* criteria) {
+  auto idx = query.GetBoxIdx();
+
+  FixedSizeVector<const Box*, 27> neighbor_boxes;
+  GetMooreBoxes(&neighbor_boxes, idx);
+
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+
+  NeighborIterator ni(neighbor_boxes, timestamp_);
+  const unsigned batch_size = 64;
+  uint64_t size = 0;
+  Agent* agents[batch_size] __attribute__((aligned(64)));
+
+  auto process_batch = [&]() {
+    for (uint64_t i = 0; i < size; ++i) {
+      functor(agents[i]);
+    }
+    size = 0;
+  };
+
+  while (!ni.IsAtEnd()) {
+    auto ah = *ni;
+    // increment iterator already here to hide memory latency
+    ++ni;
+    auto* agent = rm->GetAgent(ah);
+    if (agent != &query) {
+      agents[size] = agent;
+      size++;
+      if (size == batch_size) {
+        process_batch();
+      }
+    }
+  }
+  process_batch();
+}
+
 }  // namespace bdm
