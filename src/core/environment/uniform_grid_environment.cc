@@ -169,6 +169,7 @@ NeighborMutex* GridNeighborMutexBuilder::GetMutex(uint64_t box_idx) {
 void UniformGridEnvironment::ForEachNeighbor(Functor<void, Agent*>& functor,
                                              const Agent& query,
                                              void* criteria) {
+  auto* query_ptr = &query;
   auto idx = query.GetBoxIdx();
 
   FixedSizeVector<const Box*, 27> neighbor_boxes;
@@ -193,7 +194,7 @@ void UniformGridEnvironment::ForEachNeighbor(Functor<void, Agent*>& functor,
     // increment iterator already here to hide memory latency
     ++ni;
     auto* agent = rm->GetAgent(ah);
-    if (agent != &query) {
+    if (agent != query_ptr) {
       agents[size] = agent;
       size++;
       if (size == batch_size) {
