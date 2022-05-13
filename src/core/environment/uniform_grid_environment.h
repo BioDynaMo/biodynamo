@@ -150,9 +150,7 @@ class UniformGridEnvironment : public Environment {
       int countdown_ = 0;
     };
 
-    Iterator begin() const {  // NOLINT
-      auto* grid = static_cast<UniformGridEnvironment*>(
-          Simulation::GetActive()->GetEnvironment());
+    Iterator begin(UniformGridEnvironment* grid) const {  // NOLINT
       return Iterator(grid, this);
     }
   };
@@ -160,11 +158,13 @@ class UniformGridEnvironment : public Environment {
   /// An iterator that iterates over the boxes in this grid
   struct NeighborIterator {
     explicit NeighborIterator(
+        UniformGridEnvironment* grid,
         const FixedSizeVector<const Box*, 27>& neighbor_boxes,
         uint64_t grid_timestamp)
-        : neighbor_boxes_(neighbor_boxes),
+        : grid_(grid),
+          neighbor_boxes_(neighbor_boxes),
           // start iterator from box 0
-          box_iterator_(neighbor_boxes_[0]->begin()),
+          box_iterator_(neighbor_boxes_[0]->begin(grid)),
           grid_timestamp_(grid_timestamp) {
       // if first box is empty
       if (neighbor_boxes_[0]->IsEmpty(grid_timestamp)) {
@@ -187,6 +187,7 @@ class UniformGridEnvironment : public Environment {
     }
 
    private:
+    UniformGridEnvironment* grid_;
     /// The 27 neighbor boxes that will be searched for agents
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
     /// The box that shall be considered to iterate over for finding simulation
@@ -208,7 +209,7 @@ class UniformGridEnvironment : public Environment {
           continue;
         }
         // a non-empty box has been found
-        box_iterator_ = neighbor_boxes_[box_idx_]->begin();
+        box_iterator_ = neighbor_boxes_[box_idx_]->begin(grid_);
         return *this;
       }
       // all remaining boxes have been empty; reached end
@@ -478,7 +479,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, neighbor_boxes, timestamp_);
     const unsigned batch_size = 64;
     uint64_t size = 0;
     Agent* agents[batch_size] __attribute__((aligned(64)));

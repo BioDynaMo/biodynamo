@@ -69,19 +69,21 @@ void UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectors() {
 
 // -----------------------------------------------------------------------------
 struct AgentHandleIterator : public Iterator<AgentHandle> {
+  UniformGridEnvironment* grid_;
   uint64_t start, end, box_index, discard;
   const ParallelResizeVector<UniformGridEnvironment::Box*>& sorted_boxes;
   UniformGridEnvironment::Box::Iterator box_it;
   uint64_t tid;
 
-  AgentHandleIterator(uint64_t start, uint64_t end, uint64_t box_index,
+  AgentHandleIterator(UniformGridEnvironment* grid, uint64_t start, uint64_t end, uint64_t box_index,
                       uint64_t discard, decltype(sorted_boxes) sorted_boxes)
-      : start(start),
+      : grid_(grid), 
+        start(start),
         end(end),
         box_index(box_index),
         discard(discard),
         sorted_boxes(sorted_boxes),
-        box_it(sorted_boxes[box_index]->begin()) {
+        box_it(sorted_boxes[box_index]->begin(grid)) {
     // discard elements
     tid = ThreadInfo::GetInstance()->GetMyThreadId();
     for (uint64_t i = 0; i < discard; ++i) {
@@ -95,7 +97,7 @@ struct AgentHandleIterator : public Iterator<AgentHandle> {
   AgentHandle Next() override {
     while (box_it.IsAtEnd()) {
       box_index++;
-      box_it = sorted_boxes[box_index]->begin();
+      box_it = sorted_boxes[box_index]->begin(grid_);
     }
     auto ret = *box_it;
     start++;
@@ -114,7 +116,7 @@ void UniformGridEnvironment::LoadBalanceInfoUG::CallHandleIteratorConsumer(
   auto index =
       BinarySearch(start, cummulated_agents_, 0, grid_->total_num_boxes_ - 1) +
       1;
-  AgentHandleIterator it(start, end, index,
+  AgentHandleIterator it(grid_, start, end, index,
                          start - cummulated_agents_[index - 1], sorted_boxes_);
   f(&it);
 }
@@ -177,7 +179,7 @@ void UniformGridEnvironment::ForEachNeighbor(Functor<void, Agent*>& functor,
 
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
-  NeighborIterator ni(neighbor_boxes, timestamp_);
+  NeighborIterator ni(this, neighbor_boxes, timestamp_);
   const unsigned batch_size = 64;
   uint64_t size = 0;
   Agent* agents[batch_size] __attribute__((aligned(64)));
