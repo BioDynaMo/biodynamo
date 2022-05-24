@@ -113,21 +113,41 @@ void UniformGridEnvironment::UpdateImplementation() {
     Clear();
     timestamp_++;
 
-    auto inf = Math::kInfinity;
-    std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-    CalcSimDimensionsAndLargestAgent(&tmp_dim);
-    RoundOffGridDimensions(tmp_dim);
+    auto* param = Simulation::GetActive()->GetParam();
+    if (determine_sim_size_) {
+      auto inf = Math::kInfinity;
+      std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+      CalcSimDimensionsAndLargestAgent(&tmp_dim);
+      RoundOffGridDimensions(tmp_dim);
+    } else {
+      grid_dimensions_[0] = static_cast<int>(floor(param->min_bound));
+      grid_dimensions_[2] = static_cast<int>(floor(param->min_bound));
+      grid_dimensions_[4] = static_cast<int>(floor(param->min_bound));
+      grid_dimensions_[1] = static_cast<int>(ceil(param->max_bound));
+      grid_dimensions_[3] = static_cast<int>(ceil(param->max_bound));
+      grid_dimensions_[5] = static_cast<int>(ceil(param->max_bound));
+    }
 
     // If the box_length_ is not set manually, we set it to the largest agent
     // size
-    if (!is_custom_box_length_) {
+    if (!is_custom_box_length_ && determine_sim_size_) {
       auto los = ceil(GetLargestAgentSize());
       assert(los > 0 &&
              "The largest object size was found to be 0. Please check if your "
              "cells are correctly initialized.");
       box_length_ = los;
+    } else if (!is_custom_box_length_ && !determine_sim_size_) {
+      Log::Fatal("UniformGridEnvironment",
+                 "No box length specified although determine_sim_size_ is "
+                 "set to false. Call the member function "
+                 "SetBoxLength(box_length), or SetDetermineSimSize(false).");
     }
     box_length_squared_ = box_length_ * box_length_;
+
+    if (!determine_sim_size_) {
+      this->largest_object_size_ = box_length_;
+      this->largest_object_size_squared_ = box_length_squared_;
+    }
 
     for (int i = 0; i < 3; i++) {
       int dimension_length =
@@ -176,7 +196,6 @@ void UniformGridEnvironment::UpdateImplementation() {
     successors_.reserve();
 
     // Assign agents to boxes
-    auto* param = Simulation::GetActive()->GetParam();
     AssignToBoxesFunctor functor(this);
     rm->ForEachAgentParallel(param->scheduling_batch_size, functor);
     if (param->bound_space) {
