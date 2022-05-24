@@ -270,6 +270,8 @@ class UniformGridEnvironment : public Environment {
     is_custom_box_length_ = true;
   }
 
+  void SetDetermineSimSize(bool value) { determine_sim_size_ = value; }
+
   int32_t GetBoxLength() { return box_length_; }
 
   /// @brief      Calculates the squared euclidian distance between two points
@@ -655,6 +657,10 @@ class UniformGridEnvironment : public Environment {
   int32_t box_length_squared_ = 1;
   /// True when the box length was set manually
   bool is_custom_box_length_ = false;
+  /// If set to true, the UniformGridEnvironment determines the size of the
+  /// simulation space automatically.
+  /// If false, it uses param->min_bound and param->max_bound for each dimension
+  bool determine_sim_size_ = true;
   /// Stores the number of Boxes for each axis
   std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
