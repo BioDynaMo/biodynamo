@@ -68,16 +68,16 @@ class UniformGridEnvironment : public Environment {
   /// A single unit cube of the grid
   struct Box {
     Spinlock lock_;
+    /// length of the linked list (i.e. number of agents)
+    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
+    uint16_t length_;
     // std::atomic<bool> timestamp_;
     uint32_t timestamp_;
     /// start value of the linked list of agents inside this box.
     /// Next element can be found at `successors_[start_]`
     AgentHandle start_;
-    /// length of the linked list (i.e. number of agents)
-    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
-    uint16_t length_;
 
-    Box() : timestamp_(0), start_(AgentHandle()), length_(0) {}
+    Box() : length_(0), timestamp_(0), start_(AgentHandle()) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
