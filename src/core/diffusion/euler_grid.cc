@@ -195,6 +195,7 @@ void EulerGrid::DiffuseWithDirichlet(double dt) {
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
             c2_[c] = boundary_conditions_(x, y, z, nx - 1);
+            ++c;
             continue;
           }
 
