@@ -673,7 +673,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   auto* rm = simulation.GetResourceManager();
 
   double decay_coef = 0.0;
-  double diff_coef = 10.0;
+  double diff_coef = 100.0;
   int res = 20;
   // Depleting substance is fixed, i.e. no diff and no decay
   auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
@@ -683,7 +683,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
 
   struct SetMyBoundaries {
     SetMyBoundaries() {}
-    double operator()(size_t x, size_t y, size_t z, size_t n) { return 0.0; }
+    double operator()(size_t x, size_t y, size_t z, size_t n) { return 1.0; }
   };
 
   dgrid->SetBoundaryCondition(SetMyBoundaries());
@@ -691,18 +691,20 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   rm->AddDiffusionGrid(dgrid);
 
   // Simulate diffusion / exponential decay for `tot` timesteps
-  int tot = 100;
+  int tot = 100000;  // ToDo This should probably be lower for final version
   for (int t = 0; t < tot; t++) {
     dgrid->Diffuse(simulation_time_step);
   }
 
+  // After a sufficient amount of iterations with dirichlet boundary conditions
+  // equal to 1.0, the concentration should be 1.0 everywhere.
   auto conc = dgrid->GetAllConcentrations();
-
-  double expected_solution = 0.0;
-
-  EXPECT_FLOAT_EQ(0.0, expected_solution);
-
-  // dgrids are deleted by rm's destructor
+  double average_concentration = 1.0;
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+    average_concentration += conc[i];
+  }
+  average_concentration /= dgrid->GetNumBoxes();
+  EXPECT_FLOAT_EQ(average_concentration, 1.0);
 }
 
 TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
@@ -743,13 +745,11 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
 
     // Simulate diffusion / exponential decay for `tot` timesteps
     int tot = 10000;
-    auto conc = dgrid->GetAllConcentrations();
     for (int t = 0; t < tot; t++) {
       dgrid->Diffuse(simulation_time_step);
     }
-
     double expected_solution = 0.0;
-
+    auto conc = dgrid->GetAllConcentrations();
     for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
       expected_solution += conc[i];
     }
