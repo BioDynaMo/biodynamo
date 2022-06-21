@@ -705,7 +705,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   // dgrids are deleted by rm's destructor
 }
 
-TEST(DiffusionTest, EulerNeumannBoundaries) {
+TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
@@ -746,10 +746,6 @@ TEST(DiffusionTest, EulerNeumannBoundaries) {
     auto conc = dgrid->GetAllConcentrations();
     for (int t = 0; t < tot; t++) {
       dgrid->Diffuse(simulation_time_step);
-      double total_concentration = 0.0;
-      for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
-        total_concentration += conc[i];
-      }
     }
 
     double expected_solution = 0.0;
@@ -760,6 +756,83 @@ TEST(DiffusionTest, EulerNeumannBoundaries) {
     EXPECT_LT(std::abs(init - expected_solution) / init, 0.0001);
     rm->RemoveDiffusionGrid(0);
   }
+}
+
+/// Test verifies if the diffusion grid is able to handle a Neumann boundary
+/// with a non-zero value. We test for -1.0 which should add concentration
+/// to the grid.
+TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
+  // Define some parameters & simulation
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Neumann";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;  // no decay
+  double diff_coef = 1.0;   // diffusion
+  int res = 20;             // some resolution
+
+  /// Normal vector typically points outwards, hence -1.0 adds concentration to
+  /// the volume. This test tests if we add concentration to the volume.
+  struct SetMyBoundaries {
+    SetMyBoundaries() {}
+    double operator()(size_t x, size_t y, size_t z, size_t n) { return -1.0; }
+  };
+
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  dgrid->Initialize();
+  dgrid->SetBoundaryConditionType(kNeumann);
+  dgrid->SetBoundaryCondition(SetMyBoundaries());
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddDiffusionGrid(dgrid);
+
+  // ----------------------------------------------------------
+  // 1. Test if DG was initialized correctly (zero initialized)
+  // ----------------------------------------------------------
+  auto conc = dgrid->GetAllConcentrations();
+  double init = 0.0;
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+    init += conc[i];
+  }
+  ASSERT_DOUBLE_EQ(init, 0.0);
+
+  // ----------------------------------------------------------
+  // 2. Simulate diffusion and check if concentration is added
+  // ----------------------------------------------------------
+
+  double intermediate_concentration_backup = 0.0;
+  int tot = 10000;
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+    conc = dgrid->GetAllConcentrations();  // get current concentrations.
+    double intermediate_concentration_1 = 0.0;
+    for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+      intermediate_concentration_1 += conc[i];
+    }
+    if (t == 0) {
+      /// Note: We have 20x20x20 boxes, so we have (20x20)x2+(19*18)x4=2168
+      /// boxes on the boundary. In the first step, each boundary box should
+      /// receive a concentration of
+      /// D * dt / dx^2 = 1.0 * 0.1 / (10*10) = 10^-3.
+      /// Thus, the total concentration should be roughly 2.168, and definitely
+      /// bigger than 1.0 .
+      EXPECT_GT(intermediate_concentration_1, 1.0);
+    } else {
+      /// For all further iterations, we simply check if the concentration
+      /// increases. Which should be the case for the given BC.
+      EXPECT_GT(intermediate_concentration_1,
+                intermediate_concentration_backup);
+    }
+    intermediate_concentration_backup = intermediate_concentration_1;
+  }
+
+  rm->RemoveDiffusionGrid(0);
 }
 
 TEST(DiffusionTest, DynamicTimeStepping) {
