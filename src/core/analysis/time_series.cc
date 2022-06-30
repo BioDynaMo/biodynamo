@@ -272,17 +272,17 @@ void TimeSeries::Update() {
     auto* sim = Simulation::GetActive();
     auto* scheduler = sim->GetScheduler();
     auto* param = sim->GetParam();
+
+    // First all reducers
     std::vector<std::pair<Reducer<real_t>*, const std::string>> reducers;
     for (auto& entry : data_) {
       auto& result_data = entry.second;
-      if (result_data.ycollector != nullptr) {
-        result_data.y_values.push_back(result_data.ycollector(sim));
+      if (result_data.y_reducer_collector == nullptr) {
+        continue;
       }
-      if (result_data.y_reducer_collector != nullptr) {
-        result_data.y_reducer_collector->Reset();
-        reducers.push_back(
-            std::make_pair(result_data.y_reducer_collector, entry.first));
-      }
+      result_data.y_reducer_collector->Reset();
+      reducers.push_back(
+          std::make_pair(result_data.y_reducer_collector, entry.first));
       if (result_data.xcollector == nullptr) {
         result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
                                        param->simulation_time_step);
@@ -291,7 +291,7 @@ void TimeSeries::Update() {
       }
     }
 
-    // execute reducers
+    //   execute reducers
     auto execute_reducers = L2F([&](Agent* agent) {
       for (auto& el : reducers) {
         (*el.first)(agent);
@@ -300,6 +300,22 @@ void TimeSeries::Update() {
     sim->GetResourceManager()->ForEachAgentParallel(execute_reducers);
     for (auto& el : reducers) {
       data_[el.second].y_values.push_back(el.first->GetResult());
+    }
+
+    // Second all function collectors
+    //   Thus function collectors can use the results of the reducers.
+    for (auto& entry : data_) {
+      auto& result_data = entry.second;
+      if (result_data.ycollector == nullptr) {
+        continue;
+      }
+      result_data.y_values.push_back(result_data.ycollector(sim));
+      if (result_data.xcollector == nullptr) {
+        result_data.x_values.push_back(scheduler->GetSimulatedSteps() *
+                                       param->simulation_time_step);
+      } else {
+        result_data.x_values.push_back(result_data.xcollector(sim));
+      }
     }
   }
 }

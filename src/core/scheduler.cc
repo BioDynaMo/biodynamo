@@ -48,8 +48,8 @@ Scheduler::Scheduler() {
       "mechanical forces", "discretization", "propagate staticness agentop",
       "diffusion"};
 
-  std::vector<std::string> pre_scheduled_ops_names = {
-      "set up iteration", "update environment", "propagate staticness"};
+  std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
+                                                      "propagate staticness"};
   // We cannot put sort and balance in the list of scheduled_standalone_ops_,
   // because numa-aware data structures would be invalidated:
   // ```
@@ -61,8 +61,8 @@ Scheduler::Scheduler() {
   // agents that are not yet in the environment (which load balancing
   // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
-      "load balancing", "tear down iteration", "visualize",
-      "update time series"};
+      "load balancing", "tear down iteration", "update environment",
+      "visualize", "update time series"};
 
   protected_op_names_ = {"update staticness",
                          "discretization",
@@ -462,6 +462,9 @@ void Scheduler::Initialize(uint64_t steps) {
     progress_bar_ = nullptr;
     progress_bar_ = new ProgressBar(steps);
   }
+
+  // Update the uid generator in case the number of threads has changed.
+  sim->GetAgentUidGenerator()->Update();
 
   // We force-update the environment in this function because users may apply
   // certain operations such as shifting them in space in between two Simulate()

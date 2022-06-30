@@ -68,16 +68,16 @@ class UniformGridEnvironment : public Environment {
   /// A single unit cube of the grid
   struct Box {
     Spinlock lock_;
+    /// length of the linked list (i.e. number of agents)
+    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
+    uint16_t length_;
     // std::atomic<bool> timestamp_;
     uint32_t timestamp_;
     /// start value of the linked list of agents inside this box.
     /// Next element can be found at `successors_[start_]`
     AgentHandle start_;
-    /// length of the linked list (i.e. number of agents)
-    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
-    uint16_t length_;
 
-    Box() : timestamp_(0), start_(AgentHandle()), length_(0) {}
+    Box() : length_(0), timestamp_(0), start_(AgentHandle()) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
@@ -150,9 +150,7 @@ class UniformGridEnvironment : public Environment {
       int countdown_ = 0;
     };
 
-    Iterator begin() const {  // NOLINT
-      auto* grid = static_cast<UniformGridEnvironment*>(
-          Simulation::GetActive()->GetEnvironment());
+    Iterator begin(UniformGridEnvironment* grid) const {  // NOLINT
       return Iterator(grid, this);
     }
   };
@@ -160,11 +158,13 @@ class UniformGridEnvironment : public Environment {
   /// An iterator that iterates over the boxes in this grid
   struct NeighborIterator {
     explicit NeighborIterator(
+        UniformGridEnvironment* grid,
         const FixedSizeVector<const Box*, 27>& neighbor_boxes,
         uint64_t grid_timestamp)
-        : neighbor_boxes_(neighbor_boxes),
+        : grid_(grid),
+          neighbor_boxes_(neighbor_boxes),
           // start iterator from box 0
-          box_iterator_(neighbor_boxes_[0]->begin()),
+          box_iterator_(neighbor_boxes_[0]->begin(grid)),
           grid_timestamp_(grid_timestamp) {
       // if first box is empty
       if (neighbor_boxes_[0]->IsEmpty(grid_timestamp)) {
@@ -187,6 +187,7 @@ class UniformGridEnvironment : public Environment {
     }
 
    private:
+    UniformGridEnvironment* grid_;
     /// The 27 neighbor boxes that will be searched for agents
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
     /// The box that shall be considered to iterate over for finding simulation
@@ -208,7 +209,7 @@ class UniformGridEnvironment : public Environment {
           continue;
         }
         // a non-empty box has been found
-        box_iterator_ = neighbor_boxes_[box_idx_]->begin();
+        box_iterator_ = neighbor_boxes_[box_idx_]->begin(grid_);
         return *this;
       }
       // all remaining boxes have been empty; reached end
@@ -269,6 +270,8 @@ class UniformGridEnvironment : public Environment {
     box_length_ = bl;
     is_custom_box_length_ = true;
   }
+
+  void SetDetermineSimSize(bool value) { determine_sim_size_ = value; }
 
   int32_t GetBoxLength() { return box_length_; }
 
@@ -464,7 +467,7 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, neighbor_boxes, timestamp_);
     const unsigned batch_size = 64;
     uint64_t size = 0;
     Agent* agents[batch_size] __attribute__((aligned(64)));
@@ -511,12 +514,19 @@ class UniformGridEnvironment : public Environment {
     process_batch();
   };
 
-  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
-                       void* criteria) override {
-    Log::Fatal("UniformGridEnvironment::ForEachNeighbor",
-               "You tried to call a specific ForEachNeighbor in an "
-               "environment that does not yet support it.");
-  }
+  /// @brief      Applies the given functor to each neighbor of the specified
+  ///             agent that is within the same box as the query agent
+  ///             or in the 26 surrounding boxes.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  functor    The operation as a functor
+  /// @param[in]      query      The query object
+  /// @param[in]      criteria   This parameter is ignored. Pass a nullptr.
+  ///
+  void ForEachNeighbor(Functor<void, Agent*>& functor, const Agent& query,
+                       void* criteria) override;
 
   // NeighborMutex ---------------------------------------------------------
 
@@ -648,6 +658,10 @@ class UniformGridEnvironment : public Environment {
   int32_t box_length_squared_ = 1;
   /// True when the box length was set manually
   bool is_custom_box_length_ = false;
+  /// If set to true, the UniformGridEnvironment determines the size of the
+  /// simulation space automatically.
+  /// If false, it uses param->min_bound and param->max_bound for each dimension
+  bool determine_sim_size_ = true;
   /// Stores the number of Boxes for each axis
   std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])

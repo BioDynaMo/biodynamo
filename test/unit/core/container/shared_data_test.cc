@@ -12,12 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/container/shared_data.h"
+#include "unit/core/container/shared_data_test.h"
 #include <gtest/gtest.h>
 #include <vector>
 #include "core/real_t.h"
 
 namespace bdm {
+namespace shared_data_test {
 
 // Test if resize and size method work correctly.
 TEST(SharedDataTest, ReSize) {
@@ -28,71 +29,13 @@ TEST(SharedDataTest, ReSize) {
 }
 
 // Test if shared data is occupying full cache lines.
-TEST(SharedDataTest, CacheLineAlignment) {
-  // Test standard data tyes int, float, real_t
-  // Test alignment of int
-  EXPECT_EQ(
-      std::alignment_of<typename SharedData<int>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
-  // Test alignment of float
-  EXPECT_EQ(
-      std::alignment_of<typename SharedData<float>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
-  // Test alignment of real_t
-  EXPECT_EQ(
-      std::alignment_of<typename SharedData<real_t>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
-  // Test size of vector components int
-  EXPECT_EQ(sizeof(typename SharedData<int>::Data::value_type),
-            BDM_CACHE_LINE_SIZE);
-  // Test size of vector components float
-  EXPECT_EQ(sizeof(typename SharedData<float>::Data::value_type),
-            BDM_CACHE_LINE_SIZE);
-  // Test size of vector components real_t
-  EXPECT_EQ(sizeof(typename SharedData<real_t>::Data::value_type),
-            BDM_CACHE_LINE_SIZE);
+TEST(SharedDataTest, CacheLineAlignment) { RunCacheLineAlignmentTest(); }
 
-  // Test a chache line fully filled with real_ts.
-  // Test alignment of real_t[max_real_t], e.g. max cache line capacity
-  EXPECT_EQ(
-      std::alignment_of<
-          typename SharedData<real_t[BDM_CACHE_LINE_SIZE /
-                                     sizeof(real_t)]>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
-  // Test size of vector components real_t[max_real_t], e.g. max cache line
-  // capacity
-  EXPECT_EQ(
-      sizeof(typename SharedData<
-             real_t[BDM_CACHE_LINE_SIZE / sizeof(real_t)]>::Data::value_type),
-      BDM_CACHE_LINE_SIZE);
+#ifdef USE_DICT
 
-  // Test some custom data structures
-  // Test alignment of data that fills 1 cache line
-  EXPECT_EQ(std::alignment_of<typename SharedData<
-                char[BDM_CACHE_LINE_SIZE - 1]>::Data::value_type>::value,
-            BDM_CACHE_LINE_SIZE);
-  // Test alignment of data that fills 2 cache lines
-  EXPECT_EQ(std::alignment_of<typename SharedData<
-                char[BDM_CACHE_LINE_SIZE + 1]>::Data::value_type>::value,
-            BDM_CACHE_LINE_SIZE);
-  // Test alignment of data that fills 3 cache lines
-  EXPECT_EQ(std::alignment_of<typename SharedData<
-                char[2 * BDM_CACHE_LINE_SIZE + 1]>::Data::value_type>::value,
-            BDM_CACHE_LINE_SIZE);
-  // Test size of data that fills 1 cache line
-  EXPECT_EQ(
-      sizeof(
-          typename SharedData<char[BDM_CACHE_LINE_SIZE - 1]>::Data::value_type),
-      BDM_CACHE_LINE_SIZE);
-  // Test size of data that fills 2 cache lines
-  EXPECT_EQ(
-      sizeof(
-          typename SharedData<char[BDM_CACHE_LINE_SIZE + 1]>::Data::value_type),
-      2 * BDM_CACHE_LINE_SIZE);
-  // Test size of data that fills 3 cache lines
-  EXPECT_EQ(sizeof(typename SharedData<
-                   char[2 * BDM_CACHE_LINE_SIZE + 1]>::Data::value_type),
-            3 * BDM_CACHE_LINE_SIZE);
-}
+TEST_F(IOTest, SharedData) { RunIOTest(); }
 
+#endif  // USE_DICT
+
+}  // namespace shared_data_test
 }  // namespace bdm

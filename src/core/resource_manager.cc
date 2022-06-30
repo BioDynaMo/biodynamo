@@ -339,8 +339,9 @@ void ResourceManager::LoadBalance() {
 void ResourceManager::RemoveAgents(
     const std::vector<std::vector<AgentUid>*>& uids) {
   // initialization
-  // cumulative numbers of to be removed agents
   auto numa_nodes = thread_info_->GetNumaNodes();
+  // cumulative numbers of to be removed agents
+  //   dimensions: numa_nodes x num_threads
   std::vector<std::vector<uint64_t>> tbr_cum(numa_nodes);
   for (auto& el : tbr_cum) {
     el.resize(uids.size() + 1);
@@ -402,7 +403,7 @@ void ResourceManager::RemoveAgents(
   // find agents that must be swapped
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t i = 0; i < uids.size(); ++i) {
-    uint64_t cnt = 0;
+    std::vector<uint64_t> counts(numa_nodes);
     for (auto& uid : *uids[i]) {
       assert(ContainsAgent(uid));
       auto ah = uid_ah_map_[uid];
@@ -414,11 +415,11 @@ void ResourceManager::RemoveAgents(
 #endif  // NDEBUG
 
       if (eidx < lowest[nid]) {
-        parallel_remove_.to_right[nid][tbr_cum[nid][i] + cnt] = eidx;
+        parallel_remove_.to_right[nid][tbr_cum[nid][i] + counts[nid]] = eidx;
       } else {
         parallel_remove_.not_to_left[nid][eidx - lowest[nid]] = 1;
       }
-      cnt++;
+      counts[nid]++;
     }
   }
 
@@ -551,10 +552,13 @@ void ResourceManager::RemoveAgents(
       start_del += lowest[nid];
       end_del += lowest[nid];
 
+      auto* uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
       for (uint64_t i = start_del; i < end_del; ++i) {
         Agent* agent = agents_[nid][i];
-        assert(toberemoved.find(agent->GetUid()) != toberemoved.end());
-        uid_ah_map_.Remove(agent->GetUid());
+        auto uid = agent->GetUid();
+        assert(toberemoved.find(uid) != toberemoved.end());
+        uid_ah_map_.Remove(uid);
+        uid_generator->ReuseAgentUid(uid);
         if (type_index_) {
           // TODO parallelize type_index removal
 #pragma omp critical

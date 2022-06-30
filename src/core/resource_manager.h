@@ -346,18 +346,7 @@ class ResourceManager {
     }
   }
 
-  virtual void EndOfIteration() {
-    // Check if SoUiD defragmentation should be turned on or off
-    real_t utilization = static_cast<real_t>(GetNumAgents()) /
-                         static_cast<real_t>(uid_ah_map_.size());
-    auto* sim = Simulation::GetActive();
-    auto* param = sim->GetParam();
-    if (utilization < param->agent_uid_defragmentation_low_watermark) {
-      sim->GetAgentUidGenerator()->EnableDefragmentation(&uid_ah_map_);
-    } else if (utilization > param->agent_uid_defragmentation_high_watermark) {
-      sim->GetAgentUidGenerator()->DisableDefragmentation();
-    }
-  }
+  virtual void EndOfIteration() {}
 
   /// Adds `new_agents` to `agents_[numa_node]`. `offset` specifies
   /// the index at which the first element is inserted. Agents are inserted
@@ -416,6 +405,7 @@ class ResourceManager {
       delete agent;
       MarkEnvironmentOutOfSync();
     }
+    Simulation::GetActive()->GetAgentUidGenerator()->ReuseAgentUid(uid);
   }
 
   // \param uids: one vector for each thread containing one vector for each numa

@@ -227,6 +227,7 @@ Requirements to build on macOS are:
  * **ninja**: Ninja is a small build system with a focus on speed
  * **bash**: Recent version of bash shell
  * **tbb**: Rich and complete approach to parallelism in C++ (needed by ROOT on Apple M1)
+ * **qt@5**: Library used by ParaView
 
 ### Optional Packages
 
@@ -241,7 +242,7 @@ Requirements to build on macOS are:
 
 ```bash
 brew update; brew upgrade
-brew install libomp open-mpi python@3.9 wget cmake ninja bash tbb
+brew install libomp open-mpi python@3.9 wget cmake ninja bash tbb qt@5
 ```
 
 #### Optional Packages

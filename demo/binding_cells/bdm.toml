@@ -1,5 +1,4 @@
 [simulation]
-run_mechanical_interactions = false
 bound_space = true
 min_bound = 0
 max_bound = 200

@@ -1,5 +1,4 @@
-// -----------------------------------------------------------------------------
-//
+// ----------------------------------------------------------------------------- //
 // Copyright (C) 2021 CERN & University of Surrey for the benefit of the
 // BioDynaMo collaboration. All Rights Reserved.
 //
@@ -263,6 +262,42 @@ TEST(TimeSeries, AddCollectorReducerAndUpdate) {
   EXPECT_NEAR(2.0, yvals[0], abs_error<real_t>::value);
   EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
   EXPECT_NEAR(8.0, yvals[2], abs_error<real_t>::value);
+}
+
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, ReuseAddCollectorReducerResult) {
+  Simulation sim(TEST_NAME);
+
+  // create agents
+  sim.GetResourceManager()->AddAgent(new Cell());
+  sim.GetResourceManager()->AddAgent(new Cell());
+  sim.GetResourceManager()->AddAgent(new Cell());
+
+  // Register reducer
+  auto* ts = sim.GetTimeSeries();
+  auto agent_diam_gt_0 = [](Agent* a) { return a->GetDiameter() > 0.; };
+  auto xcollector = [](Simulation* sim) {
+    return sim->GetScheduler()->GetSimulatedSteps() + real_t(3.0);
+  };
+  auto* counter = new Counter<real_t>(agent_diam_gt_0);
+  ts->AddCollector("agents-diam-gt-0", counter, xcollector);
+  EXPECT_EQ(1u, ts->Size());
+  EXPECT_TRUE(ts->Contains("agents-diam-gt-0"));
+
+  // Register 2nd collector that reuses the result from reducer
+  auto agent_diam_gt0_ratio = [](Simulation* sim) {
+    auto count = sim->GetTimeSeries()->GetYValues("agents-diam-gt-0").back();
+    EXPECT_EQ(3, count);
+    return count / sim->GetResourceManager()->GetNumAgents();
+  };
+  ts->AddCollector("agent-diam-gt-0-ratio", agent_diam_gt0_ratio);
+
+  ts->Update();
+
+  // check entries
+  const auto& yvals = ts->GetYValues("agents-diam-gt-0");
+  EXPECT_EQ(1u, yvals.size());
+  EXPECT_NEAR(3.0, yvals[0], abs_error<double>::value);
 }
 
 // -----------------------------------------------------------------------------

@@ -66,6 +66,8 @@ struct Reducer : public Functor<void, Agent*> {
 /// rm->ForEachAgentParallel(reducer);
 /// auto result = reducer.GetResult();
 /// \endcode
+/// The optional argument `filter` allows to reduce only a subset of
+/// all agents.
 /// The benefit in comparison with `bdm::experimental::Reduce` is that
 /// multiple counters can be combined and processed in one sweep over
 /// all agents.
@@ -77,9 +79,11 @@ class GenericReducer : public Reducer<TResult> {
 
   GenericReducer(void(agent_function)(Agent*, T*),
                  T (*reduce_partial_results)(const SharedData<T>&),
+                 bool (*filter)(Agent*) = nullptr,
                  TResult (*post_process)(TResult) = nullptr)
       : agent_function_(agent_function),
         reduce_partial_results_(reduce_partial_results),
+        filter_(filter),
         post_process_(post_process) {
     Reset();
     tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
@@ -91,8 +95,10 @@ class GenericReducer : public Reducer<TResult> {
   virtual ~GenericReducer() = default;
 
   void operator()(Agent* agent) override {
-    auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
-    agent_function_(agent, &(tl_results_[tid]));
+    if (!filter_ || (filter_(agent))) {
+      auto tid = ThreadInfo::GetInstance()->GetMyThreadId();
+      agent_function_(agent, &(tl_results_[tid]));
+    }
   }
 
   void Reset() override {
@@ -118,6 +124,7 @@ class GenericReducer : public Reducer<TResult> {
   SharedData<T> tl_results_;                                     //!
   void (*agent_function_)(Agent*, T*) = nullptr;                 //!
   T (*reduce_partial_results_)(const SharedData<T>&) = nullptr;  //!
+  bool (*filter_)(Agent*) = nullptr;                             //!
   TResult (*post_process_)(TResult) = nullptr;                   //!
   BDM_CLASS_DEF_OVERRIDE(GenericReducer, 1)
 };
@@ -139,12 +146,16 @@ inline void GenericReducer<T, TResult>::Streamer(TBuffer& R__b) {
     this->reduce_partial_results_ =
         reinterpret_cast<T (*)(const SharedData<T>&)>(l);
     R__b.ReadLong64(l);
+    this->filter_ = reinterpret_cast<bool (*)(Agent*)>(l);
+    R__b.ReadLong64(l);
     this->post_process_ = reinterpret_cast<TResult (*)(TResult)>(l);
   } else {
     R__b.WriteClassBuffer(GenericReducer::Class(), this);
     Long64_t l = reinterpret_cast<Long64_t>(this->agent_function_);
     R__b.WriteLong64(l);
     l = reinterpret_cast<Long64_t>(this->reduce_partial_results_);
+    R__b.WriteLong64(l);
+    l = reinterpret_cast<Long64_t>(this->filter_);
     R__b.WriteLong64(l);
     l = reinterpret_cast<Long64_t>(this->post_process_);
     R__b.WriteLong64(l);
@@ -166,7 +177,8 @@ inline void GenericReducer<T, TResult>::Streamer(TBuffer& R__b) {
 /// auto result = Reduce(sim, sum_data, combine_tl_results);
 /// \endcode
 /// The optional argument `filter` allows to reduce only a subset of
-/// all agents.
+/// all agents.\n
+/// NB: For better performance consider using `GenericReducer` instead.
 template <typename T>
 inline T Reduce(Simulation* sim, Functor<void, Agent*, T*>& agent_functor,
                 Functor<T, const SharedData<T>&>& reduce_partial_results,
@@ -300,7 +312,8 @@ inline void Counter<TResult>::Streamer(TBuffer& R__b) {
 /// auto num_infected = Count(sim, is_infected));
 /// \endcode
 /// The optional argument `filter` allows to count only a subset of
-/// all agents.
+/// all agents.\n
+/// NB: For better performance consider using `Counter` instead.
 inline uint64_t Count(Simulation* sim, Functor<bool, Agent*>& condition,
                       Functor<bool, Agent*>* filter = nullptr) {
   // The thread-local (partial) results

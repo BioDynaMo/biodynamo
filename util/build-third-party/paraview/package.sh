@@ -50,6 +50,12 @@ else
   PV_TAR=paraview_${PV_VERSION}_${BDM_OS_VERS}_${PV_FLAVOR}.tar.gz
 fi
 
+# If we run on macOS, we have to remove `ospray::ospray` from the file 
+# VTK-targets.cmake
+if [ "$(uname)" = "Darwin" ]; then
+  sed -i "" "s/;ospray::ospray//g" $(find $(pwd) -name "*VTK-targets.cmake")
+fi
+
 ## tar the install directory
 RESULT_FILE=paraview-$PV_VERSION-$BDM_OS-$PV_FLAVOR.tar.gz
 tar -zcf $PV_TAR *
