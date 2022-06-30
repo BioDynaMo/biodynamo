@@ -819,9 +819,9 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
       /// Note: We have 20x20x20 boxes, so we have (20x20)x2+(19*18)x4=2168
       /// boxes on the boundary. In the first step, each boundary box should
       /// receive a concentration of
-      /// D * (dt / dx^2) * - BC * dx = 1.0 * (0.1 / (10*10)) * -(-1) * 10 = 10^-2.
-      /// Thus, the total concentration should be roughly 21.68 (the edges get additional influx), and definitely
-      /// bigger than 1.0 .
+      /// D * (dt / dx^2) * - BC * dx = 1.0 * (0.1 / (10*10)) * -(-1) * 10 =
+      /// 10^-2. Thus, the total concentration should be roughly 21.68 (the
+      /// edges get additional influx), and definitely bigger than 1.0 .
       EXPECT_GT(intermediate_concentration_1, 1.0);
     } else {
       /// For all further iterations, we simply check if the concentration
