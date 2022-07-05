@@ -18,8 +18,8 @@ namespace bdm {
 
 #ifndef BDM_REALT
 
-using real_t = float;
-constexpr const char* kRealtName = "float";
+using real_t = double;
+constexpr const char* kRealtName = "double";
 
 #else
 

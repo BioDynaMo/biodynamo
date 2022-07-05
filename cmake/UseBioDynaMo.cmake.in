@@ -112,7 +112,7 @@ if(real_t)
   message(STATUS "BioDynaMo real_t set to: ${real_t}")
   add_definitions("-DBDM_REALT=${real_t}")
 else()
-  message(STATUS "Using default BioDynaMo real_t (float)")
+  message(STATUS "Using default BioDynaMo real_t (double)")
 endif()
 
 if(DEFINED ENV{BDMSYS})
