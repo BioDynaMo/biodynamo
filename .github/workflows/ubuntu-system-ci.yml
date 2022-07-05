@@ -100,6 +100,16 @@ jobs:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
+    # Set floating point precision
+    - name: Set floating-point-precision
+      run: |
+        if [ "${{ env.OSVERS }}" = "ubuntu-18.04" ]; then
+          echo "REALT=float" >> $GITHUB_ENV
+        fi
+        if [ "${{ env.OSVERS }}" = "ubuntu-20.04" ]; then
+          echo "REALT=double)" >> $GITHUB_ENV
+        fi
+
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
     # runners, while waiting for other targets to be compiled
     - name: Run notebooks
@@ -113,6 +123,7 @@ jobs:
           -Dnotebooks=ON \
           -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
+          -Dreal_t=${{ env.REALT }} \
           -B build
         cmake --build build --parallel --config Release --target notebooks  -- -j1
       if: github.event_name == 'pull_request'
@@ -130,6 +141,7 @@ jobs:
           -Dbenchmark=ON \
           -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
+          -Dreal_t=${{ env.REALT }} \
           -B build
         cmake --build build --config Release
 
