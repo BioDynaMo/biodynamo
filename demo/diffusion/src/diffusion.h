@@ -37,7 +37,7 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
   // Create 8 cells in a 2x2x2 grid setup
-  auto construct = [&](const Double3& position) {
+  auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);

@@ -30,13 +30,13 @@ class TCell : public Cell {
 
  public:
   TCell() {}
-  explicit TCell(const Double3& position, double diameter, size_t color, int t)
+  explicit TCell(const Real3& position, real_t diameter, size_t color, int t)
       : Base(position), color_(color) {
     activation_histo_ = TH2I("", "", 30, 0, 49, 30, 0, t - 1);
     this->SetDiameter(diameter);
   }
 
-  void IncreaseActivationIntensity(double val) {
+  void IncreaseActivationIntensity(real_t val) {
     if (val > 0) {
       activation_intensity_ += val;
     }
@@ -60,7 +60,7 @@ class TCell : public Cell {
 
   // Set the initial activation energy. Initially the T-Cell is not activated
   // and has therefore a low value, following a normal distribution
-  void SetInitialActivationIntensity(double mean, double sigma) {
+  void SetInitialActivationIntensity(real_t mean, real_t sigma) {
     mean_ = mean;
     sigma_ = sigma;
     auto* r = Simulation::GetActive()->GetRandom();
@@ -90,9 +90,9 @@ class TCell : public Cell {
   // The color that will be used for visualization purposes
   size_t color_ = 1;
   // Mean for the normal distribution of the initial activation intensity
-  double mean_ = 3;
+  real_t mean_ = 3;
   // Sigma for the normal distribution of the initial activation intensity
-  double sigma_ = 1;
+  real_t sigma_ = 1;
   TH2I activation_histo_;
 };
 

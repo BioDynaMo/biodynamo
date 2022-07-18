@@ -47,13 +47,13 @@ void RunStraightCylinderGrowthTest(const char* test_name,
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 1, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<real_t>::value);
 
-  Double3 direction = {1, 0, 0};
+  Real3 direction = {1, 0, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -61,8 +61,8 @@ void RunStraightCylinderGrowthTest(const char* test_name,
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<real_t>::value);
     }
   }
 }
@@ -99,23 +99,23 @@ void RunTest2(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 1, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 1, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<real_t>::value);
 
-  Double3 direction = {1, 0, 0};
+  Real3 direction = {1, 0, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
     scheduler->Simulate(1);
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
-      double length = ne->GetActualLength();
+      real_t length = ne->GetActualLength();
 
       EXPECT_LT(length, 2.1);
-      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<real_t>::value);
     }
   }
 }
@@ -150,11 +150,11 @@ void RunTest3(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[2], 0, abs_error<real_t>::value);
 
-  Double3 direction = {1, 1, 0};
+  Real3 direction = {1, 1, 0};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -162,8 +162,8 @@ void RunTest3(const char* test_name, bool detect_static_agents) {
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[2], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<real_t>::value);
+      EXPECT_NEAR(ne_axis[2], 0, abs_error<real_t>::value);
     }
   }
 }
@@ -198,13 +198,13 @@ void RunTest4(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<real_t>::value);
 
-  Double3 direction = {1, 1, 1};
+  Real3 direction = {1, 1, 1};
   for (int i = 0; i < 37; i++) {
     ne->ElongateTerminalEnd(300, direction);
     ne->RunDiscretization();
@@ -212,8 +212,8 @@ void RunTest4(const char* test_name, bool detect_static_agents) {
 
     ne_axis = ne->GetSpringAxis();
 
-    EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<double>::value);
-    EXPECT_NEAR(ne_axis[0], ne_axis[2], abs_error<double>::value);
+    EXPECT_NEAR(ne_axis[0], ne_axis[1], abs_error<real_t>::value);
+    EXPECT_NEAR(ne_axis[0], ne_axis[2], abs_error<real_t>::value);
   }
 }
 
@@ -247,13 +247,13 @@ void RunTest5(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0.57735026918962584, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0.57735026918962584, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 0.57735026918962584, abs_error<real_t>::value);
 
-  Double3 direction = {2, 1, 1};
+  Real3 direction = {2, 1, 1};
 
   for (int i = 0; i < 98; i++) {
     ne->ElongateTerminalEnd(300, direction);
@@ -304,16 +304,16 @@ void RunTest6(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<real_t>::value);
 
   simulation.GetExecutionContext()->SetupIterationAll(
       simulation.GetAllExecCtxts());
 
-  Double3 direction = {0, 0, 1};
+  Real3 direction = {0, 0, 1};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
@@ -321,8 +321,8 @@ void RunTest6(const char* test_name, bool detect_static_agents) {
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
 
-      EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-      EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+      EXPECT_NEAR(ne_axis[0], 0, abs_error<real_t>::value);
+      EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
     }
   }
 }
@@ -363,13 +363,13 @@ void RunNotStraightCylinderGrowthObstacleTest(const char* test_name,
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<real_t>::value);
 
-  Double3 direction = {0.01, 0, 1};
+  Real3 direction = {0.01, 0, 1};
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
     ne->RunDiscretization();
@@ -377,13 +377,13 @@ void RunNotStraightCylinderGrowthObstacleTest(const char* test_name,
 
     ne_axis = ne->GetSpringAxis();
 
-    EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+    EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
   }
 
   ne_axis = ne->GetSpringAxis();
   EXPECT_GT(ne->GetMassLocation()[0], 5);
   EXPECT_GT(ne_axis[0], 0);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -415,14 +415,14 @@ void RunTest7(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<real_t>::value);
 
-  Double3 direction = {0, 0.5, 1};
-  Double3 direction2 = {0.5, 0, 1};
+  Real3 direction = {0, 0.5, 1};
+  Real3 direction2 = {0.5, 0, 1};
 
   for (int i = 0; i < 10; i++) {
     ne->ElongateTerminalEnd(100, {0, 0, 1});
@@ -442,11 +442,11 @@ void RunTest7(const char* test_name, bool detect_static_agents) {
     scheduler->Simulate(1);
   }
   ne_axis = branch_l->GetSpringAxis();
-  Double3 ne_axis_2 = branch_r->GetSpringAxis();
+  Real3 ne_axis_2 = branch_r->GetSpringAxis();
 
-  EXPECT_NEAR(ne_axis[0], ne_axis_2[1], abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], ne_axis_2[0], abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], ne_axis_2[2], abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], ne_axis_2[1], abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], ne_axis_2[0], abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], ne_axis_2[2], abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -478,10 +478,10 @@ void RunTest8(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis = ne->GetSpringAxis();
+  Real3 ne_axis = ne->GetSpringAxis();
 
-  Double3 direction = {0, 0.5, 1};
-  Double3 direction2 = {0.5, 0, 1};
+  Real3 direction = {0, 0.5, 1};
+  Real3 direction2 = {0.5, 0, 1};
 
   for (int i = 0; i < 10; i++) {
     ne->ElongateTerminalEnd(100, {0, 0, 1});
@@ -491,9 +491,9 @@ void RunTest8(const char* test_name, bool detect_static_agents) {
 
   auto ne2 = ne->Branch(0.5, direction2)->GetAgentPtr<NeuriteElement>();
 
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis[2], 1, abs_error<double>::value);
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[1], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis[2], 1, abs_error<real_t>::value);
 
   for (int i = 0; i < 100; i++) {
     ne->ElongateTerminalEnd(100, direction);
@@ -505,9 +505,9 @@ void RunTest8(const char* test_name, bool detect_static_agents) {
   }
 
   ne_axis = ne->GetSpringAxis();
-  Double3 ne_axis_2 = ne2->GetSpringAxis();
-  EXPECT_NEAR(ne_axis[0], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne_axis_2[1], 0, abs_error<double>::value);
+  Real3 ne_axis_2 = ne2->GetSpringAxis();
+  EXPECT_NEAR(ne_axis[0], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne_axis_2[1], 0, abs_error<real_t>::value);
 }
 
 // -----------------------------------------------------------------------------
@@ -540,9 +540,9 @@ void RunTest9(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 ne_axis;
-  Double3 ne_axis2;
-  Double3 direction;
+  Real3 ne_axis;
+  Real3 ne_axis2;
+  Real3 direction;
 
   for (int i = 0; i < 100; i++) {
     direction = {random->Uniform(-1, 1), random->Uniform(-1, 1), 1};
@@ -625,11 +625,11 @@ void RunTest10(const char* test_name, bool detect_static_agents) {
 
   auto* scheduler = simulation.GetScheduler();
 
-  Double3 direction1 = {0.5, 0, 1};
-  Double3 direction2 = {-0.5, 0, 1};
+  Real3 direction1 = {0.5, 0, 1};
+  Real3 direction2 = {-0.5, 0, 1};
 
-  Double3 ne1_axis;
-  Double3 ne2_axis;
+  Real3 ne1_axis;
+  Real3 ne2_axis;
 
   for (int i = 0; i < 220; i++) {
     ne1->ElongateTerminalEnd(10, direction1);
@@ -641,8 +641,8 @@ void RunTest10(const char* test_name, bool detect_static_agents) {
     ne1_axis = ne1->GetSpringAxis();
     ne2_axis = ne2->GetSpringAxis();
 
-    EXPECT_NEAR(ne1_axis[1], 0, abs_error<double>::value);
-    EXPECT_NEAR(ne2_axis[1], 0, abs_error<double>::value);
+    EXPECT_NEAR(ne1_axis[1], 0, abs_error<real_t>::value);
+    EXPECT_NEAR(ne2_axis[1], 0, abs_error<real_t>::value);
   }
 
   for (int i = 0; i < 100; i++) {
@@ -655,8 +655,8 @@ void RunTest10(const char* test_name, bool detect_static_agents) {
     ne1_axis = ne1->GetSpringAxis();
     ne2_axis = ne2->GetSpringAxis();
 
-    EXPECT_NEAR(ne1_axis[1], 0, abs_error<double>::value);
-    EXPECT_NEAR(ne2_axis[1], 0, abs_error<double>::value);
+    EXPECT_NEAR(ne1_axis[1], 0, abs_error<real_t>::value);
+    EXPECT_NEAR(ne2_axis[1], 0, abs_error<real_t>::value);
   }
 }
 
@@ -701,8 +701,8 @@ void RunTest11(const char* test_name, bool detect_static_agents) {
       neuron2->ExtendNewNeurite({0, 0, 1})->GetAgentPtr<NeuriteElement>();
   ne2->SetDiameter(1);
 
-  Double3 direction1 = {0.5, 0, 1};
-  Double3 direction2 = {0, 0, 1};
+  Real3 direction1 = {0.5, 0, 1};
+  Real3 direction2 = {0, 0, 1};
 
   for (int i = 0; i < 200; i++) {
     ne1->ElongateTerminalEnd(10, direction1);
@@ -722,8 +722,8 @@ void RunTest11(const char* test_name, bool detect_static_agents) {
   auto& ne1_position = ne1->GetMassLocation();
   auto& ne2_position = ne2->GetMassLocation();
 
-  EXPECT_NEAR(ne1_axis[1], 0, abs_error<double>::value);
-  EXPECT_NEAR(ne2_axis[1], 0, abs_error<double>::value);
+  EXPECT_NEAR(ne1_axis[1], 0, abs_error<real_t>::value);
+  EXPECT_NEAR(ne2_axis[1], 0, abs_error<real_t>::value);
   EXPECT_LT(ne1_position[0], ne2_position[0]);
   EXPECT_GT(ne1_position[2], 12);
   EXPECT_GT(ne2_position[2], 11);

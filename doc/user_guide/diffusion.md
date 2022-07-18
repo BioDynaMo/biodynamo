@@ -64,7 +64,7 @@ Next, we have to create an initial set of agents and set their
 attributes:
 
 ```cpp
-  auto construct = [&](const Double3& position) {
+  auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetMass(1.0);

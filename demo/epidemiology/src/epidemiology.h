@@ -42,7 +42,7 @@ inline int Simulate(int argc, const char** argv, TimeSeries* result,
 
   auto state = State::kSusceptible;
   // Lambda that creates a new person at specific position in space
-  auto person_creator = [&](const Double3& position) {
+  auto person_creator = [&](const Real3& position) {
     auto* person = new Person(position);
     // Set the data members of the new person
     person->SetDiameter(sparam->agent_diameter);

@@ -25,7 +25,7 @@ namespace soma_clustering {
 // Returns 0 if the cell locations within a subvolume of the total system,
 // comprising approximately target_n cells, are arranged as clusters, and 1
 // otherwise.
-static bool GetCriterion(double spatial_range, int target_n) {
+static bool GetCriterion(real_t spatial_range, int target_n) {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
@@ -36,7 +36,7 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // number of cells that are close (i.e. within a distance of
   // spatial_range)
   int num_close = 0;
-  double curr_dist;
+  real_t curr_dist;
   // number of cells of the same type, and that are close (i.e.
   // within a distance of spatial_range)
   int same_type_close = 0;
@@ -44,11 +44,11 @@ static bool GetCriterion(double spatial_range, int target_n) {
   // within a distance of spatial_range)
   int diff_type_close = 0;
 
-  std::vector<Double3> pos_sub_vol(n);
+  std::vector<Real3> pos_sub_vol(n);
   std::vector<int> types_sub_vol(n);
 
   // Define the subvolume to be the first octant of a cube
-  double sub_vol_max = param->max_bound / 2;
+  real_t sub_vol_max = param->max_bound / 2;
 
   // The number of cells within the subvolume
   int num_cells_sub_vol = 0;
@@ -77,8 +77,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // If there are not enough cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if (((static_cast<double>((num_cells_sub_vol))) /
-       static_cast<double>(target_n)) < 0.25) {
+  if (((static_cast<real_t>((num_cells_sub_vol))) /
+       static_cast<real_t>(target_n)) < 0.25) {
     std::cout << "not enough cells in subvolume: " << num_cells_sub_vol
               << std::endl;
     return false;
@@ -86,8 +86,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // If there are too many cells within the subvolume, the correctness
   // criterion is not fulfilled
-  if (((static_cast<double>((num_cells_sub_vol))) /
-       static_cast<double>(target_n)) > 4) {
+  if (((static_cast<real_t>((num_cells_sub_vol))) /
+       static_cast<real_t>(target_n)) > 4) {
     std::cout << "too many cells in subvolume: " << num_cells_sub_vol
               << std::endl;
     return false;
@@ -109,8 +109,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
     }
   }
 
-  double correctness_coefficient =
-      (static_cast<double>(diff_type_close)) / (num_close + 1.0);
+  real_t correctness_coefficient =
+      (static_cast<real_t>(diff_type_close)) / (num_close + 1.0);
 
   // check if there are many cells of opposite types located within a close
   // distance, indicative of bad clustering
@@ -122,8 +122,8 @@ static bool GetCriterion(double spatial_range, int target_n) {
 
   // check if clusters are large enough, i.e. whether cells have more than 100
   // cells of the same type located nearby
-  double avg_neighbors =
-      (static_cast<double>(same_type_close / num_cells_sub_vol));
+  real_t avg_neighbors =
+      (static_cast<real_t>(same_type_close / num_cells_sub_vol));
   std::cout << "average neighbors in subvolume: " << avg_neighbors << std::endl;
   if (avg_neighbors < 5) {
     std::cout << "cells in subvolume do not have enough neighbors: "

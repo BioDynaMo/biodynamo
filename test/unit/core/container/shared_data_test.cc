@@ -15,8 +15,7 @@
 #include "unit/core/container/shared_data_test.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include "core/container/shared_data.h"
-#include "unit/test_util/io_test.h"
+#include "core/real_t.h"
 
 namespace bdm {
 namespace shared_data_test {

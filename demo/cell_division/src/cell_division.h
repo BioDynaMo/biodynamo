@@ -39,7 +39,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // To define how are cells will look like we will create a construct in the
   // form of a C++ lambda as follows.
-  auto construct = [&](const Double3& position) {
+  auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(diameter);
     // Add the "grow and divide" behavior to each cell

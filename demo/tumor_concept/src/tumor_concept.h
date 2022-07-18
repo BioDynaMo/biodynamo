@@ -31,7 +31,7 @@ class MyCell : public Cell {  // our object extends the Cell object
 
  public:
   MyCell() {}
-  explicit MyCell(const Double3& position) : Base(position) {}
+  explicit MyCell(const Real3& position) : Base(position) {}
   virtual ~MyCell() {}
 
   /// If MyCell divides, the daughter has to initialize its attributes
@@ -80,7 +80,7 @@ struct Growth : public Behavior {
         cell->ChangeVolume(400);
 
         // create an array of 3 random numbers between -2 and 2
-        Double3 cell_movements = random->template UniformArray<3>(-2, 2);
+        Real3 cell_movements = random->template UniformArray<3>(-2, 2);
         // update the cell mass location, ie move the cell
         cell->UpdatePosition(cell_movements);
       } else {  //
@@ -109,11 +109,11 @@ inline int Simulate(int argc, const char** argv) {
   auto* myrand = simulation.GetRandom();
 
   size_t nb_of_cells = 2400;  // number of cells in the simulation
-  double x_coord, y_coord, z_coord;
+  real_t x_coord, y_coord, z_coord;
 
   for (size_t i = 0; i < nb_of_cells; ++i) {
     // our modelling will be a cell cube of 100*100*100
-    // random double between 0 and 100
+    // random real_t between 0 and 100
     x_coord = myrand->Uniform(param->min_bound, param->max_bound);
     y_coord = myrand->Uniform(param->min_bound, param->max_bound);
     z_coord = myrand->Uniform(param->min_bound, param->max_bound);

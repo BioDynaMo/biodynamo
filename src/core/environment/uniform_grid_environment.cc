@@ -119,7 +119,7 @@ void UniformGridEnvironment::UpdateImplementation() {
     auto* param = Simulation::GetActive()->GetParam();
     if (determine_sim_size_) {
       auto inf = Math::kInfinity;
-      std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+      std::array<real_t, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
       CalcSimDimensionsAndLargestAgent(&tmp_dim);
       RoundOffGridDimensions(tmp_dim);
     } else {

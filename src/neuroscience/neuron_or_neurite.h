@@ -59,7 +59,7 @@ class NeuronOrNeurite {
 
   bool IsNeuriteElement() const;
 
-  virtual Double3 OriginOf(const AgentUid& daughter_uid) const = 0;
+  virtual Real3 OriginOf(const AgentUid& daughter_uid) const = 0;
 
   virtual void RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) = 0;
 

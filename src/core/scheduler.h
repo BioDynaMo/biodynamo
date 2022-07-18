@@ -77,7 +77,7 @@ class Scheduler {
 
   /// This function returns the time that has been simulated until this
   /// point of the simulation.
-  double GetSimulatedTime() const;
+  real_t GetSimulatedTime() const;
 
   /// Adds the given operation to the list of to be scheduled
   /// operations.
@@ -113,7 +113,7 @@ class Scheduler {
 
  protected:
   uint64_t total_steps_ = 0;
-  double simulated_time_ = 0.0;
+  real_t simulated_time_ = 0.0;
 
   /// Executes one step.
   /// This design makes testing more convenient

@@ -87,13 +87,14 @@ cxxflags="@cxxflags@"
 cxxstd=@cxxstd@
 cxxflagsdebug="@cxxflagsdebug@"
 cxxflagsrelease="@cxxflagsrelease@"
-cxxdefines="-DUSE_DICT"
+cxxdefines="@cxxdefines@"
 ldflags="@ldflags@"
 soflags="@soflags@"
 socreatecxxflags="@socreatecxxflags@"
 cmakeinvoke="@cmakeinvoke@"
 configargs="@configargs@"
 omplibs="@omplibs@"
+fpprecision="@BDM_CONFIG_REALT@"
 
 ### BDM libraries ###
 
@@ -111,7 +112,7 @@ Usage: bdm-config [--version] [--root-version]\
  [--debug] [--opt] [--cxxflags] [--cxxincludes]\
  [--ldflags] [--libs] [--bindir] [--libdir] [--incdir]\
  [--cxx] [--ld ] [--cmakedir] [--cmake-invoke] [--config]\
- [--arch] [--platform] [--ncpu] [--help]"
+ [--arch] [--platform] [--ncpu] [--fp-precision] [--help]"
 
 if test $# -eq 0; then
    echo "${usage}" 1>&2
@@ -244,6 +245,10 @@ while test $# -gt 0; do
       ### output used Linker
       out="$out $ld"
       ;;
+    --fp-precision)
+      ### output floating-point precision of BioDynaMo
+      out="$out $fpprecision"
+      ;;
     --help)
       ### Print a help message
       echo "Usage: `basename $0` [options]"
@@ -267,6 +272,7 @@ while test $# -gt 0; do
       echo "  --ncpu                Print number of available (hyperthreaded) cores"
       echo "  --cxx                 Print alternative C++ compiler specified when BDM was built"
       echo "  --ld                  Print alternative Linker specified when BDM was built"
+      echo "  --fp-precision        Print the floating-point precision that  BDM was built with"
       echo "  --help                Print this message"
       exit 0
       ;;

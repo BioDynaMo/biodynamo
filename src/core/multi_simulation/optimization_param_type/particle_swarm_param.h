@@ -26,7 +26,7 @@ namespace bdm {
 /// algorithm Defines an initial value, and the lower and upper bound
 struct ParticleSwarmParam : public OptimizationParamType {
   ParticleSwarmParam() = default;
-  ParticleSwarmParam(const std::string& name, double min, double max, double iv)
+  ParticleSwarmParam(const std::string& name, real_t min, real_t max, real_t iv)
       : OptimizationParamType(name),
         lower_bound(min),
         upper_bound(max),
@@ -47,7 +47,7 @@ struct ParticleSwarmParam : public OptimizationParamType {
     return new ParticleSwarmParam(*this);
   }
 
-  double GetValue(int n) const override {
+  real_t GetValue(int n) const override {
     Log::Fatal("ParticleSwarmParam::GetValue",
                "Invalid operation! Values are obtained through the "
                "optimization library.");
@@ -60,11 +60,11 @@ struct ParticleSwarmParam : public OptimizationParamType {
   }
 
   // The minimum value
-  double lower_bound = 0;
+  real_t lower_bound = 0;
   // THe maximum value
-  double upper_bound = 0;
+  real_t upper_bound = 0;
   // The stride
-  double initial_value = 1;
+  real_t initial_value = 1;
   BDM_CLASS_DEF_OVERRIDE(ParticleSwarmParam, 1);
 };
 

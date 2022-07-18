@@ -11,16 +11,29 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-
-#include "core/operation/reduction_op.h"
-#include "core/container/math_array.h"
-#include "core/operation/operation_registry.h"
+#ifndef CORE_REAL_H_
+#define CORE_REAL_H_
 
 namespace bdm {
 
-BDM_REGISTER_TEMPLATE_OP(ReductionOp, int, "ReductionOpInt", kCpu);
-BDM_REGISTER_TEMPLATE_OP(ReductionOp, real_t, "ReductionOpDouble", kCpu);
-BDM_REGISTER_TEMPLATE_OP(ReductionOp, Real3, "ReductionOpReal3", kCpu);
-BDM_REGISTER_TEMPLATE_OP(ReductionOp, Real4, "ReductionOpReal4", kCpu);
+#ifndef BDM_REALT
+
+using real_t = double;
+constexpr const char* kRealtName = "double";
+
+#else
+
+using real_t = BDM_REALT;
+
+// Workaround, bc the ROOT interpreter does not process the
+// following code:
+// constexpr const char* kRealtName = #BDM_REALT;
+#define BDM_STRINGIFY_IMPL(var) #var
+#define BDM_STRINGIFY(var) BDM_STRINGIFY_IMPL(var)
+constexpr const char* kRealtName = BDM_STRINGIFY(BDM_REALT);
+
+#endif  // BDM_REALT
 
 }  // namespace bdm
+
+#endif  // CORE_REAL_H_

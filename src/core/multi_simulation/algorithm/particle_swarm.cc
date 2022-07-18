@@ -76,9 +76,9 @@ struct ParticleSwarm : public Algorithm {
 
     auto max_it = settings.pso_n_gen;
     int iteration = 0;
-    double min_mse = 1e9;
+    real_t min_mse = 1e9;
     json best_params;
-    double prev_mse = 1.0;
+    real_t prev_mse = 1.0;
     Spinlock lock;
 
     // The fitting function (i.e. calling a simulation with a paramset)
@@ -95,7 +95,7 @@ struct ParticleSwarm : public Algorithm {
       // we should ignore it and return the previously obtained error
       for (auto& p : free_params) {
         if (std::isnan(p)) {
-          return prev_mse + 0.005;
+          return prev_mse + static_cast<real_t>(0.005);
         }
       }
 
@@ -114,7 +114,7 @@ struct ParticleSwarm : public Algorithm {
 
       new_param.MergeJsonPatch(j_patch.dump());
 
-      double mse = Experiment(dispatch_experiment, repetition, &new_param);
+      real_t mse = Experiment(dispatch_experiment, repetition, &new_param);
       std::cout << " MSE " << mse << " inout " << free_params << std::endl;
       {
         std::lock_guard<Spinlock> lock_guard(lock);

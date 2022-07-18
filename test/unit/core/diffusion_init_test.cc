@@ -40,7 +40,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   auto* param = simulation.GetParam();
 
   // Create one cell at a random position
-  auto construct = [](const Double3& position) {
+  auto construct = [](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(10);
     return cell;
@@ -71,7 +71,7 @@ TEST(DiffusionInitTest, GaussianBand) {
   std::array<uint32_t, 3> e = {25, 0, 13};
   std::array<uint32_t, 3> f = {13, 13, 13};
 
-  auto eps = abs_error<double>::value;
+  auto eps = abs_error<real_t>::value;
   auto conc = dgrid->GetAllConcentrations();
 
   EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(a)],
@@ -103,7 +103,7 @@ TEST(DiffusionInitTest, InitBothArrays) {
   auto* param = simulation.GetParam();
 
   // Create one cell at a random position
-  auto construct = [](const Double3& position) {
+  auto construct = [](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(10);
     return cell;
@@ -117,7 +117,7 @@ TEST(DiffusionInitTest, InitBothArrays) {
   rm->AddDiffusionGrid(d_grid);
 
   // Initialize the substance according to a GaussianBand along the x-axis
-  auto SetValues = [&](double x, double y, double z) { return 0.5; };
+  auto SetValues = [&](real_t x, real_t y, real_t z) { return 0.5; };
   ModelInitializer::InitializeSubstance(kSubstance, SetValues);
 
   simulation.GetScheduler()->Simulate(1);

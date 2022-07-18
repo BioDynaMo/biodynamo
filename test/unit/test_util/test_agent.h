@@ -29,7 +29,7 @@ class TestAgent : public Agent {
 
   explicit TestAgent(int data) : data_(data) {}
 
-  explicit TestAgent(const Double3& pos) : position_{pos} {}
+  explicit TestAgent(const Real3& pos) : position_{pos} {}
 
   virtual ~TestAgent() = default;
 
@@ -41,26 +41,26 @@ class TestAgent : public Agent {
 
   void RunDiscretization() override {}
 
-  const Double3& GetPosition() const override { return position_; }
+  const Real3& GetPosition() const override { return position_; }
 
-  void SetPosition(const Double3& pos) override { position_ = pos; }
+  void SetPosition(const Real3& pos) override { position_ = pos; }
 
-  void ApplyDisplacement(const Double3&) override {}
+  void ApplyDisplacement(const Real3&) override {}
 
-  Double3 CalculateDisplacement(const InteractionForce* force,
-                                double squared_radius, double dt) override {
+  Real3 CalculateDisplacement(const InteractionForce* force,
+                              real_t squared_radius, real_t dt) override {
     return {0, 0, 0};
   }
 
-  double GetDiameter() const override { return diameter_; }
-  void SetDiameter(const double diameter) override { diameter_ = diameter; }
+  real_t GetDiameter() const override { return diameter_; }
+  void SetDiameter(const real_t diameter) override { diameter_ = diameter; }
 
   int GetData() const { return data_; }
   void SetData(int data) { data_ = data; }
 
  protected:
-  Double3 position_ = {{0, 0, 0}};
-  double diameter_ = 10;
+  Real3 position_ = {{0, 0, 0}};
+  real_t diameter_ = 10;
   int data_ = 0;
 };
 

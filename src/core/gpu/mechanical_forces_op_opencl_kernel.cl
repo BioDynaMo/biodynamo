@@ -12,21 +12,21 @@
 //
 // -----------------------------------------------------------------------------
 
-double norm(double3);
-double squared_euclidian_distance(__global double*, uint, uint);
+real_t norm(real_t3);
+real_t squared_euclidian_distance(__global real_t*, uint, uint);
 int3 get_box_coordinates(uint, __constant uint*);
 uint get_box_id(int3,__constant uint*);
-void compute_force(__global double*, __global double*, uint, uint, double3*);
-void force(__global double*, __global double*, uint, uint, ushort, __global uint*, double, double3*);
+void compute_force(__global real_t*, __global real_t*, uint, uint, real_t3*);
+void force(__global real_t*, __global real_t*, uint, uint, ushort, __global uint*, real_t, real_t3*);
 
-double norm(double3 v) {
+real_t norm(real_t3 v) {
   return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
 }
 
-double squared_euclidian_distance(__global double* positions, uint idx, uint nidx) {
-  const double dx = positions[3*idx + 0] - positions[3*nidx + 0];
-  const double dy = positions[3*idx + 1] - positions[3*nidx + 1];
-  const double dz = positions[3*idx + 2] - positions[3*nidx + 2];
+real_t squared_euclidian_distance(__global real_t* positions, uint idx, uint nidx) {
+  const real_t dx = positions[3*idx + 0] - positions[3*nidx + 0];
+  const real_t dy = positions[3*idx + 1] - positions[3*nidx + 1];
+  const real_t dz = positions[3*idx + 2] - positions[3*nidx + 2];
   return (dx * dx + dy * dy + dz * dz);
 }
 
@@ -43,21 +43,21 @@ uint get_box_id(int3 bc,__constant uint* num_boxes_axis) {
   return bc.z * num_boxes_axis[0]*num_boxes_axis[1] + bc.y * num_boxes_axis[0] + bc.x;
 }
 
-void compute_force(__global double* positions, __global double* diameters, uint idx, uint nidx, double3* collision_force) {
-  double r1 = 0.5 * diameters[idx];
-  double r2 = 0.5 * diameters[nidx];
+void compute_force(__global real_t* positions, __global real_t* diameters, uint idx, uint nidx, real_t3* collision_force) {
+  real_t r1 = 0.5 * diameters[idx];
+  real_t r2 = 0.5 * diameters[nidx];
   // We take virtual bigger radii to have a distant interaction, to get a desired density.
-  double additional_radius = 10.0 * 0.15;
+  real_t additional_radius = 10.0 * 0.15;
   r1 += additional_radius;
   r2 += additional_radius;
 
-  double comp1 = positions[3*idx + 0] - positions[3*nidx + 0];
-  double comp2 = positions[3*idx + 1] - positions[3*nidx + 1];
-  double comp3 = positions[3*idx + 2] - positions[3*nidx + 2];
-  double center_distance = sqrt(comp1 * comp1 + comp2 * comp2 + comp3 * comp3);
+  real_t comp1 = positions[3*idx + 0] - positions[3*nidx + 0];
+  real_t comp2 = positions[3*idx + 1] - positions[3*nidx + 1];
+  real_t comp3 = positions[3*idx + 2] - positions[3*nidx + 2];
+  real_t center_distance = sqrt(comp1 * comp1 + comp2 * comp2 + comp3 * comp3);
 
   // the overlap distance (how much one penetrates in the other)
-  double delta = r1 + r2 - center_distance;
+  real_t delta = r1 + r2 - center_distance;
 
   if (delta < 0) {
     return;
@@ -73,12 +73,12 @@ void compute_force(__global double* positions, __global double* diameters, uint 
   }
 
   // the force itself
-  double r = (r1 * r2) / (r1 + r2);
-  double gamma = 1; // attraction coeff
-  double k = 2;     // repulsion coeff
-  double f = k * delta - gamma * sqrt(r * delta);
+  real_t r = (r1 * r2) / (r1 + r2);
+  real_t gamma = 1; // attraction coeff
+  real_t k = 2;     // repulsion coeff
+  real_t f = k * delta - gamma * sqrt(r * delta);
 
-  double module = f / center_distance;
+  real_t module = f / center_distance;
   collision_force->x += module * comp1;
   collision_force->y += module * comp2;
   collision_force->z += module * comp3;
@@ -86,11 +86,11 @@ void compute_force(__global double* positions, __global double* diameters, uint 
 }
 
 
-void force(__global double* positions,
-                   __global double* diameters,
+void force(__global real_t* positions,
+                   __global real_t* diameters,
                    uint idx, uint start, ushort length,
-                   __global uint* successors, double squared_radius,
-                   double3* collision_force) {
+                   __global uint* successors, real_t squared_radius,
+                   real_t3* collision_force) {
   uint nidx = start;
 
   for (ushort nb = 0; nb < length; nb++) {
@@ -105,21 +105,21 @@ void force(__global double* positions,
   }
 }
 
-__kernel void collide(__global double* positions,
-                      __global double* diameters,
-                      __global double* tractor_force,
-                      __global double* adherence,
+__kernel void collide(__global real_t* positions,
+                      __global real_t* diameters,
+                      __global real_t* tractor_force,
+                      __global real_t* adherence,
                       __global uint* box_id,
-                      __global double* mass,
-                      double timestep,
-                      double max_displacement,
-                      double squared_radius,
+                      __global real_t* mass,
+                      real_t timestep,
+                      real_t max_displacement,
+                      real_t squared_radius,
                       uint N,
                       __global uint* starts,
                       __global ushort* lengths,
                       __global uint* successors,
                       __constant uint* num_boxes_axis,
-                      __global double* result) {
+                      __global real_t* result) {
   uint tidx = get_global_id(0);
   if (tidx < N) {
     // Apply tractor forces
@@ -128,7 +128,7 @@ __kernel void collide(__global double* positions,
     result[3*tidx + 2] = timestep * tractor_force[3*tidx + 2];
     // printf(\"cell_movement = (%f, %f, %f)\\n\", result[3*tidx + 0], result[3*tidx + 1], result[3*tidx + 2]);
 
-    double3 collision_force = (double3)(0, 0, 0);
+    real_t3 collision_force = (real_t3)(0, 0, 0);
 
     // Moore neighborhood
     int3 box_coords = get_box_coordinates(box_id[tidx], num_boxes_axis);
@@ -144,7 +144,7 @@ __kernel void collide(__global double* positions,
     }
 
     // Mass needs to non-zero!
-    double mh = timestep / mass[tidx];
+    real_t mh = timestep / mass[tidx];
     // printf(\"mh = %f\\n\", mh);
 
     if (norm(collision_force) > adherence[tidx]) {
@@ -163,7 +163,7 @@ __kernel void collide(__global double* positions,
   }
 }
 
-__kernel void clear_force_opencl(__global double* result, uint N) {
+__kernel void clear_force_opencl(__global real_t* result, uint N) {
   uint tidx = get_global_id(0);
   if (tidx < N * N * N) {
     result[3*tidx + 0] = 0;

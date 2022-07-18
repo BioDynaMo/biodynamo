@@ -27,11 +27,10 @@ namespace bdm {
 ///
 /// @return     The distance between the two points
 ///
-inline double SquaredEuclideanDistance(const Double3& pos1,
-                                       const Double3& pos2) {
-  const double dx = pos2[0] - pos1[0];
-  const double dy = pos2[1] - pos1[1];
-  const double dz = pos2[2] - pos1[2];
+inline real_t SquaredEuclideanDistance(const Real3& pos1, const Real3& pos2) {
+  const real_t dx = pos2[0] - pos1[0];
+  const real_t dy = pos2[1] - pos1[1];
+  const real_t dz = pos2[2] - pos1[2];
   return (dx * dx + dy * dy + dz * dz);
 }
 
@@ -40,7 +39,7 @@ struct ConstantDisplace : public Behavior {
   BDM_BEHAVIOR_HEADER(ConstantDisplace, Behavior, 1);
 
  public:
-  ConstantDisplace(double v = 1, Double3 goal_position = {0, 0, 0})
+  ConstantDisplace(real_t v = 1, Real3 goal_position = {0, 0, 0})
       : velocity_(v), goal_position_(goal_position) {
     AlwaysCopyToNew();
   }
@@ -56,7 +55,7 @@ struct ConstantDisplace : public Behavior {
     }
   }
 
-  void SetGoalPosition(Double3 new_goal) {
+  void SetGoalPosition(Real3 new_goal) {
     goal_position_ = new_goal;
     reached_goal_ = false;
   }
@@ -67,10 +66,10 @@ struct ConstantDisplace : public Behavior {
         auto sq_distance =
             SquaredEuclideanDistance(agent->GetPosition(), goal_position_);
         if (sq_distance > eps_) {
-          Double3 direction = goal_position_ - cell->GetPosition();
+          Real3 direction = goal_position_ - cell->GetPosition();
           direction.Normalize();
-          Double3 vel = direction * velocity_;
-          Double3 movement = vel * dt_;
+          Real3 vel = direction * velocity_;
+          Real3 movement = vel * dt_;
           cell->UpdatePosition(movement);
         } else {  // move the last remaining bit
           cell->SetPosition(goal_position_);
@@ -81,11 +80,11 @@ struct ConstantDisplace : public Behavior {
   }
 
  private:
-  const double dt_ = 1;  // TODO: should be parameterized
-  const double eps_ = 5;
+  const real_t dt_ = 1;  // TODO: should be parameterized
+  const real_t eps_ = 5;
   bool reached_goal_ = false;
-  double velocity_;
-  Double3 goal_position_;
+  real_t velocity_;
+  Real3 goal_position_;
 };
 
 }  // namespace bdm
