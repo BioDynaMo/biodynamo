@@ -153,8 +153,10 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN "ON")
 if(real_t)
   message(STATUS "Setting real_t to: ${real_t}")
   add_definitions("-DBDM_REALT=${real_t}")
+  set(BDM_CONFIG_REALT "${real_t}")
 else()
   message(STATUS "Using default real_t (double)")
+  set(BDM_CONFIG_REALT "float")
 endif()
 
 # -------------------- find packages ------------------------------------------
