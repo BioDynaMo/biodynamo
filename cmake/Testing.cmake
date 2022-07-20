@@ -14,7 +14,7 @@
 
 # setup google test
 ExternalProject_Add(
-  gtest
+  bdm-gtest
   URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.11.0.zip"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
   CMAKE_ARGS
@@ -26,27 +26,27 @@ ExternalProject_Add(
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
     INSTALL_COMMAND 
-     cp -a "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest/googletest/include/."
+     cp -a "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/bdm-gtest/googletest/include/."
         "${CMAKE_CURRENT_BINARY_DIR}/include"
-     && cp "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/gtest-build/lib/libgtest.a" 
+     && cp "${CMAKE_CURRENT_BINARY_DIR}/gtest/src/bdm-gtest-build/lib/libgtest.a" 
         "${CMAKE_CURRENT_BINARY_DIR}/lib"
   # Ugly but necessary, in future versions one can use ${binary_dir}
   # in BUILD_BYPRODUCTS
   #BUILD_BYPRODUCTS "${binary_dir}/libgtest.a"
-  BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/gtest-build/lib/libgtest.a"
+  BUILD_BYPRODUCTS "${CMAKE_BINARY_DIR}/gtest/src/bdm-gtest-build/lib/libgtest.a"
 )
-ExternalProject_Get_Property(gtest source_dir binary_dir)
+ExternalProject_Get_Property(bdm-gtest source_dir binary_dir)
 
 # Create a libgtest target to be used as a dependency by test program
 add_library(libgtest IMPORTED STATIC GLOBAL)
-add_dependencies(libgtest gtest)
+add_dependencies(libgtest bdm-gtest)
 set_target_properties(libgtest PROPERTIES
     IMPORTED_LOCATION "${binary_dir}/lib/libgtest.a"
     IMPORTED_LINK_INTERFACE_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}"
 )
 
 # add include directories for gtest
-include_directories("${CMAKE_BINARY_DIR}/gtest/src/gtest/googletest/include")
+include_directories("${CMAKE_BINARY_DIR}/gtest/src/bdm-gtest/googletest/include")
 
 # create target that shows the test output on failure
 add_custom_target(run-check COMMAND ${CMAKE_CTEST_COMMAND} --force-new-ctest-process --output-on-failure)

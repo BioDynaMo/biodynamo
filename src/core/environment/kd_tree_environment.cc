@@ -16,7 +16,7 @@
 
 #include "core/environment/kd_tree_environment.h"
 
-#include <nanoflann.hpp>
+#include "nanoflann/nanoflann.hpp"
 
 namespace bdm {
 

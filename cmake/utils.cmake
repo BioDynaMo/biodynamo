@@ -475,6 +475,7 @@ function(add_bdm_feature_properties)
     ADD_FEATURE_INFO(tcmalloc tcmalloc "Use tcmalloc for memory allocations.")
     ADD_FEATURE_INFO(jemalloc jemalloc "Use jemalloc for memory allocations.")
     ADD_FEATURE_INFO(notebooks notebooks "Generate ROOT notebooks")
+    ADD_FEATURE_INFO(dse dse "Distributed simulation engine")
 endfunction()
 
 # Method used to give execution permissions to a file

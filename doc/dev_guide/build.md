@@ -127,6 +127,7 @@ If you change the value of these switches, you might have to delete `CMakeCache.
 | `jemalloc`      | `off` | use `jemalloc` for memory allocations |
 | `tcmalloc`      | `off` | use `tcmalloc` for memory allocations |
 | `website`       | `off` | enable website generation (`make website<-live>` target (see below for more information)) |
+| `dse`       | `on` | enable the distributed simulation engine of BioDynaMo, capable of dividing the computation of a simulation between several compute nodes. |
 
 ### Further CMake command line parameters
 
