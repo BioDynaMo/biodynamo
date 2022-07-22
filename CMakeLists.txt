@@ -116,7 +116,7 @@ option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 option(real_t    "Define data type for real numbers. Currently supported: float, double" double)
-option(dse       "Enable the distributed simulation engine." ON)
+option(dse       "Enable the distributed simulation engine." OFF)
 
 if(APPLE)
   find_program(BREW_BIN brew)
