@@ -147,6 +147,7 @@
     <class name="bdm::SharedData<uint64_t>" />
     <class name="bdm::SharedData<bdm::MathArray<double,3>>" />
     <class name="bdm::SharedData<bdm::MathArray<double,4>>" />
+    <class name="bdm::experimental::DistributionParam" />
   </selection>
   <exclusion>
     <class pattern="bdm::SharedData<*>::AlignedT" />

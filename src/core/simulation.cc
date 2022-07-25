@@ -31,6 +31,7 @@
 #include "bdm_version.h"
 #include "core/agent/agent_uid_generator.h"
 #include "core/analysis/time_series.h"
+#include "core/distribution/distribution_param.h"
 #include "core/distribution/distributor.h"
 #include "core/environment/environment.h"
 #include "core/environment/kd_tree_environment.h"
@@ -373,8 +374,14 @@ void Simulation::InitializeMembers() {
 
   // TODO pass command line options
   experimental::MPI::GetInstance()->Init(nullptr, nullptr);
-  distributor_ = experimental::CreateDistributor(
-      experimental::DistributorType::kSpatialSTK);
+  // Only use distributed simulation engine if there is more than one rank
+  int num_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+  if (num_ranks > 1) {
+    distributor_ = experimental::CreateDistributor(
+        experimental::DistributorType::kSpatialSTK);
+    Param::RegisterParamGroup(new experimental::DistributionParam());
+  }
 }
 
 void Simulation::SetEnvironment(Environment* env) {

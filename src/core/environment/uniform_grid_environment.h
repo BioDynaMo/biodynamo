@@ -272,6 +272,7 @@ class UniformGridEnvironment : public Environment {
   }
 
   void SetDetermineSimSize(bool value) { determine_sim_size_ = value; }
+  bool IsSimSizeDetermined() const { return determine_sim_size_; }
 
   int32_t GetBoxLength() { return box_length_; }
 
@@ -656,7 +657,7 @@ class UniformGridEnvironment : public Environment {
   int32_t box_length_ = 1;
   /// Length of a Box squared
   int32_t box_length_squared_ = 1;
-  /// True when the box length was set manually
+  /// True when the box length was set manually.
   bool is_custom_box_length_ = false;
   /// If set to true, the UniformGridEnvironment determines the size of the
   /// simulation space automatically.

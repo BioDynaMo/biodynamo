@@ -14,6 +14,11 @@
 
 #include "core/distribution/distributor.h"
 
+#include "core/distribution/distribution_param.h"
+#include "core/environment/uniform_grid_environment.h"
+#include "core/simulation.h"
+#include "core/util/log.h"
+
 #include <stk_io/FillMesh.hpp>         // stk::io::fill_mesh
 #include <stk_mesh/base/BulkData.hpp>  // for BulkData
 #include <stk_mesh/base/Field.hpp>
@@ -28,14 +33,13 @@
 #include <stk_util/environment/CPUTime.hpp>
 #include <stk_util/environment/WallTime.hpp>
 
-#include "core/util/log.h"
-
 namespace bdm {
 namespace experimental {
 
 Distributor::Distributor() {}
 Distributor::~Distributor() {}
 
+// -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 class SpatialSTKDistributor : public Distributor {
  private:
@@ -44,17 +48,41 @@ class SpatialSTKDistributor : public Distributor {
   stk::mesh::BulkData bulk_;
   stk::mesh::Field<int>* proc_owner_ = nullptr;
   stk::mesh::Field<double>* weights_ = nullptr;
+  int32_t box_length_ = 1;
 
  public:
   SpatialSTKDistributor();
   virtual ~SpatialSTKDistributor();
 
+ private:
+  void InitializeMesh();
   void UpdateProcOwnerField();
 };
 
+// -----------------------------------------------------------------------------
 SpatialSTKDistributor::SpatialSTKDistributor()
     : meta_(kSpatialDimensions, stk::mesh::entity_rank_names()),
       bulk_(meta_, MPI_COMM_WORLD, stk::mesh::BulkData::AUTO_AURA) {
+  // sanity checks
+  auto* sim = Simulation::GetActive();
+  auto* env = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
+  if (!env) {
+    Log::Fatal("SpatialSTKDistributor",
+               "The SpatialSTKDistributor currently requires the "
+               "UniformGridEnvironment class. We detected a different "
+               "Environment implementation.");
+  } else {
+    box_length_ = env->GetBoxLength();
+  }
+  if (!env->IsSimSizeDetermined()) {
+    Log::Fatal(
+        "SpatialSTKDistributor",
+        "The SpatialSTKDistributor currently only supports fixed simulation "
+        "spaces that do not change during the simulation.\nSet "
+        "UniformGridEnvironment::SetDetermineSimSize(false) and set "
+        "Param::min_bound and Param::max_bound");
+  }
+
   // setup fields
   double init_weight = 1.0;
   weights_ = &meta_.declare_field<stk::mesh::Field<double>>(
@@ -66,18 +94,31 @@ SpatialSTKDistributor::SpatialSTKDistributor()
   stk::mesh::put_field_on_mesh(*proc_owner_, meta_.universal_part(),
                                &init_proc);
 
-  // setup mesh
+  InitializeMesh();
+  UpdateProcOwnerField();
+}
+
+// -----------------------------------------------------------------------------
+SpatialSTKDistributor::~SpatialSTKDistributor() {}
+
+// -----------------------------------------------------------------------------
+void SpatialSTKDistributor::InitializeMesh() {
   std::stringstream sstream;
+  auto* param = Simulation::GetActive()->GetParam();
+
+  // box length
+  auto* sim = Simulation::GetActive();
+  auto* env = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
+  auto* dparam = sim->GetParam()->Get<DistributionParam>();
+
+  box_length_ = env->GetBoxLength() * dparam->box_length_factor;
   int maxx, maxy, maxz;
   maxx = maxy = maxz = 9;
   sstream << "generated:" << maxx << "x" << maxy << "x" << maxz;
   stk::io::fill_mesh(sstream.str(), bulk_);
-
-  UpdateProcOwnerField();
 }
 
-SpatialSTKDistributor::~SpatialSTKDistributor() {}
-
+// -----------------------------------------------------------------------------
 void SpatialSTKDistributor::UpdateProcOwnerField() {
   stk::mesh::EntityVector elements;
   stk::mesh::get_entities(bulk_, stk::topology::ELEM_RANK,
