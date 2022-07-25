@@ -41,6 +41,7 @@ class ParaviewAdaptorTest;
 
 namespace experimental {
 class TimeSeries;
+class Distributor;
 }  // namespace experimental
 
 /// This is the central BioDynaMo object. It containes pointers to e.g. the
@@ -183,6 +184,8 @@ class Simulation {
   int64_t dtor_ts_ = 0;  //!
   /// Collects time series information during the simulation
   experimental::TimeSeries* time_series_ = nullptr;
+  /// object responsible to distributed the simulation among multiple MPI ranks
+  experimental::Distributor* distributor_ = nullptr;
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,

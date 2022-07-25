@@ -31,6 +31,7 @@
 #include "bdm_version.h"
 #include "core/agent/agent_uid_generator.h"
 #include "core/analysis/time_series.h"
+#include "core/distribution/distributor.h"
 #include "core/environment/environment.h"
 #include "core/environment/kd_tree_environment.h"
 #include "core/environment/octree_environment.h"
@@ -372,6 +373,8 @@ void Simulation::InitializeMembers() {
 
   // TODO pass command line options
   experimental::MPI::GetInstance()->Init(nullptr, nullptr);
+  distributor_ = experimental::CreateDistributor(
+      experimental::DistributorType::kSpatialSTK);
 }
 
 void Simulation::SetEnvironment(Environment* env) {
