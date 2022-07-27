@@ -47,7 +47,7 @@ class SpatialSTKDistributor : public Distributor {
   stk::mesh::MetaData meta_;
   stk::mesh::BulkData bulk_;
   stk::mesh::Field<int>* proc_owner_ = nullptr;
-  stk::mesh::Field<double>* weights_ = nullptr;
+  stk::mesh::Field<float>* weights_ = nullptr;
   int32_t box_length_ = 1;
 
  public:
@@ -84,8 +84,8 @@ SpatialSTKDistributor::SpatialSTKDistributor()
   }
 
   // setup fields
-  double init_weight = 1.0;
-  weights_ = &meta_.declare_field<stk::mesh::Field<double>>(
+  float init_weight = 1.0;
+  weights_ = &meta_.declare_field<stk::mesh::Field<float>>(
       stk::topology::ELEM_RANK, "Weights", 1);
   stk::mesh::put_field_on_mesh(*weights_, meta_.universal_part(), &init_weight);
   int init_proc = -1.0;
