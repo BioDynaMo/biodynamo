@@ -35,6 +35,7 @@ struct Param;
 class ExecutionContext;
 class CommandLineOptions;
 class AgentUidGenerator;
+class SimulationSpace;
 
 class SimulationTest;
 class ParaviewAdaptorTest;
@@ -138,6 +139,8 @@ class Simulation {
 
   experimental::TimeSeries* GetTimeSeries();
 
+  SimulationSpace* GetSimulationSpace();
+
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old
   /// scheduler (obtained with `GetScheduler()`) will be invalidated. \n
@@ -186,6 +189,9 @@ class Simulation {
   experimental::TimeSeries* time_series_ = nullptr;
   /// object responsible to distributed the simulation among multiple MPI ranks
   experimental::Distributor* distributor_ = nullptr;
+
+  /// Describes the simulation space  
+  SimulationSpace* space_;  //!
 
   /// Initialize Simulation
   void Initialize(CommandLineOptions* clo,

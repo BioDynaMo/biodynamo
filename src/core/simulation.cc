@@ -51,6 +51,7 @@
 #include "core/util/thread_info.h"
 #include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
+#include "core/simulation_space.h"
 #include "memory_usage.h"
 
 #include <TEnv.h>
@@ -306,6 +307,8 @@ const std::string& Simulation::GetOutputDir() const { return output_dir_; }
 
 experimental::TimeSeries* Simulation::GetTimeSeries() { return time_series_; }
 
+SimulationSpace* Simulation::GetSimulationSpace() { return space_; }
+
 void Simulation::ReplaceScheduler(Scheduler* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;
@@ -381,6 +384,9 @@ void Simulation::InitializeMembers() {
     distributor_ = experimental::CreateDistributor(
         experimental::DistributorType::kSpatialSTK);
     Param::RegisterParamGroup(new experimental::DistributionParam());
+    space_ = new DistributedSimSpace();
+  } else {
+    space_ = new SimulationSpace();
   }
 }
 
