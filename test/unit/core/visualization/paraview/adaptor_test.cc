@@ -181,6 +181,7 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
+    param->interaction_radius = 10;
     param->export_visualization = true;
 
     // We selection Substance_1 for export

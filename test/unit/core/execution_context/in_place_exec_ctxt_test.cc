@@ -20,6 +20,7 @@
 #include "core/model_initializer.h"
 #include "core/operation/operation_registry.h"
 #include "core/randomized_rm.h"  // for bdm::Ubrng
+#include "core/simulation_space.h"
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
 
@@ -301,9 +302,9 @@ struct TestOperation : public AgentOperationImpl {
     // ctxt must be obtained inside the lambda, otherwise we always get the
     // one corresponding to the master thread
     auto* ctxt = Simulation::GetActive()->GetExecutionContext();
-    auto* env = Simulation::GetActive()->GetEnvironment();
+    auto* space = Simulation::GetActive()->GetSimulationSpace();
     ctxt->ForEachNeighbor(nb_functor, *agent,
-                          env->GetLargestAgentSizeSquared());
+                          space->GetInteractionRadiusSquared());
 #pragma omp critical
     num_neighbors[agent->GetUid()] = nb_counter;
   }
@@ -395,17 +396,18 @@ TEST(InPlaceExecutionContext, DefaultSearchRadius) {
   auto* env = sim.GetEnvironment();
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
+  auto* space = Simulation::GetActive()->GetSimulationSpace();
 
   Cell* cell_0 = new Cell();
   cell_0->SetDiameter(42);
   rm->AddAgent(cell_0);
 
   EXPECT_EQ(1u, rm->GetNumAgents());
-  EXPECT_EQ(env->GetLargestAgentSizeSquared(), 0.0);
+  EXPECT_EQ(space->GetInteractionRadiusSquared(), 0.0);
 
   env->Update();
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
-  EXPECT_EQ(42 * 42, env->GetLargestAgentSizeSquared());
+  EXPECT_EQ(42 * 42, space->GetInteractionRadiusSquared());
 
   // Add agent with new largest object size
   Cell* cell_1 = new Cell();
@@ -414,7 +416,7 @@ TEST(InPlaceExecutionContext, DefaultSearchRadius) {
 
   env->Update();
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
-  EXPECT_EQ(43 * 43, env->GetLargestAgentSizeSquared());
+  EXPECT_EQ(43 * 43, space->GetInteractionRadiusSquared());
 }
 
 struct TestNeighborFunctor : public Functor<void, Agent*, real_t> {
@@ -426,6 +428,7 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
   Simulation sim(TEST_NAME, set_param);
   auto* env = sim.GetEnvironment();
   auto* rm = sim.GetResourceManager();
+  auto* space = Simulation::GetActive()->GetSimulationSpace();
   auto* ctxt =
       dynamic_cast<InPlaceExecutionContext*>(sim.GetExecutionContext());
 
@@ -436,11 +439,11 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
   }
 
   EXPECT_EQ(10u, rm->GetNumAgents());
-  EXPECT_EQ(env->GetLargestAgentSizeSquared(), 0.0);
+  EXPECT_EQ(space->GetInteractionRadiusSquared(), 0.0);
 
   env->Update();
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
-  EXPECT_EQ(5 * 5, env->GetLargestAgentSizeSquared());
+  EXPECT_EQ(5 * 5, space->GetInteractionRadiusSquared());
 
   Cell* cell_1 = new Cell();
   cell_1->SetDiameter(6);
@@ -448,9 +451,9 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
 
   env->Update();
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
-  EXPECT_EQ(6 * 6, env->GetLargestAgentSizeSquared());
+  EXPECT_EQ(6 * 6, space->GetInteractionRadiusSquared());
   EXPECT_TRUE(ctxt->cache_neighbors_);
-  EXPECT_FALSE(ctxt->IsNeighborCacheValid(env->GetLargestAgentSizeSquared()));
+  EXPECT_FALSE(ctxt->IsNeighborCacheValid(space->GetInteractionRadiusSquared()));
 
   // Since we didn't run a ForEachNeighbor operation, the cached squared radius
   // is still its default value of 0.0

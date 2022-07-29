@@ -26,6 +26,7 @@
 #include "core/util/log.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
+#include "core/simulation_space.h"
 
 namespace bdm {
 
@@ -46,8 +47,8 @@ class DiffusionGrid {
   virtual void Initialize();
 
   /// Updates the grid dimensions, based on the given threshold values. The
-  /// diffusion grid dimensions need always be larger than the neighbor grid
-  /// dimensions, so that each simulation object can obtain its local
+  /// diffusion grid dimensions need always be larger than the simulation space
+  /// dimensions, so that each agent can obtain its local
   /// concentration / gradient
   virtual void Update();
 
@@ -237,8 +238,15 @@ class DiffusionGrid {
       {};  //!
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
+  //
+  /// copy of local simulation space to detect growth
+  MathArray<int32_t, 6> local_sim_space_;
 
-  BDM_CLASS_DEF(DiffusionGrid, 1);
+  /// Determine if the simulation space has grown since the last time 
+  /// the diffusion grid was updated.
+  bool HasSimSpaceGrown() const;
+  
+  BDM_CLASS_DEF(DiffusionGrid, 2);
 };
 
 }  // namespace bdm

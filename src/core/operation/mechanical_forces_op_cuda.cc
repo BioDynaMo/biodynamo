@@ -29,6 +29,7 @@
 #include "core/util/timing.h"
 #include "core/util/type.h"
 #include "core/util/vtune_helper.h"
+#include "core/simulation_space.h"
 
 namespace bdm {
 
@@ -317,8 +318,8 @@ void MechanicalForcesOpCuda::operator()() {
     }
   }
 
-  real_t squared_radius =
-      grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
+  auto* space = sim->GetSimulationSpace();
+  real_t squared_radius = space->GetInteractionRadiusSquared();
 
   // Timing timer("MechanicalForcesOpCuda::Kernel");
   cdo_->LaunchMechanicalForcesKernel(

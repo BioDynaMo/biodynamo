@@ -167,6 +167,7 @@ TEST(DiffusionTest, CopyOldData) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
+    param->interaction_radius = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
   auto* param = simulation.param_;
@@ -315,6 +316,7 @@ TEST(DiffusionTest, Thresholds) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
+    param->interaction_radius = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
   simulation.GetEnvironment()->Update();
@@ -351,6 +353,7 @@ TEST(DiffusionTest, IOTest) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -50;
     param->max_bound = 50;
+    param->interaction_radius = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
   simulation.GetEnvironment()->Update();
@@ -435,6 +438,7 @@ TEST(DiffusionTest, CorrectParameters) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
     param->max_bound = 100;
+    param->interaction_radius = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
   simulation.GetEnvironment()->Update();
@@ -449,6 +453,7 @@ TEST(DiffusionTest, EulerConvergenceExponentialDecay) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
+    param->interaction_radius = 10;
     param->diffusion_boundary_condition = "closed";
   };
   Simulation simulation(TEST_NAME, set_param);
@@ -495,6 +500,7 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
+    param->interaction_radius = 10;
     param->diffusion_boundary_condition = "closed";
   };
   Simulation simulation(TEST_NAME, set_param);
@@ -571,6 +577,7 @@ TEST(DiffusionTest, DynamicTimeStepping) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = -100;
     param->max_bound = 100;
+    param->interaction_radius = 10;
     param->simulation_time_step = 0.1;
   };
   Simulation simulation(TEST_NAME, set_param);

@@ -48,5 +48,6 @@
 #include "core/util/timing.h"
 #include "core/util/vtune.h"
 #include "core/visualization/root/notebook_util.h"
+#include "core/simulation_space.h"
 
 #endif  // BIODYNAMO_H_

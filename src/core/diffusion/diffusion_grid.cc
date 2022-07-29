@@ -14,7 +14,7 @@
 
 #include "core/diffusion/diffusion_grid.h"
 #include <mutex>
-#include "core/environment/environment.h"
+#include "core/simulation_space.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
 
@@ -28,10 +28,16 @@ void DiffusionGrid::Initialize() {
   }
 
   // Get neighbor grid dimensions
-  auto* env = Simulation::GetActive()->GetEnvironment();
-  auto bounds = env->GetDimensionThresholds();
+  auto* space = Simulation::GetActive()->GetSimulationSpace();
+  auto bounds = space->GetLocalSpace();
 
   grid_dimensions_ = {bounds[0], bounds[1]};
+
+  // Pad the grid to avoid out of bounds checks
+  for (int i = 0; i < 3; i++) {
+    grid_dimensions_[2 * i] -= resolution_;
+    grid_dimensions_[2 * i + 1] += resolution_;
+  }
 
   // Example: diffusion grid dimensions from 0-40 and resolution
   // of 4. Resolution must be adjusted otherwise one data pointer will be
@@ -91,16 +97,17 @@ void DiffusionGrid::Diffuse(real_t dt) {
 }
 
 void DiffusionGrid::Update() {
-  // Get neighbor grid dimensions
-  auto* env = Simulation::GetActive()->GetEnvironment();
-  auto bounds = env->GetDimensionThresholds();
+  if (!HasSimSpaceGrown()) {
+    return;
+  }
+  auto* space = Simulation::GetActive()->GetSimulationSpace();
+  local_sim_space_ = space->GetLocalSpace();
   // Update the grid dimensions such that each dimension ranges from
-  // {bounds[0] - bounds[1]}
-  grid_dimensions_ = {bounds[0], bounds[1]};
+  grid_dimensions_ = {local_sim_space_[0], local_sim_space_[1]};
 
   // If the grid is not perfectly divisible along each dimension by the
   // box length, extend the grid so that it is
-  int dimension_length = bounds[1] - bounds[0];
+  int dimension_length = local_sim_space_[1] - local_sim_space_[0];
   for (int i = 0; i < 1; i++) {
     int r = fmod(dimension_length, box_length_);
     if (r > 1e-9) {
@@ -378,4 +385,20 @@ void DiffusionGrid::ParametersCheck(real_t dt) {
         "). Please refer to the user guide for more information.");
   }
 }
+
+// -----------------------------------------------------------------------------
+bool DiffusionGrid::HasSimSpaceGrown() const {
+  auto* space = Simulation::GetActive()->GetSimulationSpace();
+  auto current_space = space->GetLocalSpace();
+
+  for (int i = 0; i < 6; ++i) {
+    if (i % 2 && current_space[i] > local_sim_space_[i]) {
+      return true;
+    } else if (current_space[i] > local_sim_space_[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace bdm

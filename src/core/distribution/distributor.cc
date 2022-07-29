@@ -65,6 +65,7 @@ SpatialSTKDistributor::SpatialSTKDistributor()
       bulk_(meta_, MPI_COMM_WORLD, stk::mesh::BulkData::AUTO_AURA) {
   // sanity checks
   auto* sim = Simulation::GetActive();
+  auto* space = sim->GetSimulationSpace();
   auto* env = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
   if (!env) {
     Log::Fatal("SpatialSTKDistributor",
@@ -74,14 +75,15 @@ SpatialSTKDistributor::SpatialSTKDistributor()
   } else {
     box_length_ = env->GetBoxLength();
   }
-  if (!env->IsSimSizeDetermined()) {
-    Log::Fatal(
-        "SpatialSTKDistributor",
-        "The SpatialSTKDistributor currently only supports fixed simulation "
-        "spaces that do not change during the simulation.\nSet "
-        "UniformGridEnvironment::SetDetermineSimSize(false) and set "
-        "Param::min_bound and Param::max_bound");
-  }
+  // FIXME add logic to detect if whole simulation space changed
+  // if (!env->IsSimSizeDetermined()) {
+  //   Log::Fatal(
+  //       "SpatialSTKDistributor",
+  //       "The SpatialSTKDistributor currently only supports fixed simulation "
+  //       "spaces that do not change during the simulation.\nSet "
+  //       "UniformGridEnvironment::SetDetermineSimSize(false) and set "
+  //       "Param::min_bound and Param::max_bound");
+  // }
 
   // setup fields
   float init_weight = 1.0;

@@ -35,6 +35,7 @@
 #include "core/environment/environment.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
+#include "core/simulation_space.h"
 
 namespace bdm {
 
@@ -127,8 +128,8 @@ struct Fea : public Functor<void, Agent*, AgentHandle> {
   void operator()(Agent* agent, AgentHandle) {
     Fen fen(diffs, agent);
     auto* sim = Simulation::GetActive();
-    auto* env = sim->GetEnvironment();
-    auto squared_radius = env->GetLargestAgentSizeSquared();
+    auto* space = sim->GetSimulationSpace();
+    auto squared_radius = space->GetInteractionRadiusSquared();
     sim->GetExecutionContext()->ForEachNeighbor(fen, *agent, squared_radius);
   }
 };

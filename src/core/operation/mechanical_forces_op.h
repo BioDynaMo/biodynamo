@@ -31,6 +31,7 @@
 #include "core/simulation.h"
 #include "core/util/math.h"
 #include "core/util/thread_info.h"
+#include "core/simulation_space.h"
 
 namespace bdm {
 
@@ -85,9 +86,8 @@ class MechanicalForcesOp : public AgentOperationImpl {
     if (last_iteration_[tid] != current_iteration) {
       last_iteration_[tid] = current_iteration;
 
-      auto* grid = sim->GetEnvironment();
-      auto search_radius = grid->GetLargestAgentSize();
-      squared_radius_ = search_radius * search_radius;
+      auto* space = sim->GetSimulationSpace();
+      squared_radius_ = space->GetInteractionRadiusSquared();
       auto current_time = (current_iteration + 1) * param->simulation_time_step;
       delta_time_[tid] = current_time - last_time_run_[tid];
       last_time_run_[tid] = current_time;

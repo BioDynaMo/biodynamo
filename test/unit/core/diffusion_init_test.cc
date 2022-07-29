@@ -33,6 +33,7 @@ TEST(DiffusionInitTest, GaussianBand) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
     param->max_bound = 250;
+    param->interaction_radius = 10;
   };
   Simulation simulation(TEST_NAME, set_param);
 
@@ -54,8 +55,6 @@ TEST(DiffusionInitTest, GaussianBand) {
   // Initialize the substance according to a GaussianBand along the x-axis
   ModelInitializer::InitializeSubstance(kSubstance,
                                         GaussianBand(125, 50, Axis::kXAxis));
-
-  simulation.GetEnvironment()->Update();
 
   auto* dgrid = rm->GetDiffusionGrid(0);
 

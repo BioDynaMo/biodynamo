@@ -114,7 +114,6 @@ inline void RunTest2(const std::string& environment) {
     }
   }
 
-  env->Clear();
   env->Update();
 
   // Create operation

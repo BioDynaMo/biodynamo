@@ -48,15 +48,17 @@ class OctreeEnvironment : public Environment {
 
   ~OctreeEnvironment();
 
-  std::array<int32_t, 6> GetDimensions() const override;
-
-  std::array<int32_t, 2> GetDimensionThresholds() const override;
+  // FIXME remove
+  // std::array<int32_t, 6> GetDimensions() const override;
+  // 
+  // std::array<int32_t, 2> GetDimensionThresholds() const override;
 
   LoadBalanceInfo* GetLoadBalanceInfo() override;
 
   NeighborMutexBuilder* GetNeighborMutexBuilder() override;
 
-  void Clear() override;
+  // FIXME remove
+  // void Clear() override;
 
   void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
                        const Agent& query, real_t squared_radius) override;
@@ -75,16 +77,17 @@ class OctreeEnvironment : public Environment {
   // Hide unibn-specific types from header (pimpl idiom)
   std::unique_ptr<UnibnImpl> impl_;
   AgentContainer* container_ = nullptr;
-  /// Cube which contains all simulation objects
+  /// Cuboid which contains all agents
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
-  std::array<int32_t, 6> grid_dimensions_;
-  /// Stores the min / max dimension value that need to be surpassed in order
-  /// to trigger a diffusion grid change
-  std::array<int32_t, 2> threshold_dimensions_;
-
-  void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions);
-
-  void CheckGridGrowth();
+  MathArray<int32_t, 6> grid_dimensions_;
+  // FIXME remove
+  // /// Stores the min / max dimension value that need to be surpassed in order
+  // /// to trigger a diffusion grid change
+  // std::array<int32_t, 2> threshold_dimensions_;
+  // 
+  // void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions);
+  // 
+  // void CheckGridGrowth();
 };
 
 }  // namespace bdm

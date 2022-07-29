@@ -569,7 +569,7 @@ TEST(Simulation, SetEnvironmentSame) {
   sim.SetEnvironment(env);
   // will segfault if env has been deleted inside
   // SetEnvironment
-  env->Clear();
+  env->MarkAsOutOfSync();
 }
 
 }  // namespace bdm

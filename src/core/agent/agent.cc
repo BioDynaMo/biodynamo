@@ -35,6 +35,7 @@
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
+#include "core/simulation_space.h"
 
 namespace bdm {
 
@@ -84,9 +85,9 @@ void Agent::PropagateStaticness(bool beginning) {
     return;
   }
 
-  auto* env = Simulation::GetActive()->GetEnvironment();
+  auto* space = Simulation::GetActive()->GetSimulationSpace();
   // TODO(all) generalize to axis-aligned bounding box
-  if (!beginning && GetDiameter() > env->GetLargestAgentSize()) {
+  if (!beginning && GetDiameter() > space->GetInteractionRadius()) {
     // If the agent is bigger than all other agents,
     // the uniform grid implementation is not able to inform
     // all necessary neighbors.
@@ -104,8 +105,9 @@ void Agent::PropagateStaticness(bool beginning) {
       neighbor->SetStaticnessNextTimestep(false);
     }
   });
+  auto* env = Simulation::GetActive()->GetEnvironment();
   env->ForEachNeighbor(set_staticness, *this,
-                       env->GetLargestAgentSizeSquared());
+                       space->GetInteractionRadiusSquared());
 }
 
 void Agent::UpdateStaticness() {

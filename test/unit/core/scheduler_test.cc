@@ -95,56 +95,6 @@ TEST_F(SchedulerTest, Restore) { RunRestoreTest(); }
 TEST_F(SchedulerTest, Backup) { RunBackupTest(); }
 #endif  // USE_DICT
 
-TEST_F(SchedulerTest, EmptySimulationFromBeginning) {
-  auto set_param = [](auto* param) {
-    param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -10;
-    param->max_bound = 10;
-  };
-  Simulation simulation(TEST_NAME, set_param);
-
-  simulation.GetScheduler()->Simulate(1);
-
-  auto* env = simulation.GetEnvironment();
-  std::array<int32_t, 2> expected_dim_threshold = {-10, 10};
-  EXPECT_EQ(expected_dim_threshold, env->GetDimensionThresholds());
-  std::array<int32_t, 6> expected_dimensions = {-10, 10, -10, 10, -10, 10};
-  EXPECT_EQ(expected_dimensions, env->GetDimensions());
-}
-
-TEST_F(SchedulerTest, EmptySimulationAfterFirstIteration) {
-  auto set_param = [](auto* param) {
-    param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -10;
-    param->max_bound = 10;
-  };
-  Simulation simulation(TEST_NAME, set_param);
-
-  auto* rm = simulation.GetResourceManager();
-  auto* env = simulation.GetEnvironment();
-  auto* scheduler = simulation.GetScheduler();
-
-  // We cannot rebalance after the rm->Clear() below, since LoadBalancingOp
-  // relies on the ResourceManager. Therefore we only run it once at the
-  // beginning
-  scheduler->GetOps("load balancing")[0]->frequency_ =
-      std::numeric_limits<std::size_t>::max();
-
-  Cell* cell = new Cell(10);
-  rm->AddAgent(cell);
-  scheduler->Simulate(1);
-
-  auto max_dimensions = env->GetDimensionThresholds();
-  auto dimensions = env->GetDimensions();
-  rm->ClearAgents();
-
-  scheduler->Simulate(1);
-
-  EXPECT_EQ(max_dimensions, env->GetDimensionThresholds());
-  EXPECT_EQ(dimensions, env->GetDimensions());
-  EXPECT_FALSE(env->HasGrown());
-}
-
 struct TestOp : public AgentOperationImpl {
   BDM_OP_HEADER(TestOp);
 

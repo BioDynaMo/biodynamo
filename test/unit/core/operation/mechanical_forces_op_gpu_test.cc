@@ -23,6 +23,7 @@
 #include "core/operation/mechanical_forces_op.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
+#include "core/simulation_space.h"
 
 namespace bdm {
 namespace mechanical_forces_op_gpu_test_internal {
@@ -59,11 +60,10 @@ class MechanicalForcesOpCpuVerify {
 
     void operator()(Agent* agent, AgentHandle ah) override {
       auto* sim = Simulation::GetActive();
-      auto* env = sim->GetEnvironment();
       auto* param = sim->GetParam();
+      auto* space = sim->GetSimulationSpace();
 
-      auto search_radius = env->GetLargestAgentSize();
-      auto squared_radius_ = search_radius * search_radius;
+      auto squared_radius_ = space->GetInteractionRadiusSquared();
       InteractionForce force;
       const auto& displacement = agent->CalculateDisplacement(
           &force, squared_radius_, param->simulation_time_step);

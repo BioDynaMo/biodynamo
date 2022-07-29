@@ -61,13 +61,7 @@ class DiffusionOp : public StandaloneOperationImpl {
     }
 
     rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
-      // Update the diffusion grid dimension if the environment dimensions
-      // have changed. If the space is bound, we do not need to update the
-      // dimensions, because these should not be changing anyway
-      if (env->HasGrown() &&
-          param->bound_space == Param::BoundSpaceMode::kOpen) {
-        dgrid->Update();
-      }
+      dgrid->Update();
       dgrid->Diffuse(delta_t_);
       if (param->calculate_gradients) {
         dgrid->CalculateGradient();

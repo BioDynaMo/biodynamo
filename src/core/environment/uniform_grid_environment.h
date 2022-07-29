@@ -236,18 +236,14 @@ class UniformGridEnvironment : public Environment {
   virtual ~UniformGridEnvironment() = default;
 
   /// Clears the grid
-  void Clear() override {
-    if (!is_custom_box_length_) {
-      box_length_ = 1;
-    }
+  void Clear() {
+    box_length_ = 1;
     box_length_squared_ = 1;
     num_boxes_axis_ = {{0}};
     num_boxes_xy_ = 0;
     int32_t inf = std::numeric_limits<int32_t>::max();
     grid_dimensions_ = {inf, -inf, inf, -inf, inf, -inf};
-    threshold_dimensions_ = {inf, -inf};
     successors_.clear();
-    has_grown_ = false;
   }
 
   struct AssignToBoxesFunctor : public Functor<void, Agent*, AgentHandle> {
@@ -265,14 +261,6 @@ class UniformGridEnvironment : public Environment {
    private:
     UniformGridEnvironment* grid_ = nullptr;
   };
-
-  void SetBoxLength(int32_t bl) {
-    box_length_ = bl;
-    is_custom_box_length_ = true;
-  }
-
-  void SetDetermineSimSize(bool value) { determine_sim_size_ = value; }
-  bool IsSimSizeDetermined() const { return determine_sim_size_; }
 
   int32_t GetBoxLength() { return box_length_; }
 
@@ -343,7 +331,7 @@ class UniformGridEnvironment : public Environment {
     return GetBoxIndex(box_coord);
   }
 
-  std::array<int32_t, 6> GetDimensions() const override {
+  MathArray<int32_t, 6> GetDimensions() const {
     return grid_dimensions_;
   }
 
@@ -365,9 +353,10 @@ class UniformGridEnvironment : public Environment {
     }
   }
 
-  std::array<int32_t, 2> GetDimensionThresholds() const override {
-    return threshold_dimensions_;
-  }
+  // FIXME remove
+  // std::array<int32_t, 2> GetDimensionThresholds() const override {
+  //   return threshold_dimensions_;
+  // }
 
   void GetNumBoxesAxis(uint32_t* nba) {
     // Check if conversion can be done without loosing information
@@ -657,12 +646,6 @@ class UniformGridEnvironment : public Environment {
   int32_t box_length_ = 1;
   /// Length of a Box squared
   int32_t box_length_squared_ = 1;
-  /// True when the box length was set manually.
-  bool is_custom_box_length_ = false;
-  /// If set to true, the UniformGridEnvironment determines the size of the
-  /// simulation space automatically.
-  /// If false, it uses param->min_bound and param->max_bound for each dimension
-  bool determine_sim_size_ = true;
   /// Stores the number of Boxes for each axis
   std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
@@ -679,10 +662,11 @@ class UniformGridEnvironment : public Environment {
   Adjacency adjacency_;
   /// Cube which contains all agents
   /// {x_min, x_max, y_min, y_max, z_min, z_max}
-  std::array<int32_t, 6> grid_dimensions_;
-  /// Stores the min / max dimension value that need to be surpassed in order
-  /// to trigger a diffusion grid change
-  std::array<int32_t, 2> threshold_dimensions_;
+  MathArray<int32_t, 6> grid_dimensions_;
+  // FIXME remove
+  // /// Stores the min / max dimension value that need to be surpassed in order
+  // /// to trigger a diffusion grid change
+  // std::array<int32_t, 2> threshold_dimensions_;
 
   LoadBalanceInfoUG lbi_;  //!
 
@@ -692,42 +676,43 @@ class UniformGridEnvironment : public Environment {
   std::unique_ptr<GridNeighborMutexBuilder> nb_mutex_builder_ =
       std::make_unique<GridNeighborMutexBuilder>();
 
-  void CheckGridGrowth() {
-    // Determine if the grid dimensions have changed (changed in the sense that
-    // the grid has grown outwards)
-    auto min_gd =
-        *std::min_element(grid_dimensions_.begin(), grid_dimensions_.end());
-    auto max_gd =
-        *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
-    if (min_gd < threshold_dimensions_[0]) {
-      threshold_dimensions_[0] = min_gd;
-      has_grown_ = true;
-    }
-    if (max_gd > threshold_dimensions_[1]) {
-      Log::Info("UniformGridEnvironment",
-                "Your agents are getting near the edge of "
-                "the simulation space. Be aware of boundary conditions that "
-                "may come into play!");
-      threshold_dimensions_[1] = max_gd;
-      has_grown_ = true;
-    }
-  }
-
-  void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions) {
-    // Check if conversion can be done without loosing information
-    assert(floor(grid_dimensions_[0]) >= std::numeric_limits<int32_t>::min());
-    assert(floor(grid_dimensions_[2]) >= std::numeric_limits<int32_t>::min());
-    assert(floor(grid_dimensions_[4]) >= std::numeric_limits<int32_t>::min());
-    assert(ceil(grid_dimensions_[1]) <= std::numeric_limits<int32_t>::max());
-    assert(ceil(grid_dimensions_[3]) <= std::numeric_limits<int32_t>::max());
-    assert(ceil(grid_dimensions_[3]) <= std::numeric_limits<int32_t>::max());
-    grid_dimensions_[0] = static_cast<int32_t>(floor(grid_dimensions[0]));
-    grid_dimensions_[2] = static_cast<int32_t>(floor(grid_dimensions[2]));
-    grid_dimensions_[4] = static_cast<int32_t>(floor(grid_dimensions[4]));
-    grid_dimensions_[1] = static_cast<int32_t>(ceil(grid_dimensions[1]));
-    grid_dimensions_[3] = static_cast<int32_t>(ceil(grid_dimensions[3]));
-    grid_dimensions_[5] = static_cast<int32_t>(ceil(grid_dimensions[5]));
-  }
+  // FIXME remove
+  // void CheckGridGrowth() {
+  //   // Determine if the grid dimensions have changed (changed in the sense that
+  //   // the grid has grown outwards)
+  //   auto min_gd =
+  //       *std::min_element(grid_dimensions_.begin(), grid_dimensions_.end());
+  //   auto max_gd =
+  //       *std::max_element(grid_dimensions_.begin(), grid_dimensions_.end());
+  //   if (min_gd < threshold_dimensions_[0]) {
+  //     threshold_dimensions_[0] = min_gd;
+  //     has_grown_ = true;
+  //   }
+  //   if (max_gd > threshold_dimensions_[1]) {
+  //     Log::Info("UniformGridEnvironment",
+  //               "Your agents are getting near the edge of "
+  //               "the simulation space. Be aware of boundary conditions that "
+  //               "may come into play!");
+  //     threshold_dimensions_[1] = max_gd;
+  //     has_grown_ = true;
+  //   }
+  // }
+  // 
+  // void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions) {
+  //   // Check if conversion can be done without loosing information
+  //   assert(floor(grid_dimensions_[0]) >= std::numeric_limits<int32_t>::min());
+  //   assert(floor(grid_dimensions_[2]) >= std::numeric_limits<int32_t>::min());
+  //   assert(floor(grid_dimensions_[4]) >= std::numeric_limits<int32_t>::min());
+  //   assert(ceil(grid_dimensions_[1]) <= std::numeric_limits<int32_t>::max());
+  //   assert(ceil(grid_dimensions_[3]) <= std::numeric_limits<int32_t>::max());
+  //   assert(ceil(grid_dimensions_[3]) <= std::numeric_limits<int32_t>::max());
+  //   grid_dimensions_[0] = static_cast<int32_t>(floor(grid_dimensions[0]));
+  //   grid_dimensions_[2] = static_cast<int32_t>(floor(grid_dimensions[2]));
+  //   grid_dimensions_[4] = static_cast<int32_t>(floor(grid_dimensions[4]));
+  //   grid_dimensions_[1] = static_cast<int32_t>(ceil(grid_dimensions[1]));
+  //   grid_dimensions_[3] = static_cast<int32_t>(ceil(grid_dimensions[3]));
+  //   grid_dimensions_[5] = static_cast<int32_t>(ceil(grid_dimensions[5]));
+  // }
 
   /// @brief      Gets the Moore (i.e adjacent) boxes of the query boxAlso adds
   /// the
