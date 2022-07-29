@@ -157,22 +157,28 @@ void UniformGridEnvironment::UpdateImplementation() {
   //   this->largest_object_size_ = box_length_;
   //   this->largest_object_size_squared_ = box_length_squared_;
   // }
+  std::cout << "UG1 " << grid_dimensions_ << std::endl;
 
   for (int i = 0; i < 3; i++) {
     int dimension_length =
         grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
     int r = dimension_length % box_length_;
+    std::cout << "  " << i << " " << r << std::endl;
     // If the grid is not perfectly divisible along each dimension by the
     // resolution, extend the grid so that it is
     if (r != 0) {
       // std::abs for the case that box_length_ > dimension_length
       grid_dimensions_[2 * i + 1] += (box_length_ - r);
-    } else {
-      // Else extend the grid dimension with one row, because the outmost
-      // object lies exactly on the border
-      grid_dimensions_[2 * i + 1] += box_length_;
-    }
+    } 
+    // FIXME remove
+    // else {
+    //   // Else extend the grid dimension with one row, because the outmost
+    //   // object lies exactly on the border
+    //   grid_dimensions_[2 * i + 1] += box_length_;
+    // }
   }
+  
+  std::cout << "UG2 " << grid_dimensions_ << std::endl;
 
   // Pad the grid to avoid out of bounds check when search neighbors
   for (int i = 0; i < 3; i++) {
@@ -180,6 +186,8 @@ void UniformGridEnvironment::UpdateImplementation() {
     grid_dimensions_[2 * i + 1] += box_length_;
   }
 
+  std::cout << "UG3 " << grid_dimensions_ << std::endl;
+  //
   // Calculate how many boxes fit along each dimension
   for (int i = 0; i < 3; i++) {
     int dimension_length =

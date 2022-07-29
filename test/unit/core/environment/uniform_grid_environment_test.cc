@@ -250,8 +250,10 @@ TEST(UniformGridEnvironmentTest, GetBoxIndex) {
   auto* rm = simulation.GetResourceManager();
   auto* grid =
       static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
+  auto* space = simulation.GetSimulationSpace();
 
-  CellFactory(rm, 3);
+  space->SetInteractionRadius(30);
+  space->SetWholeSpace({0, 60, 0, 60, 0, 60});  
 
   grid->Update();
 
@@ -282,26 +284,28 @@ TEST(UniformGridEnvironmentTest, GridDimensions) {
 
   env->ForcedUpdate();
 
-  MathArray<int32_t, 6> expected_dim_0 = {{-30, 90, -30, 90, -30, 90}};
-  auto dim_0 = space->GetLocalSpace();
+  MathArray<int32_t, 6> expected_dim_0 = {{-60, 120, -60, 120, -60, 120}};
+  auto* ug = dynamic_cast<UniformGridEnvironment*>(env);
+  auto dim_0 = ug->GetDimensions();
 
   EXPECT_EQ(expected_dim_0, dim_0);
 
   rm->GetAgent(AgentUid(0))->SetPosition({{100, 0, 0}});
   env->ForcedUpdate();
-  MathArray<int32_t, 6> expected_dim_1 = {{-30, 150, -30, 90, -30, 90}};
-  auto dim_1 = space->GetLocalSpace();
+  MathArray<int32_t, 6> expected_dim_1 = {{-60, 180, -60, 120, -60, 120}};
+  auto dim_1 = ug->GetDimensions();
 
   EXPECT_EQ(expected_dim_1, dim_1);
 }
 
 TEST(UniformGridEnvironmentTest, GetBoxCoordinates) {
   Simulation simulation(TEST_NAME);
-  auto* rm = simulation.GetResourceManager();
   auto* grid =
       static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
+  auto* space = simulation.GetSimulationSpace();
 
-  CellFactory(rm, 3);
+  space->SetInteractionRadius(30);
+  space->SetWholeSpace({0, 60, 0, 60, 0, 60});  
 
   // expecting a 4 * 4 * 4 grid
   grid->Update();

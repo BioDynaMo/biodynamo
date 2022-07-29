@@ -76,9 +76,9 @@ TEST(DiffusionTest, GridDimensions) {
   EXPECT_EQ(-40, dims[0]);
   EXPECT_EQ(-40, dims[2]);
   EXPECT_EQ(-40, dims[4]);
-  EXPECT_EQ(140, dims[1]);
-  EXPECT_EQ(140, dims[3]);
-  EXPECT_EQ(140, dims[5]);
+  EXPECT_EQ(120, dims[1]);
+  EXPECT_EQ(120, dims[3]);
+  EXPECT_EQ(120, dims[5]);
 
   delete dgrid;
 }

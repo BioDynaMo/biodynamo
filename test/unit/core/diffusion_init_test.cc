@@ -40,14 +40,14 @@ TEST(DiffusionInitTest, GaussianBand) {
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
 
-  // Create one cell at a random position
-  auto construct = [](const Real3& position) {
-    Cell* cell = new Cell(position);
-    cell->SetDiameter(10);
-    return cell;
-  };
-  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
-                                       construct);
+  // // Create one cell at a random position
+  // auto construct = [](const Real3& position) {
+  //   Cell* cell = new Cell(position);
+  //   cell->SetDiameter(10);
+  //   return cell;
+  // };
+  // ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+  //                                      construct);
 
   // Define the substances in our simulation
   ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
@@ -60,6 +60,9 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   // Create data structures, whose size depend on the grid dimensions
   dgrid->Initialize();
+    auto foo = dgrid->GetDimensions();
+  for (auto& el : foo) { std::cout << el << std::endl; }
+
   // Initialize data structures with user-defined values
   dgrid->RunInitializers();
 
