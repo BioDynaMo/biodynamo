@@ -31,11 +31,11 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
+#include "core/simulation_space.h"
 #include "core/util/log.h"
 #include "core/util/macros.h"
 #include "core/util/root.h"
 #include "core/util/type.h"
-#include "core/simulation_space.h"
 
 namespace bdm {
 

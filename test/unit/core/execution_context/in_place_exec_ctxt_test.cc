@@ -453,7 +453,8 @@ TEST(InPlaceExecutionContext, NeighborCacheValidity) {
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
   EXPECT_EQ(6 * 6, space->GetInteractionRadiusSquared());
   EXPECT_TRUE(ctxt->cache_neighbors_);
-  EXPECT_FALSE(ctxt->IsNeighborCacheValid(space->GetInteractionRadiusSquared()));
+  EXPECT_FALSE(
+      ctxt->IsNeighborCacheValid(space->GetInteractionRadiusSquared()));
 
   // Since we didn't run a ForEachNeighbor operation, the cached squared radius
   // is still its default value of 0.0

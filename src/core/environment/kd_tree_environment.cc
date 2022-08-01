@@ -54,7 +54,7 @@ void KDTreeEnvironment::UpdateImplementation() {
 
   // Update the flattened indices map
   nf_adapter_->flat_idx_map_.Update();
-  
+
   impl_->index_->buildIndex();
 }
 

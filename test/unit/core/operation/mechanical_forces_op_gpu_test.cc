@@ -21,9 +21,9 @@
 #include "core/functor.h"
 #include "core/gpu/gpu_helper.h"
 #include "core/operation/mechanical_forces_op.h"
+#include "core/simulation_space.h"
 #include "gtest/gtest.h"
 #include "unit/test_util/test_util.h"
-#include "core/simulation_space.h"
 
 namespace bdm {
 namespace mechanical_forces_op_gpu_test_internal {

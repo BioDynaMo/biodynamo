@@ -24,12 +24,12 @@
 #include "core/resource_manager.h"
 #include "core/shape.h"
 #include "core/simulation.h"
+#include "core/simulation_space.h"
 #include "core/util/log.h"
 #include "core/util/thread_info.h"
 #include "core/util/timing.h"
 #include "core/util/type.h"
 #include "core/util/vtune_helper.h"
-#include "core/simulation_space.h"
 
 namespace bdm {
 

@@ -60,8 +60,10 @@ TEST(DiffusionInitTest, GaussianBand) {
 
   // Create data structures, whose size depend on the grid dimensions
   dgrid->Initialize();
-    auto foo = dgrid->GetDimensions();
-  for (auto& el : foo) { std::cout << el << std::endl; }
+  auto foo = dgrid->GetDimensions();
+  for (auto& el : foo) {
+    std::cout << el << std::endl;
+  }
 
   // Initialize data structures with user-defined values
   dgrid->RunInitializers();

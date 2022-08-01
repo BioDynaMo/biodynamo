@@ -15,14 +15,14 @@
 #define CORE_SIMULATION_SPACE_H_
 
 #include "core/container/math_array.h"
+#include "core/param/param.h"
 #include "core/real_t.h"
 #include "core/simulation.h"
-#include "core/param/param.h"
 
 namespace bdm {
 
-/// This class contains the logic to define the simulation space and the 
-/// interaction radius of agents. 
+/// This class contains the logic to define the simulation space and the
+/// interaction radius of agents.
 // TODO(lukas) documentation
 class SimulationSpace {
  public:
@@ -50,7 +50,7 @@ class SimulationSpace {
   virtual bool operator==(const SimulationSpace& other);
 
   virtual SimulationSpace& operator=(const SimulationSpace& other);
-  
+
   /// Updates the simulation space and interaction radius if these variables
   /// are determined automatically.
   virtual void Update();
@@ -64,10 +64,10 @@ class SimulationSpace {
   bool fixed_interaction_radius_ = false;
 
  private:
-  /// Determines what the simulaiton space need to be in order to contain 
+  /// Determines what the simulaiton space need to be in order to contain
   /// all the agents if `Param::bound_space > 0 && !fixed_space_`.\n
   /// Determines the interaction radius based on the larget agent in the
-  /// simulation 
+  /// simulation
   void DetermineSpaceAndInteractionRadius(SpaceReal* space);
 
   // Convert SpaceReal to Space and set whole_space_

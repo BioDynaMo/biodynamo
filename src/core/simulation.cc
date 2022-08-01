@@ -44,6 +44,7 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
+#include "core/simulation_space.h"
 #include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
@@ -51,7 +52,6 @@
 #include "core/util/thread_info.h"
 #include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
-#include "core/simulation_space.h"
 #include "memory_usage.h"
 
 #include <TEnv.h>

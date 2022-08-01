@@ -42,12 +42,12 @@
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
+#include "core/simulation_space.h"
 #include "core/substance_initializers.h"
 #include "core/util/filesystem.h"
 #include "core/util/root.h"
 #include "core/util/timing.h"
 #include "core/util/vtune.h"
 #include "core/visualization/root/notebook_util.h"
-#include "core/simulation_space.h"
 
 #endif  // BIODYNAMO_H_

@@ -331,9 +331,7 @@ class UniformGridEnvironment : public Environment {
     return GetBoxIndex(box_coord);
   }
 
-  MathArray<int32_t, 6> GetDimensions() const {
-    return grid_dimensions_;
-  }
+  MathArray<int32_t, 6> GetDimensions() const { return grid_dimensions_; }
 
   /// Returns true if the provided point is inside the simulation domain.
   /// Compares the points coordinates against grid_dimensions_ (without bounding

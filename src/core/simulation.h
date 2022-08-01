@@ -190,7 +190,7 @@ class Simulation {
   /// object responsible to distributed the simulation among multiple MPI ranks
   experimental::Distributor* distributor_ = nullptr;
 
-  /// Describes the simulation space  
+  /// Describes the simulation space
   SimulationSpace* space_;  //!
 
   /// Initialize Simulation

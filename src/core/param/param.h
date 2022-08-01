@@ -235,13 +235,13 @@ struct Param {
   ///     max_bound = 100
   real_t max_bound = 100;
 
-  /// In 3D or 2D simulations, the interaction radius determines the local 
+  /// In 3D or 2D simulations, the interaction radius determines the local
   /// environment. Spatial environment algorithms will use this distance
   /// to find neighboring agents.
   /// If set to its default value (0), the simulation engine determines the
   /// interaction_radius automatically based on the largest agent in the
   /// simulation.
-  /// \see Environment 
+  /// \see Environment
   real_t interaction_radius = 0;
 
   /// Define the boundary condition of the diffusion grid [open, closed]\n

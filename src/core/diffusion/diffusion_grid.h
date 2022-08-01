@@ -23,10 +23,10 @@
 
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
+#include "core/simulation_space.h"
 #include "core/util/log.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
-#include "core/simulation_space.h"
 
 namespace bdm {
 
@@ -242,10 +242,10 @@ class DiffusionGrid {
   /// copy of local simulation space to detect growth
   MathArray<int32_t, 6> local_sim_space_;
 
-  /// Determine if the simulation space has grown since the last time 
+  /// Determine if the simulation space has grown since the last time
   /// the diffusion grid was updated.
   bool HasSimSpaceGrown() const;
-  
+
   BDM_CLASS_DEF(DiffusionGrid, 2);
 };
 

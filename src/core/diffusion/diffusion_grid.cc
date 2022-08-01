@@ -14,8 +14,8 @@
 
 #include "core/diffusion/diffusion_grid.h"
 #include <mutex>
-#include "core/simulation_space.h"
 #include "core/simulation.h"
+#include "core/simulation_space.h"
 #include "core/util/log.h"
 
 namespace bdm {
@@ -31,8 +31,10 @@ void DiffusionGrid::Initialize() {
   auto* space = Simulation::GetActive()->GetSimulationSpace();
   auto local_sim_space_ = space->GetLocalSpace();
 
-  auto min = *std::min_element(local_sim_space_.begin(), local_sim_space_.end());
-  auto max = *std::max_element(local_sim_space_.begin(), local_sim_space_.end());
+  auto min =
+      *std::min_element(local_sim_space_.begin(), local_sim_space_.end());
+  auto max =
+      *std::max_element(local_sim_space_.begin(), local_sim_space_.end());
   grid_dimensions_ = {min, max};
 
   // Example: diffusion grid dimensions from 0-40 and resolution
@@ -99,8 +101,10 @@ void DiffusionGrid::Update() {
   auto* space = Simulation::GetActive()->GetSimulationSpace();
   local_sim_space_ = space->GetLocalSpace();
   // Update the grid dimensions
-  auto min = *std::min_element(local_sim_space_.begin(), local_sim_space_.end());
-  auto max = *std::max_element(local_sim_space_.begin(), local_sim_space_.end());
+  auto min =
+      *std::min_element(local_sim_space_.begin(), local_sim_space_.end());
+  auto max =
+      *std::max_element(local_sim_space_.begin(), local_sim_space_.end());
   grid_dimensions_ = {min, max};
 
   // Calculate new_dimension_length and new_resolution

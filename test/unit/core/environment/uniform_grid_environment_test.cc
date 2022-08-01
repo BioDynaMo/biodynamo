@@ -18,10 +18,10 @@
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/functor.h"
+#include "core/simulation_space.h"
 #include "gtest/gtest.h"
 #include "unit/core/count_neighbor_functor.h"
 #include "unit/test_util/test_util.h"
-#include "core/simulation_space.h"
 
 namespace bdm {
 
@@ -253,7 +253,7 @@ TEST(UniformGridEnvironmentTest, GetBoxIndex) {
   auto* space = simulation.GetSimulationSpace();
 
   space->SetInteractionRadius(30);
-  space->SetWholeSpace({0, 60, 0, 60, 0, 60});  
+  space->SetWholeSpace({0, 60, 0, 60, 0, 60});
 
   grid->Update();
 
@@ -305,7 +305,7 @@ TEST(UniformGridEnvironmentTest, GetBoxCoordinates) {
   auto* space = simulation.GetSimulationSpace();
 
   space->SetInteractionRadius(30);
-  space->SetWholeSpace({0, 60, 0, 60, 0, 60});  
+  space->SetWholeSpace({0, 60, 0, 60, 0, 60});
 
   // expecting a 4 * 4 * 4 grid
   grid->Update();

@@ -74,7 +74,7 @@ SpatialSTKDistributor::SpatialSTKDistributor()
                "The SpatialSTKDistributor currently requires the "
                "UniformGridEnvironment class. We detected a different "
                "Environment implementation.");
-  } 
+  }
   interaction_radius_ = space->GetInteractionRadius();
   whole_space_ = space->GetWholeSpace();
 

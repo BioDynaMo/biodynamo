@@ -131,7 +131,7 @@ void UniformGridEnvironment::UpdateImplementation() {
     if (r != 0) {
       // std::abs for the case that box_length_ > dimension_length
       grid_dimensions_[2 * i + 1] += (box_length_ - r);
-    } 
+    }
   }
 
   // Pad the grid to avoid out of bounds check when search neighbors

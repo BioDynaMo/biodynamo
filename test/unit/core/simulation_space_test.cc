@@ -14,9 +14,9 @@
 
 #include "core/simulation_space.h"
 #include <gtest/gtest.h>
-#include "unit/test_util/test_util.h"
 #include "core/agent/cell.h"
 #include "core/resource_manager.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 namespace simulation_space_test {

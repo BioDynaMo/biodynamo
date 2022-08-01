@@ -29,9 +29,9 @@
 #include "core/param/param.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
+#include "core/simulation_space.h"
 #include "core/util/math.h"
 #include "core/util/thread_info.h"
-#include "core/simulation_space.h"
 
 namespace bdm {
 
