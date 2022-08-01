@@ -21,9 +21,21 @@
 
 namespace bdm {
 
-/// This class contains the logic to define the simulation space and the
+/// This class contains the logic to determine the simulation space and the
 /// interaction radius of agents.
-// TODO(lukas) documentation
+/// These values can be defined in three ways:\n
+/// First, by setting `Param::bound_space`,
+/// `Param::min_bound`, `Param::max_bound` and `Param::interaction_radius`.
+/// Second, by using the member functions `SetWholeSpace` and
+/// `SetInteractionRadius`.
+/// Third, by determining the simulation space and interaction radius
+/// automatically, if `Param::bound_space == kOpen` and the first two options
+/// were not used.\n
+/// Automatic space: the mechanism iterates over all agents and determines min
+/// and max values for the x, y, and z dimension. Afterwards it subtracts the
+/// interaction radius from min and adds it to max.\n Automatic interaction
+/// radius: the mechanism iterates over all agents to find the largest one. The
+/// interaction radius is set to `2 * radius` of the largest agent.
 class SimulationSpace {
  public:
   using Space = MathArray<int32_t, 6>;
