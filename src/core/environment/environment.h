@@ -84,19 +84,6 @@ class Environment {
                                real_t squared_radius,
                                const Agent* query_agent = nullptr) = 0;
 
-  // FIXME remove
-  // virtual void Clear() = 0;
-  // 
-  // virtual std::array<int32_t, 6> GetDimensions() const = 0;
-  // 
-  // virtual std::array<int32_t, 2> GetDimensionThresholds() const = 0;
-  // 
-  // /// Return the size of the largest agent
-  // real_t GetLargestAgentSize() const { return largest_object_size_; };
-  // real_t GetLargestAgentSizeSquared() const {
-  //   return largest_object_size_squared_;
-  // };
-
   virtual LoadBalanceInfo* GetLoadBalanceInfo() = 0;
 
   /// This class ensures thread-safety for the case
@@ -121,16 +108,7 @@ class Environment {
   /// `NeighborMutex`.
   virtual NeighborMutexBuilder* GetNeighborMutexBuilder() = 0;
 
-  // FIXME remove
-  // bool HasGrown() const { return has_grown_; }
-
  protected:
-  // FIXME remove
-  // bool has_grown_ = false;
-  // /// The size of the largest object in the simulation
-  // real_t largest_object_size_ = 0.0;
-  // real_t largest_object_size_squared_ = 0.0;
-
   /// Member function that is called by Update() and ForcedUpdate(). Pure
   /// virtual.
   virtual void UpdateImplementation() = 0;

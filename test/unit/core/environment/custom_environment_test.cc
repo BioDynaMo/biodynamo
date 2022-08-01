@@ -29,17 +29,6 @@ class MyEnvironment : public Environment {
     std::string city;
   };
 
-  // FIXME remove
-  // void Clear() override {}
-  // 
-  // std::array<int32_t, 6> GetDimensions() const override {
-  //   return {0, 0, 0, 0, 0, 0};
-  // }
-  // 
-  // std::array<int32_t, 2> GetDimensionThresholds() const override {
-  //   return {0, 0};
-  // }
-
   LoadBalanceInfo* GetLoadBalanceInfo() override {
     Log::Fatal(
         "MyEnvironment::GetLoadBalanceInfo",

@@ -329,11 +329,6 @@ TEST(UniformGridEnvironmentTest, NonEmptyBoundedTestThresholdDimensions) {
   rm->AddAgent(new Cell(10));
 
   env->ForcedUpdate();
-
-  // FIXME
-  // auto max_dimensions = env->GetDimensionThresholds();
-  // EXPECT_EQ(1, max_dimensions[0]);
-  // EXPECT_EQ(99, max_dimensions[1]);
 }
 
 struct TestFunctor : public Functor<void, Agent*, real_t> {

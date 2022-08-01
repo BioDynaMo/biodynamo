@@ -48,7 +48,9 @@ class SpatialSTKDistributor : public Distributor {
   stk::mesh::BulkData bulk_;
   stk::mesh::Field<int>* proc_owner_ = nullptr;
   stk::mesh::Field<float>* weights_ = nullptr;
-  int32_t box_length_ = 1;
+  MathArray<int, 6> whole_space_;
+  int32_t interaction_radius_;
+  int32_t box_length_;
 
  public:
   SpatialSTKDistributor();
@@ -72,18 +74,9 @@ SpatialSTKDistributor::SpatialSTKDistributor()
                "The SpatialSTKDistributor currently requires the "
                "UniformGridEnvironment class. We detected a different "
                "Environment implementation.");
-  } else {
-    box_length_ = env->GetBoxLength();
-  }
-  // FIXME add logic to detect if whole simulation space changed
-  // if (!env->IsSimSizeDetermined()) {
-  //   Log::Fatal(
-  //       "SpatialSTKDistributor",
-  //       "The SpatialSTKDistributor currently only supports fixed simulation "
-  //       "spaces that do not change during the simulation.\nSet "
-  //       "UniformGridEnvironment::SetDetermineSimSize(false) and set "
-  //       "Param::min_bound and Param::max_bound");
-  // }
+  } 
+  interaction_radius_ = space->GetInteractionRadius();
+  whole_space_ = space->GetWholeSpace();
 
   // setup fields
   float init_weight = 1.0;
@@ -108,7 +101,6 @@ void SpatialSTKDistributor::InitializeMesh() {
   std::stringstream sstream;
   auto* param = Simulation::GetActive()->GetParam();
 
-  // box length
   auto* sim = Simulation::GetActive();
   auto* env = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
   auto* dparam = sim->GetParam()->Get<DistributionParam>();
