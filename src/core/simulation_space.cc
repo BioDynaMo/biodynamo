@@ -270,9 +270,11 @@ void SimulationSpace::Update() {
     if (!fixed_space_) {
       RoundOffSpaceDimensions(tmp_dim);
     }
-    for (int i = 0; i < 3; i++) {
-      whole_space_[2 * i] -= interaction_radius_;
-      whole_space_[2 * i + 1] += interaction_radius_;
+    if (!fixed_space_) {
+      for (int i = 0; i < 3; i++) {
+        whole_space_[2 * i] -= interaction_radius_;
+        whole_space_[2 * i + 1] += interaction_radius_;
+      }
     }
 
     initialized_ = true;

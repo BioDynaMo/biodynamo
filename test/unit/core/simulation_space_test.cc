@@ -132,7 +132,7 @@ TEST(SimulationSpace, AutomaticSpaceAndInteractionRadius) {
 
   space->Update();
 
-  MathArray<int32_t, 6> expected_space = {{0, 40, 0, 40, 0, 40}};
+  MathArray<int32_t, 6> expected_space = {{-30, 70, -30, 70, -30, 70}};
 
   EXPECT_EQ(expected_space, space->GetLocalSpace());
   EXPECT_EQ(30, space->GetInteractionRadius());
@@ -145,7 +145,7 @@ TEST(SimulationSpace, AutomaticSpaceAndInteractionRadius) {
 
   // check if the values have been updated based on the modified agent
   // attributes
-  expected_space = {{0, 100, -12, 40, 0, 40}};
+  expected_space = {{-40, 140, -52, 80, -40, 80}};
   EXPECT_EQ(expected_space, space->GetLocalSpace());
   EXPECT_EQ(40, space->GetInteractionRadius());
   EXPECT_EQ(1600, space->GetInteractionRadiusSquared());
@@ -162,7 +162,7 @@ TEST(SimulationSpace, AutomaticSpaceFixedInteractionRadius) {
 
   space->Update();
 
-  MathArray<int32_t, 6> expected_space = {{0, 40, 0, 40, 0, 40}};
+  MathArray<int32_t, 6> expected_space = {{-10, 50, -10, 50, -10, 50}};
 
   EXPECT_EQ(expected_space, space->GetLocalSpace());
   EXPECT_EQ(10, space->GetInteractionRadius());
@@ -175,7 +175,7 @@ TEST(SimulationSpace, AutomaticSpaceFixedInteractionRadius) {
 
   // check if the values have been updated based on the modified agent
   // attributes
-  expected_space = {{0, 100, -12, 40, 0, 40}};
+  expected_space = {{-10, 110, -22, 50, -10, 50}};
   EXPECT_EQ(expected_space, space->GetLocalSpace());
   EXPECT_EQ(10, space->GetInteractionRadius());
   EXPECT_EQ(100, space->GetInteractionRadiusSquared());
@@ -220,7 +220,7 @@ TEST(SimulationSpace, AutomaticSpaceAndInteractionRadius_EmptySim) {
 
   space->Update();
 
-  MathArray<int32_t, 6> expected_space = {{0, 40, 0, 40, 0, 40}};
+  MathArray<int32_t, 6> expected_space = {{-30, 70, -30, 70, -30, 70}};
 
   EXPECT_EQ(expected_space, space->GetLocalSpace());
   EXPECT_EQ(30, space->GetInteractionRadius());

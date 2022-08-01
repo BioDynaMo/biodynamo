@@ -116,69 +116,23 @@ void UniformGridEnvironment::UpdateImplementation() {
   timestamp_++;
 
   auto* param = Simulation::GetActive()->GetParam();
-  // FIXME remove
-  // if (determine_sim_size_) {
-  //   auto inf = Math::kInfinity;
-  //   std::array<real_t, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-  //   CalcSimDimensionsAndLargestAgent(&tmp_dim);
-  //   RoundOffGridDimensions(tmp_dim);
-  // } else {
-  //   grid_dimensions_[0] = static_cast<int>(floor(param->min_bound));
-  //   grid_dimensions_[2] = static_cast<int>(floor(param->min_bound));
-  //   grid_dimensions_[4] = static_cast<int>(floor(param->min_bound));
-  //   grid_dimensions_[1] = static_cast<int>(ceil(param->max_bound));
-  //   grid_dimensions_[3] = static_cast<int>(ceil(param->max_bound));
-  //   grid_dimensions_[5] = static_cast<int>(ceil(param->max_bound));
-  // }
   auto* space = Simulation::GetActive()->GetSimulationSpace();
   space->Update();
   grid_dimensions_ = space->GetLocalSpace();
   box_length_ = ceil(space->GetInteractionRadius());
   box_length_squared_ = box_length_ * box_length_;
 
-  // FIXME remove
-  // // If the box_length_ is not set manually, we set it to the largest agent
-  // // size
-  // if (!is_custom_box_length_ && determine_sim_size_) {
-  //   auto los = ceil(GetLargestAgentSize());
-  //   assert(los > 0 &&
-  //          "The largest object size was found to be 0. Please check if your "
-  //          "cells are correctly initialized.");
-  //   box_length_ = los;
-  // } else if (!is_custom_box_length_ && !determine_sim_size_) {
-  //   Log::Fatal("UniformGridEnvironment",
-  //              "No box length specified although determine_sim_size_ is "
-  //              "set to false. Call the member function "
-  //              "SetBoxLength(box_length), or SetDetermineSimSize(false).");
-  // }
-  // box_length_squared_ = box_length_ * box_length_;
-  // 
-  // if (!determine_sim_size_) {
-  //   this->largest_object_size_ = box_length_;
-  //   this->largest_object_size_squared_ = box_length_squared_;
-  // }
-  std::cout << "UG1 " << grid_dimensions_ << std::endl;
-
   for (int i = 0; i < 3; i++) {
     int dimension_length =
         grid_dimensions_[2 * i + 1] - grid_dimensions_[2 * i];
     int r = dimension_length % box_length_;
-    std::cout << "  " << i << " " << r << std::endl;
     // If the grid is not perfectly divisible along each dimension by the
     // resolution, extend the grid so that it is
     if (r != 0) {
       // std::abs for the case that box_length_ > dimension_length
       grid_dimensions_[2 * i + 1] += (box_length_ - r);
     } 
-    // FIXME remove
-    // else {
-    //   // Else extend the grid dimension with one row, because the outmost
-    //   // object lies exactly on the border
-    //   grid_dimensions_[2 * i + 1] += box_length_;
-    // }
   }
-  
-  std::cout << "UG2 " << grid_dimensions_ << std::endl;
 
   // Pad the grid to avoid out of bounds check when search neighbors
   for (int i = 0; i < 3; i++) {
@@ -186,8 +140,6 @@ void UniformGridEnvironment::UpdateImplementation() {
     grid_dimensions_[2 * i + 1] += box_length_;
   }
 
-  std::cout << "UG3 " << grid_dimensions_ << std::endl;
-  //
   // Calculate how many boxes fit along each dimension
   for (int i = 0; i < 3; i++) {
     int dimension_length =
@@ -199,9 +151,6 @@ void UniformGridEnvironment::UpdateImplementation() {
 
   num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];
   total_num_boxes_ = num_boxes_xy_ * num_boxes_axis_[2];
-
-  // FIXME remove
-  // CheckGridGrowth();
 
   // resize boxes_
   if (boxes_.size() != total_num_boxes_) {
@@ -216,12 +165,6 @@ void UniformGridEnvironment::UpdateImplementation() {
   // Assign agents to boxes
   AssignToBoxesFunctor functor(this);
   rm->ForEachAgentParallel(param->scheduling_batch_size, functor);
-  // FIXME
-  // if (param->bound_space) {
-  //   int min = param->min_bound;
-  //   int max = param->max_bound;
-  //   // threshold_dimensions_ = {min, max};
-  // }
 
   if (param->thread_safety_mechanism ==
       Param::ThreadSafetyMechanism::kAutomatic) {

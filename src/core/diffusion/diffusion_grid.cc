@@ -29,15 +29,11 @@ void DiffusionGrid::Initialize() {
 
   // Get neighbor grid dimensions
   auto* space = Simulation::GetActive()->GetSimulationSpace();
-  auto bounds = space->GetLocalSpace();
+  auto local_sim_space_ = space->GetLocalSpace();
 
-  grid_dimensions_ = {bounds[0], bounds[1]};
-
-  // Pad the grid to avoid out of bounds checks
-  // for (int i = 0; i < 3; i++) {
-  //   grid_dimensions_[2 * i] -= resolution_;
-  //   grid_dimensions_[2 * i + 1] += resolution_;
-  // }
+  auto min = *std::min_element(local_sim_space_.begin(), local_sim_space_.end());
+  auto max = *std::max_element(local_sim_space_.begin(), local_sim_space_.end());
+  grid_dimensions_ = {min, max};
 
   // Example: diffusion grid dimensions from 0-40 and resolution
   // of 4. Resolution must be adjusted otherwise one data pointer will be
@@ -102,19 +98,10 @@ void DiffusionGrid::Update() {
   }
   auto* space = Simulation::GetActive()->GetSimulationSpace();
   local_sim_space_ = space->GetLocalSpace();
-  // Update the grid dimensions such that each dimension ranges from
-  grid_dimensions_ = {local_sim_space_[0], local_sim_space_[1]};
-
-  // // If the grid is not perfectly divisible along each dimension by the
-  // // box length, extend the grid so that it is
-  // int dimension_length = local_sim_space_[1] - local_sim_space_[0];
-  // for (int i = 0; i < 1; i++) {
-  //   int r = fmod(dimension_length, box_length_);
-  //   if (r > 1e-9) {
-  //     // std::abs for the case that box_length_ > dimension_length
-  //     grid_dimensions_[2 * i + 1] += (box_length_ - r);
-  //   }
-  // }
+  // Update the grid dimensions
+  auto min = *std::min_element(local_sim_space_.begin(), local_sim_space_.end());
+  auto max = *std::max_element(local_sim_space_.begin(), local_sim_space_.end());
+  grid_dimensions_ = {min, max};
 
   // Calculate new_dimension_length and new_resolution
   int new_dimension_length = grid_dimensions_[1] - grid_dimensions_[0];

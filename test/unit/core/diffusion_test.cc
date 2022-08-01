@@ -113,9 +113,9 @@ TEST(DiffusionTest, UpdateGrid) {
   EXPECT_EQ(-60, d_dims[0]);
   EXPECT_EQ(-60, d_dims[2]);
   EXPECT_EQ(-60, d_dims[4]);
-  EXPECT_EQ(210, d_dims[1]);
-  EXPECT_EQ(210, d_dims[3]);
-  EXPECT_EQ(210, d_dims[5]);
+  EXPECT_EQ(180, d_dims[1]);
+  EXPECT_EQ(180, d_dims[3]);
+  EXPECT_EQ(180, d_dims[5]);
 
   delete dgrid;
 }
@@ -142,9 +142,9 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   EXPECT_EQ(-40, dims[0]);
   EXPECT_EQ(-40, dims[2]);
   EXPECT_EQ(-40, dims[4]);
-  EXPECT_EQ(140, dims[1]);
-  EXPECT_EQ(140, dims[3]);
-  EXPECT_EQ(140, dims[5]);
+  EXPECT_EQ(120, dims[1]);
+  EXPECT_EQ(120, dims[3]);
+  EXPECT_EQ(120, dims[5]);
 
   dgrid->Update();
 
@@ -153,9 +153,9 @@ TEST(DiffusionTest, FalseUpdateGrid) {
   EXPECT_EQ(-40, dims[0]);
   EXPECT_EQ(-40, dims[2]);
   EXPECT_EQ(-40, dims[4]);
-  EXPECT_EQ(140, dims[1]);
-  EXPECT_EQ(140, dims[3]);
-  EXPECT_EQ(140, dims[5]);
+  EXPECT_EQ(120, dims[1]);
+  EXPECT_EQ(120, dims[3]);
+  EXPECT_EQ(120, dims[5]);
 
   delete dgrid;
 }
@@ -241,8 +241,8 @@ TEST(DiffusionTest, CopyOldData) {
   real_t gradient_z_top = grad_1[3 * dgrid->GetBoxIndex(top) + 2];
 
   // Grow grid artificially
-  param->min_bound = -140;
-  param->max_bound = 140;
+  auto* space = simulation.GetSimulationSpace();
+  space->SetWholeSpace({-140, 140, -140, 140, -140, 140});
   simulation.GetEnvironment()->ForcedUpdate();
   dgrid->Update();
 
@@ -758,6 +758,7 @@ TEST(DiffusionTest, GradientComputation) {
   // Compute the gradient the scalar field.
   ModelInitializer::InitializeSubstance(0, scalar_field);
   simulation.GetScheduler()->Simulate(1);
+
   d_grid->CalculateGradient();
 
   // Define a few dummy positions where to evaluate the gradient
