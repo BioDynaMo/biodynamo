@@ -14,6 +14,8 @@
 
 #include "core/distribution/distributor.h"
 
+#ifdef USE_DSE
+
 #include "core/distribution/distribution_param.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/simulation.h"
@@ -138,3 +140,26 @@ Distributor* CreateDistributor(DistributorType type) {
 
 }  // namespace experimental
 }  // namespace bdm
+
+#else
+
+#include "core/util/log.h"
+
+namespace bdm {
+namespace experimental {
+
+Distributor::Distributor() {}
+Distributor::~Distributor() {}
+
+Distributor* CreateDistributor(DistributorType type) {
+  Log::Fatal("CreateDistributor",
+             "BioDynaMo was compiled without support for distributed "
+             "execution.\nTo enable this features add the following argument "
+             "to the cmake call: '-Ddse=on'");
+  return nullptr;
+}
+
+}  // namespace experimental
+}  // namespace bdm
+
+#endif  // USE_DSE

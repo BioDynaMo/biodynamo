@@ -312,6 +312,7 @@ if (dse)
   message(STATUS "Found Trilinos ${Trilinos_VERSION} in directory: ${Trilinos_DIR}")
   include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS} ${Trilinons_TPL_LIBRARY_DIRS})
+  add_definitions("-DUSE_DSE")
   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${Trilinos_LIBRARIES} ${Trilinons_TPL_LIBRARIES})
 endif()
 

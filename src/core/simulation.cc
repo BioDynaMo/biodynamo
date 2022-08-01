@@ -381,10 +381,14 @@ void Simulation::InitializeMembers() {
   int num_ranks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
   if (num_ranks > 1) {
+#ifdef USE_DSE
     distributor_ = experimental::CreateDistributor(
         experimental::DistributorType::kSpatialSTK);
     Param::RegisterParamGroup(new experimental::DistributionParam());
     space_ = new DistributedSimSpace();
+#else
+    space_ = new SimulationSpace();
+#endif  // USE_DSE
   } else {
     space_ = new SimulationSpace();
   }
