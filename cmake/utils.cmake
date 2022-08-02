@@ -365,6 +365,13 @@ function(install_inside_build)
               DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/unit
               GLOB "*.h"
               )
+      # Copy distributed test files
+      add_copy_directory(copy_files_bdm
+              ${CMAKE_SOURCE_DIR}/test/distributed
+              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/distributed
+              GLOB "*.h"
+              )
+
       # gtest includes cannot be copied using this methiod, because the files
       # don't exist yet. See install step of gtest
       add_copy_directory(copy_files_bdm

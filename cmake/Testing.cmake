@@ -81,31 +81,35 @@ add_custom_target(coverage-build
 
 
 function(bdm_add_test_executable TEST_TARGET)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES" ${ARGN} )
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LIBRARIES;NUM_MPI_RANKS;VALGRIND_TEST_FILTER" ${ARGN} )
   # create test executable
   bdm_add_executable(${TEST_TARGET}
                      SOURCES ${ARG_SOURCES}
                      HEADERS ${ARG_HEADERS}
                      LIBRARIES biodynamo libgtest ${ARG_LIBRARIES})
-  SET(BIODYNAMO_TEST_TARGET_NAME "${TEST_TARGET}" PARENT_SCOPE)
-
+  set(BDM_MPIRUN "")
+  if (${ARG_NUM_MPI_RANKS} GREATER 1)
+    set(BDM_MPIRUN "mpirun -n ${ARG_NUM_MPI_RANKS}")
+  endif()
   # execute all tests with command: make test
-  add_test(NAME ${TEST_TARGET} COMMAND ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET})
+  add_test(NAME ${TEST_TARGET} COMMAND ${CMAKE_BINARY_DIR}/launcher.sh ${BDM_MPIRUN} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET})
 
   # add valgrind test
   if (valgrind AND VALGRIND_FOUND AND NOT coverage)
     # filter out tests that would take too long if tested under valgrind 
     add_test(NAME "valgrind_${TEST_TARGET}"
-      COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndForEachAgentParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*:FLAKY_ParaviewIntegrationTest*:AgentVectorTest.Equality:SchedulerTest::LoadAndBalanceAfterEnvironment)
-    add_custom_target(run-valgrind
-      COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndForEachAgentParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*:FLAKY_ParaviewIntegrationTest*:AgentVectorTest.Equality:SchedulerTest::LoadAndBalanceAfterEnvironment)
-    add_dependencies(run-valgrind biodynamo-unit-tests)
+      COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${BDM_MPIRUN} ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=${ARG_VALGRIND_TEST_FILTER})
+    add_custom_target(run-valgrind_${TEST_TARGET}
+      COMMAND  ${CMAKE_BINARY_DIR}/launcher.sh ${BDM_MPIRUN} ${CMAKE_SOURCE_DIR}/util/valgrind.sh ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET} -- --gtest_filter=${ARG_VALGRIND_TEST_FILTER})
+    add_dependencies(run-valgrind_${TEST_TARGET} biodynamo-unit-tests)
+
+    if (NOT TARGET run-valgrind)
+      add_custom_target(run-valgrind)
+    endif()
+    add_dependencies(run-valgrind run-valgrind_${TEST_TARGET})
   endif()
 
   add_dependencies(run-check ${TEST_TARGET})
-
-  # add target for system tests
-  add_custom_target(run-demos COMMAND ${CMAKE_SOURCE_DIR}/test/system-test.sh)
 
   add_custom_target("testbdmclean_${TEST_TARGET}" COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/CMakeFiles/${TEST_TARGET}.dir/cmake_clean.cmake")
   add_dependencies(testbdmclean "testbdmclean_${TEST_TARGET}")

@@ -688,24 +688,29 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
+
   # NB: Remove stdc++fs after switching to c++17  
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS}
-                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ${FS_LIB})
-  #   separate test binaries - each source file is compiled into a separate binary
-  # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
-  # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")
-  # foreach(file ${TEST_SOURCES})
-  #   get_filename_component(filename ${file} NAME_WE)
-  #   set(TEST_HEADER ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/${filename}.h)
-  #   if (NOT EXISTS ${TEST_HEADER})
-  #     set(TEST_HEADER ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h)
-  #   endif()
-  #   bdm_add_test_executable("runBiodynamoTests_${filename}"
-  #                           SOURCES ${file}
-  #                           HEADERS ${TEST_HEADER})
-  # endforeach()
+                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ${FS_LIB}
+                          NUM_MPI_RANKS 1
+                          VALGRIND_TEST_FILTER "-*DeathTest.*:IOTest.InvalidRead:SchedulerTest.Backup:ResourceManagerTest.SortAndForEachAgentParallel*:InlineVector*:NeuriteElementBehaviour.*:MechanicalInteraction.*:DiffusionTest.*Convergence*:FLAKY_ParaviewIntegrationTest*:AgentVectorTest.Equality:SchedulerTest::LoadAndBalanceAfterEnvironment")
+  
+  file(GLOB_RECURSE DISTRIBUTED_TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/distributed/*.cc
+                                             ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.cc)
+  file(GLOB_RECURSE DISTRIBUTED_TEST_HEADERS ${CMAKE_SOURCE_DIR}/test/distributed/*.h
+                                             ${CMAKE_SOURCE_DIR}/test/unit/test_util/*.h)
+  # NB: Remove stdc++fs after switching to c++17  
+  bdm_add_test_executable(biodynamo-distributed-tests
+                          SOURCES ${DISTRIBUTED_TEST_SOURCES}
+                          HEADERS ${DISTRIBUTED_TEST_HEADERS}
+                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ${FS_LIB}
+                          NUM_MPI_RANKS 2
+                          VALGRIND_TEST_FILTER "")
+
+  # add target for system tests
+  add_custom_target(run-demos COMMAND ${CMAKE_SOURCE_DIR}/test/system-test.sh)
 endif()
 
 if(OPENCL_FOUND OR CUDA_FOUND)
