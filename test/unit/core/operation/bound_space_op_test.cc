@@ -22,20 +22,22 @@ namespace bdm {
 // -----------------------------------------------------------------------------
 TEST(BoundSpaceOp, Torus) {
   Simulation sim(TEST_NAME);
+  sim.GetSimulationSpace()->SetWholeSpace({-10, 30, -10, 30, -10, 30});
 
   TestAgent a;
   a.SetPosition({-15, 0, 50});
-  ApplyBoundingBox(&a, Param::BoundSpaceMode::kTorus, -10, 30);
+  ApplyBoundingBox(&a, Param::BoundSpaceMode::kTorus);
   EXPECT_ARR_NEAR({25, 0, 10}, a.GetPosition());
 }
 
 // -----------------------------------------------------------------------------
 TEST(BoundSpaceOp, TorusDistanceLargerThanSim) {
   Simulation sim(TEST_NAME);
+  sim.GetSimulationSpace()->SetWholeSpace({-10, 30, -10, 30, -10, 30});
 
   TestAgent a;
   a.SetPosition({-200, 0, 150});
-  ApplyBoundingBox(&a, Param::BoundSpaceMode::kTorus, -10, 30);
+  ApplyBoundingBox(&a, Param::BoundSpaceMode::kTorus);
   EXPECT_ARR_NEAR({0, 0, -10}, a.GetPosition());
 }
 

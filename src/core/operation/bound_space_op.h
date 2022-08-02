@@ -20,18 +20,22 @@
 #include "core/operation/operation_registry.h"
 #include "core/param/param.h"
 #include "core/simulation.h"
+#include "core/simulation_space.h"
 
 namespace bdm {
 
-inline void ApplyBoundingBox(Agent* agent, Param::BoundSpaceMode mode,
-                             real_t lb, real_t rb) {
+inline void ApplyBoundingBox(Agent* agent, Param::BoundSpaceMode mode) {
   // Need to create a small distance from the positive edge of each dimension;
   // otherwise it will fall out of the boundary of the simulation space
   real_t eps = 1e-10;
   auto pos = agent->GetPosition();
+  auto* space = Simulation::GetActive()->GetSimulationSpace();
+  const auto& whole_space = space->GetWholeSpace();
   if (mode == Param::BoundSpaceMode::kClosed) {
     bool updated = false;
     for (int i = 0; i < 3; i++) {
+      auto lb = whole_space[2 * i];
+      auto rb = whole_space[2 * i + 1];
       if (pos[i] < lb) {
         pos[i] = lb;
         updated = true;
@@ -44,8 +48,11 @@ inline void ApplyBoundingBox(Agent* agent, Param::BoundSpaceMode mode,
       agent->SetPosition(pos);
     }
   } else if (mode == Param::BoundSpaceMode::kTorus) {
-    auto length = rb - lb;
-    for (auto& el : pos) {
+    for (int i = 0; i < 3; i++) {
+      auto& el = pos[i];
+      auto lb = whole_space[2 * i];
+      auto rb = whole_space[2 * i + 1];
+      auto length = rb - lb;
       if (el < lb) {
         auto d = std::abs(lb - el);
         if (d > length) {
@@ -72,8 +79,7 @@ struct BoundSpace : public AgentOperationImpl {
   void operator()(Agent* agent) override {
     auto* param = Simulation::GetActive()->GetParam();
     if (param->bound_space) {
-      ApplyBoundingBox(agent, param->bound_space, param->min_bound,
-                       param->max_bound);
+      ApplyBoundingBox(agent, param->bound_space);
     }
   }
 };

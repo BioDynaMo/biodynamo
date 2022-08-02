@@ -227,8 +227,7 @@ void MechanicalForcesOpOpenCL::operator()() {
     new_pos[2] = cell_movements[idx][2];
     cell->UpdatePosition(new_pos);
     if (param->bound_space) {
-      ApplyBoundingBox(agent, param->bound_space, param->min_bound,
-                       param->max_bound);
+      ApplyBoundingBox(agent, param->bound_space);
     }
   });
 }
