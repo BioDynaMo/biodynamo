@@ -382,10 +382,9 @@ void Simulation::InitializeMembers() {
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
   if (num_ranks > 1) {
 #ifdef USE_DSE
+    space_ = new DistributedSimSpace();
     distributor_ = experimental::CreateDistributor(
         experimental::DistributorType::kSpatialSTK);
-    Param::RegisterParamGroup(new experimental::DistributionParam());
-    space_ = new DistributedSimSpace();
 #else
     space_ = new SimulationSpace();
 #endif  // USE_DSE
@@ -428,6 +427,10 @@ void Simulation::InitializeRuntimeParams(
   std::stringstream sstr;
   sstr << (*clo);
   command_line_parameter_str_ = sstr.str();
+
+#ifdef USE_DSE
+  Param::RegisterParamGroup(new experimental::DistributionParam());
+#endif
 
   param_ = new Param();
 

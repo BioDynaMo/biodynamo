@@ -50,9 +50,11 @@ class SpatialSTKDistributor : public Distributor {
   stk::mesh::BulkData bulk_;
   stk::mesh::Field<int>* proc_owner_ = nullptr;
   stk::mesh::Field<float>* weights_ = nullptr;
-  MathArray<int, 6> whole_space_;
   int32_t interaction_radius_;
   int32_t box_length_;
+  // copy to determine if it was changed during the simulation.
+  SimulationSpace::Space whole_space_;
+  MathArray<int, 3> num_boxes_axis_;
 
  public:
   SpatialSTKDistributor();
@@ -61,6 +63,10 @@ class SpatialSTKDistributor : public Distributor {
  private:
   void InitializeMesh();
   void UpdateProcOwnerField();
+  void UpdateLocalSpace();
+  SimulationSpace::Space BoxToSpaceCoordinates(
+      const MathArray<int, 6>& box_space) const;
+  SimulationSpace::Space GetBoxCoordinates(size_t id) const;
 };
 
 // -----------------------------------------------------------------------------
@@ -101,17 +107,36 @@ SpatialSTKDistributor::~SpatialSTKDistributor() {}
 // -----------------------------------------------------------------------------
 void SpatialSTKDistributor::InitializeMesh() {
   std::stringstream sstream;
-  auto* param = Simulation::GetActive()->GetParam();
-
   auto* sim = Simulation::GetActive();
   auto* env = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
+  auto* space = dynamic_cast<DistributedSimSpace*>(sim->GetSimulationSpace());
   auto* dparam = sim->GetParam()->Get<DistributionParam>();
 
-  box_length_ = env->GetBoxLength() * dparam->box_length_factor;
-  int maxx, maxy, maxz;
-  maxx = maxy = maxz = 9;
-  sstream << "generated:" << maxx << "x" << maxy << "x" << maxz;
+  if (!env) {
+    Log::Fatal("SpatialSTKDistributor",
+               "The SpatialSTKDistributor currently only works in conjunction "
+               "with the UniformGridEnvironment");
+  }
+  if (!space) {
+    Log::Fatal("SpatialSTKDistributor",
+               "The SpatialSTKDistributor requires a DistributedSimSpace.");
+  }
+  box_length_ = space->GetInteractionRadius() * dparam->box_length_factor;
+
+  whole_space_ = space->GetWholeSpace();
+  // Calculate how many boxes fit along each dimension
+  for (int i = 0; i < 3; i++) {
+    int dimension_length = whole_space_[2 * i + 1] - whole_space_[2 * i];
+    assert((dimension_length % box_length_ == 0) &&
+           "The grid dimensions are not a multiple of its box length");
+    num_boxes_axis_[i] = dimension_length / box_length_;
+  }
+
+  sstream << "generated:" << num_boxes_axis_[0] << "x" << num_boxes_axis_[1]
+          << "x" << num_boxes_axis_[2];
   stk::io::fill_mesh(sstream.str(), bulk_);
+
+  UpdateLocalSpace();
 }
 
 // -----------------------------------------------------------------------------
@@ -124,6 +149,81 @@ void SpatialSTKDistributor::UpdateProcOwnerField() {
     auto* data = stk::mesh::field_data(*proc_owner_, element);
     *data = bulk_.parallel_rank();
   }
+}
+
+// -----------------------------------------------------------------------------
+SimulationSpace::Space SpatialSTKDistributor::GetBoxCoordinates(
+    size_t id) const {
+  id--;
+  SimulationSpace::Space box_coord;
+  auto num_boxes_xy_ = num_boxes_axis_[0] * num_boxes_axis_[1];  // FIXME cache
+  box_coord[2] = id / num_boxes_xy_;
+  auto remainder = id % num_boxes_xy_;
+  box_coord[1] = remainder / num_boxes_axis_[0];
+  box_coord[0] = remainder % num_boxes_axis_[0];
+  return box_coord;
+}
+
+// -----------------------------------------------------------------------------
+void SpatialSTKDistributor::UpdateLocalSpace() {
+  auto min = std::numeric_limits<int>::min();
+  auto max = std::numeric_limits<int>::max();
+  MathArray<int, 6> local_box_coord = {max, min, max, min, max, min};
+
+  auto* coords = meta_.coordinate_field();
+  stk::mesh::EntityVector elements;
+  stk::mesh::get_entities(bulk_, stk::topology::ELEM_RANK,
+                          meta_.locally_owned_part(), elements);
+
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  for (const stk::mesh::Entity& element : elements) {
+    // auto coord = static_cast<double*>(stk::mesh::field_data(*coords,
+    // element));
+    auto id = bulk_.identifier(element);
+    auto coord = GetBoxCoordinates(id);
+    for (int i = 0; i < 3; ++i) {
+      if (coord[i] < local_box_coord[2 * i]) {
+        local_box_coord[2 * i] = coord[i];
+      }
+      if (coord[i] > local_box_coord[2 * i + 1]) {
+        local_box_coord[2 * i + 1] = coord[i];
+      }
+    }
+  }
+
+  // since we are interested in the space enclosing all boxes add 1 in each
+  // dimension
+  local_box_coord[1]++;
+  local_box_coord[3]++;
+  local_box_coord[5]++;
+
+  auto local_space = BoxToSpaceCoordinates(local_box_coord);
+  auto* space = dynamic_cast<DistributedSimSpace*>(
+      Simulation::GetActive()->GetSimulationSpace());
+  if (!space) {
+    Log::Fatal("SpatialSTKDistributor",
+               "The SpatialSTKDistributor requires a DistributedSimSpace.");
+  }
+  space->SetLocalSpace(local_space);
+}
+
+// -----------------------------------------------------------------------------
+SimulationSpace::Space SpatialSTKDistributor::BoxToSpaceCoordinates(
+    const MathArray<int, 6>& box_space) const {
+  auto* space = dynamic_cast<DistributedSimSpace*>(
+      Simulation::GetActive()->GetSimulationSpace());
+  const auto& ws = space->GetWholeSpace();
+  SimulationSpace::Space ret_val = box_space * box_length_;
+  // add offset
+  ret_val[0] += ws[0];
+  ret_val[1] += ws[0];
+  ret_val[2] += ws[2];
+  ret_val[3] += ws[2];
+  ret_val[4] += ws[4];
+  ret_val[5] += ws[4];
+  return ret_val;
 }
 
 // -----------------------------------------------------------------------------

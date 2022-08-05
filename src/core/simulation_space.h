@@ -48,7 +48,7 @@ class SimulationSpace {
   virtual ~SimulationSpace();
 
   // Setting the whole simulation space will disable the automatic determination
-  void SetWholeSpace(Space space);
+  void SetWholeSpace(const Space& space);
 
   const Space& GetWholeSpace() const;
 
@@ -87,9 +87,16 @@ class SimulationSpace {
 };
 
 // FIXME move to separate file
-struct DistributedSimSpace : public SimulationSpace {
+class DistributedSimSpace : public SimulationSpace {
+ public:
   virtual ~DistributedSimSpace() {}
-  MathArray<double, 6> local_space;
+  virtual const Space& GetLocalSpace() const;
+  void SetLocalSpace(const SimulationSpace::Space& space);
+
+ private:
+  SimulationSpace::Space local_space_;
+
+  virtual void Update();
 };
 
 }  // namespace bdm

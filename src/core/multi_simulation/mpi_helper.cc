@@ -32,6 +32,11 @@ MPI *MPI::GetInstance() {
 
 // -----------------------------------------------------------------------------
 void MPI::Init(int *argc, char ***argv) {
+  int initialized;
+  MPI_Initialized(&initialized);
+  if (initialized) {
+    return;
+  }
   if (!init_counter_) {
     MPI_Init(argc, argv);
   }

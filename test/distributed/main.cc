@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ::testing::InitGoogleTest(&argc, argv);
   MPI_Init(&argc, &argv);
-  MPISetup();
+  // MPISetup();
 
   auto failed_cnt = RunAllTests();
 

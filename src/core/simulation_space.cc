@@ -49,7 +49,7 @@ SimulationSpace::SimulationSpace(const SimulationSpace& other)
 SimulationSpace::~SimulationSpace() {}
 
 // -----------------------------------------------------------------------------
-void SimulationSpace::SetWholeSpace(SimulationSpace::Space space) {
+void SimulationSpace::SetWholeSpace(const SimulationSpace::Space& space) {
   whole_space_ = space;
   fixed_space_ = true;
 }
@@ -297,6 +297,33 @@ void SimulationSpace::Update() {
   }
   // if there are no agents in the simulation and the simulation space is
   // initialized, keep the values from before
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+const SimulationSpace::Space& DistributedSimSpace::GetLocalSpace() const {
+  return local_space_;
+}
+
+// -----------------------------------------------------------------------------
+void DistributedSimSpace::SetLocalSpace(const SimulationSpace::Space& space) {
+  local_space_ = space;
+}
+
+// -----------------------------------------------------------------------------
+void DistributedSimSpace::Update() {
+  if (!SimulationSpace::fixed_space_) {
+    Log::Fatal("DistributedSimSpace",
+               "The current implementation of the distributed simulation "
+               "engine only supports fixed simulation space. See documentation "
+               "of class SimulationSpace");
+  }
+  if (!SimulationSpace::fixed_interaction_radius_) {
+    Log::Fatal("DistributedSimSpace",
+               "The current implementation of the distributed simulation "
+               "engine only supports fixed interaction radius. See "
+               "documentation of class SimulationSpace");
+  }
 }
 
 }  // namespace bdm
