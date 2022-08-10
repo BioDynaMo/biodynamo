@@ -21,6 +21,10 @@ namespace experimental {
 struct Distributor {
   Distributor();
   virtual ~Distributor();
+
+  /// Moves agents outside the local space to the process that owns
+  /// the corrsponding space
+  virtual void MigrateAgents() = 0;
 };
 
 // -----------------------------------------------------------------------------

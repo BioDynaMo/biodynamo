@@ -140,6 +140,8 @@ class Simulation {
   experimental::TimeSeries* GetTimeSeries();
 
   SimulationSpace* GetSimulationSpace();
+  
+  experimental::Distributor* GetDistributor();
 
   /// Replaces the scheduler for this simulation.
   /// Existing scheduler will be deleted! Therefore, pointers to the old

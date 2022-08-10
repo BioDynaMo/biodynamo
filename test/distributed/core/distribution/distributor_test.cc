@@ -14,12 +14,16 @@
 
 #include <gtest/gtest.h>
 #include <mpi.h>
+#include "core/resource_manager.h"
 #include "core/distribution/distribution_param.h"
+#include "core/distribution/distributor.h"
 #include "core/simulation.h"
 #include "core/simulation_space.h"
 #include "unit/test_util/test_util.h"
+#include "unit/test_util/test_agent.h"
 
 namespace bdm {
+namespace experimental {
 
 TEST(SpatialSTKDistributor, Initialize) {
   auto set_param = [](Param* param) {
@@ -27,7 +31,7 @@ TEST(SpatialSTKDistributor, Initialize) {
     param->min_bound = -10;
     param->max_bound = 20;
     param->interaction_radius = 5;
-    param->Get<experimental::DistributionParam>()->box_length_factor = 2;
+    param->Get<DistributionParam>()->box_length_factor = 2;
   };
 
   Simulation simulation(TEST_NAME, set_param);
@@ -48,4 +52,54 @@ TEST(SpatialSTKDistributor, Initialize) {
   }
 }
 
+// -----------------------------------------------------------------------------
+// Assumes that the space is partitioned like in SpatialSTKDistributor.Initialize
+TEST(SpatialSTKDistributor, MigrateAgents) {
+  auto set_param = [](Param* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -10;
+    param->max_bound = 20;
+    param->interaction_radius = 5;
+    param->Get<DistributionParam>()->box_length_factor = 2;
+  };
+
+  Simulation simulation(TEST_NAME, set_param);
+  auto* space = simulation.GetSimulationSpace();
+
+  SimulationSpace::Space expected_ws = {-10, 20, -10, 20, -10, 20};
+  EXPECT_EQ(expected_ws, space->GetWholeSpace());
+
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+  // in each rank create an agent outside the local space
+  if (rank == 0) {
+    auto* agent = new TestAgent({0, 0, 15});
+    agent->SetData(123); 
+    rm->AddAgent(agent);
+  } else {
+    auto* agent = new TestAgent({0, 0, 5});
+    agent->SetData(321); 
+    rm->AddAgent(agent);
+  }
+
+  simulation.GetDistributor()->MigrateAgents();
+
+  ASSERT_EQ(1, rm->GetNumAgents());
+
+  auto* agent = bdm_static_cast<TestAgent*>(rm->GetAgent(AgentHandle(0, 0)));
+  // verify that agents have been migrated to the right rank
+  if (rank == 0) {
+    EXPECT_EQ(321, agent->GetData());
+    Real3 expected_position = {0, 0, 5};
+    EXPECT_EQ(expected_position, agent->GetPosition());
+  } else {
+    EXPECT_EQ(123, agent->GetData());
+    Real3 expected_position = {0, 0, 15};
+    EXPECT_EQ(expected_position, agent->GetPosition());
+  }
+}
+
+}  // namespace experimental
 }  // namespace bdm

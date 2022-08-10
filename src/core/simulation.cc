@@ -309,6 +309,8 @@ experimental::TimeSeries* Simulation::GetTimeSeries() { return time_series_; }
 
 SimulationSpace* Simulation::GetSimulationSpace() { return space_; }
 
+experimental::Distributor* Simulation::GetDistributor() { return distributor_; }
+
 void Simulation::ReplaceScheduler(Scheduler* scheduler) {
   delete scheduler_;
   scheduler_ = scheduler;
