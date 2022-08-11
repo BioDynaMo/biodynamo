@@ -270,10 +270,18 @@ void SpatialSTKDistributor::MigrateAgents() {
   rm->ForEachAgentParallel(param->scheduling_batch_size, fea); 
 
   // send/receive agents
+  
 
   // remove agents from this rank
+  // FIXME parallelize
+  for (auto& el : migrations) {
+    for (auto* agent : el.second) {
+      rm->RemoveAgent(agent->GetUid());
+    }
+  }
 
   // add new agents
+  // FIXME parallelize
 }
 
 // -----------------------------------------------------------------------------
