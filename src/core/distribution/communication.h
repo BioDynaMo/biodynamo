@@ -12,23 +12,39 @@
 //
 // -----------------------------------------------------------------------------
 
-#ifndef CORE_DISTRIBUTION_DISTRIBUTION_PARAM_H_
-#define CORE_DISTRIBUTION_DISTRIBUTION_PARAM_H_
+#ifndef CORE_DISTRIBUTION_COMMUNICATION_H__
+#define CORE_DISTRIBUTION_COMMUNICATION_H__
 
-#include "core/param/param_group.h"
+#ifdef USE_DSE
+
+#include <mpi.h>
+#include <unordered_map>
+#include <vector>
+#include <set>
 
 namespace bdm {
+
+class Agent;
+
 namespace experimental {
 
-struct DistributionParam : public ParamGroup {
-  BDM_PARAM_GROUP_HEADER(DistributionParam, 1);
-  /// The box length of the distributed mesh is determined by
-  /// multiplying the UniformGridEnvironment::box_length_ with
-  /// the box length factor
-  unsigned box_length_factor = 10;
-};
+// -----------------------------------------------------------------------------
+void SendReceive(MPI_Comm comm, const std::set<int>& neighbor_ranks, 
+    const std::unordered_map<int, std::vector<Agent*>>& migrate_out, 
+    std::unordered_map<int, std::vector<Agent*>>* migrate_in
+    );
+
+// -----------------------------------------------------------------------------
+void SendReceive(
+ MPI_Comm comm, 
+ const std::set<int>& neighbor_ranks,
+ const std::unordered_map<int, std::pair<char*, uint64_t>>& send,
+ std::unordered_map<int, std::pair<char*, uint64_t>>* receive);
 
 }  // namespace experimental
 }  // namespace bdm
 
-#endif  // CORE_DISTRIBUTION_DISTRIBUTION_PARAM_H_
+
+#endif   // USE_DSE
+
+#endif  // CORE_DISTRIBUTION_COMMUNICATION_H__

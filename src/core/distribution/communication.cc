@@ -16,55 +16,90 @@
 
 #include "stk_util/parallel/CommNeighbors.hpp"
 
+#ifdef USE_DSE
+
+#include "core/multi_simulation/mpi_helper.h"
+
 namespace bdm {
 namespace experimental {
 
-void SendReceive(
- MPI_Comm comm, 
- const std::vector<int>& neighbor_ranks,
- const std::unordered_map<int, std::pair<unsigned char*, uint64_t>>& send,
- std::unordered_map<int, std::pair<unsigned char*, uint64_t>>* receive
+// -----------------------------------------------------------------------------
+void SendReceive(MPI_Comm comm, const std::set<int>& neighbor_ranks, 
+    const std::unordered_map<int, std::vector<Agent*>>& migrate_out, 
+    std::unordered_map<int, std::vector<Agent*>>* migrate_in
     ) {
 
-  stk::CommNeighbors commNeighbors(comm, neighbor_ranks);
+  // serialize
+  std::vector<MPIObject*> tmp;
+  std::unordered_map<int, std::pair<char*, uint64_t>> out;
+  for(auto& el : migrate_out) {
+    auto* message = new MPIObject();
+    message->WriteObject(&el.second);
+    out.insert({el.first, {message->Buffer(), message->BufferSize()}});
+    tmp.push_back(message);
+  }
+
+  std::unordered_map<int, std::pair<char*, uint64_t>> in;
+  SendReceive(comm, neighbor_ranks, out, &in);
+
+  // deserialize
+  for(auto& el : in) {
+    MPIObject message(el.second.first, el.second.second);
+    auto* agent_vec = reinterpret_cast<std::vector<Agent*>*>(message.ReadObject(message.GetClass()));
+    // FIXME another copy
+    (*migrate_in)[el.first] = *agent_vec;
+  }
+  
+  // free memory
+  for(auto* message : tmp) {
+    delete message;
+  }
+}
+
+
+// -----------------------------------------------------------------------------
+void SendReceive(
+ MPI_Comm comm, 
+ const std::set<int>& neighbor_ranks,
+ const std::unordered_map<int, std::pair<char*, uint64_t>>& send,
+ std::unordered_map<int, std::pair<char*, uint64_t>>* receive
+    ) {
+
+  std::vector<int> neighbor_ranks_vec(neighbor_ranks.begin(), neighbor_ranks.end());
+  stk::CommNeighbors commNeighbors(comm, neighbor_ranks_vec);
 
   int my_rank = commNeighbors.parallel_rank();
 
   // send
   for (int proc : neighbor_ranks) {
     if (proc != my_rank) {
-      stk::CommBuffer& proc_buff = commNeighbors.send_buffer(proc);
+      stk::CommBufferV& proc_buff = commNeighbors.send_buffer(proc);
+      const auto& data = send.at(proc);
       // FIXME avoid copy
-      auto* dest = proc_buff.raw_buffer();
-      std::memcpy(dest, send[proc].first, sned[proc].second);
+      for(uint64_t i = 0; i < data.second; ++i) {
+        proc_buff.pack<char>(data.first[i]);
+      }
     }
   }
 
   commNeighbors.communicate();
 
   // receive
-  for (int procFromWhichDataIsReceived = 0;
-       procFromWhichDataIsReceived < numProcs; procFromWhichDataIsReceived++) {
-    if (procFromWhichDataIsReceived != me) {
-      stk::CommBuffer& dataReceived =
-          commNeighbors.recv_buffer(procFromWhichDataIsReceived);
-      int numItemsReceived = 0;
-      std::stringstream str;
-      str << "P" << me << " data received from "
-          << procFromWhichDataIsReceived << ": ";
-      while (dataReceived.remaining()) {
-        double val = -1;
-        dataReceived.unpack(val);
-        // EXPECT_EQ(100-procFromWhichDataIsReceived+numItemsReceived, val);
-        str << val << ", ";
-        numItemsReceived++;
-      }
-      int goldNumItemsReceived = procFromWhichDataIsReceived;
-      EXPECT_EQ(goldNumItemsReceived, numItemsReceived);
-      std::cout << str.str() << std::endl;
-    }
+  for (int proc : neighbor_ranks) {
+    stk::CommBufferV& proc_buff = commNeighbors.recv_buffer(proc);
+
+    auto size = proc_buff.size_in_bytes(); 
+    auto& pair = (*receive)[proc];
+    pair.second = size;
+    pair.first = new char[size];
+    
+    // FIXME copy
+    std::memcpy(pair.first, proc_buff.raw_buffer(), size);
   }
 }
 
 }  // namespace experimental
 }  // namespace bdm
+
+#endif  // USE_DSE
+

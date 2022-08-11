@@ -16,7 +16,10 @@
 
 #ifdef USE_DSE
 
+#include <set>
+
 #include "core/distribution/distribution_param.h"
+#include "core/distribution/communication.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
@@ -58,6 +61,9 @@ class SpatialSTKDistributor : public Distributor {
   MathArray<int, 3> num_boxes_axis_;
   /// Number of boxes in the xy plane for the whole simulation space
   uint64_t num_boxes_xy_;
+  /// Contains all MPI ranks of neighboring processors
+  /// i.e. processors that share an aura 
+  std::set<int> neighbor_ranks_;
 
  public:
   SpatialSTKDistributor();
@@ -69,6 +75,7 @@ class SpatialSTKDistributor : public Distributor {
   void InitializeMesh();
   void UpdateProcOwnerField();
   void UpdateLocalSpace();
+  void UpdateNeighborRanks();
   SimulationSpace::Space BoxToSpaceCoordinates(
       const MathArray<int, 6>& box_space) const;
   MathArray<int, 3> GetBoxCoordinates(size_t id) const;
@@ -145,6 +152,7 @@ void SpatialSTKDistributor::InitializeMesh() {
   stk::io::fill_mesh(sstream.str(), bulk_);
 
   UpdateLocalSpace();
+  UpdateNeighborRanks();
 }
 
 // -----------------------------------------------------------------------------
@@ -213,6 +221,19 @@ void SpatialSTKDistributor::UpdateLocalSpace() {
   space->SetLocalSpace(local_space);
 }
 
+void SpatialSTKDistributor::UpdateNeighborRanks() {
+  neighbor_ranks_.clear();
+
+  stk::mesh::EntityVector elements;
+  stk::mesh::get_entities(bulk_, stk::topology::ELEM_RANK,
+                          meta_.aura_part(), elements);
+
+  for (const stk::mesh::Entity& element : elements) {
+    auto neighbor = bulk_.parallel_owner_rank(element);
+    neighbor_ranks_.insert(neighbor);  
+  }
+}
+
 // -----------------------------------------------------------------------------
 SimulationSpace::Space SpatialSTKDistributor::BoxToSpaceCoordinates(
     const MathArray<int, 6>& box_space) const {
@@ -244,7 +265,8 @@ Distributor* CreateDistributor(DistributorType type) {
 
 // -----------------------------------------------------------------------------
 void SpatialSTKDistributor::MigrateAgents() {
-  std::unordered_map<int, std::vector<Agent*>> migrations;
+  std::unordered_map<int, std::vector<Agent*>> migrate_out;
+  std::unordered_map<int, std::vector<Agent*>> migrate_in;
   int me;
   MPI_Comm_rank(MPI_COMM_WORLD, &me);
 
@@ -261,7 +283,7 @@ void SpatialSTKDistributor::MigrateAgents() {
       // migrate agent 
       std::cout << "migrate agent " << agent->GetPosition() << std::endl;
 #pragma omp critical
-      migrations[owner].push_back(agent);
+      migrate_out[owner].push_back(agent);
     }
   });
   
@@ -270,11 +292,11 @@ void SpatialSTKDistributor::MigrateAgents() {
   rm->ForEachAgentParallel(param->scheduling_batch_size, fea); 
 
   // send/receive agents
-  
+  SendReceive(MPI_COMM_WORLD, neighbor_ranks_, migrate_out, &migrate_in); 
 
   // remove agents from this rank
   // FIXME parallelize
-  for (auto& el : migrations) {
+  for (auto& el : migrate_out) {
     for (auto* agent : el.second) {
       rm->RemoveAgent(agent->GetUid());
     }
@@ -282,6 +304,11 @@ void SpatialSTKDistributor::MigrateAgents() {
 
   // add new agents
   // FIXME parallelize
+  for (auto& el : migrate_in) {
+    for (auto* agent : el.second) {
+      rm->AddAgent(agent);
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------

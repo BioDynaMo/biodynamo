@@ -73,6 +73,7 @@ T* MPI_Recv_Obj_ROOT(int size, int source, int tag,
   MPIObject* mpio = new MPIObject(buf, size);
   T* obj = (T*)(mpio->ReadObject(mpio->GetClass()));
   free(buf);
+  // FIXME mpio is never freed
   return obj;
 }
 
