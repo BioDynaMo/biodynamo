@@ -12,15 +12,15 @@
 //
 // -----------------------------------------------------------------------------
 
+#include "core/distribution/distributor.h"
 #include <gtest/gtest.h>
 #include <mpi.h>
-#include "core/resource_manager.h"
 #include "core/distribution/distribution_param.h"
-#include "core/distribution/distributor.h"
+#include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "core/simulation_space.h"
-#include "unit/test_util/test_util.h"
 #include "unit/test_util/test_agent.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 namespace experimental {
@@ -53,7 +53,8 @@ TEST(SpatialSTKDistributor, Initialize) {
 }
 
 // -----------------------------------------------------------------------------
-// Assumes that the space is partitioned like in SpatialSTKDistributor.Initialize
+// Assumes that the space is partitioned like in
+// SpatialSTKDistributor.Initialize
 TEST(SpatialSTKDistributor, MigrateAgents) {
   auto set_param = [](Param* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
@@ -76,11 +77,11 @@ TEST(SpatialSTKDistributor, MigrateAgents) {
   // in each rank create an agent outside the local space
   if (rank == 0) {
     auto* agent = new TestAgent({0, 0, 15});
-    agent->SetData(123); 
+    agent->SetData(123);
     rm->AddAgent(agent);
   } else {
     auto* agent = new TestAgent({0, 0, 5});
-    agent->SetData(321); 
+    agent->SetData(321);
     rm->AddAgent(agent);
   }
 

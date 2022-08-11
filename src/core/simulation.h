@@ -140,7 +140,7 @@ class Simulation {
   experimental::TimeSeries* GetTimeSeries();
 
   SimulationSpace* GetSimulationSpace();
-  
+
   experimental::Distributor* GetDistributor();
 
   /// Replaces the scheduler for this simulation.

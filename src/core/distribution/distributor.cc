@@ -18,8 +18,8 @@
 
 #include <set>
 
-#include "core/distribution/distribution_param.h"
 #include "core/distribution/communication.h"
+#include "core/distribution/distribution_param.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
@@ -55,14 +55,15 @@ class SpatialSTKDistributor : public Distributor {
   stk::mesh::Field<float>* weights_ = nullptr;
   int32_t interaction_radius_;
   int32_t box_length_;
-  /// copy from SimulationSpace to determine if it was changed during the simulation.
+  /// copy from SimulationSpace to determine if it was changed during the
+  /// simulation.
   SimulationSpace::Space whole_space_;
   /// Number of boxes in each dimension for the whole simulation space
   MathArray<int, 3> num_boxes_axis_;
   /// Number of boxes in the xy plane for the whole simulation space
   uint64_t num_boxes_xy_;
   /// Contains all MPI ranks of neighboring processors
-  /// i.e. processors that share an aura 
+  /// i.e. processors that share an aura
   std::set<int> neighbor_ranks_;
 
  public:
@@ -168,8 +169,7 @@ void SpatialSTKDistributor::UpdateProcOwnerField() {
 }
 
 // -----------------------------------------------------------------------------
-MathArray<int, 3> SpatialSTKDistributor::GetBoxCoordinates(
-    size_t id) const {
+MathArray<int, 3> SpatialSTKDistributor::GetBoxCoordinates(size_t id) const {
   id--;
   MathArray<int, 3> box_coord;
   box_coord[2] = id / num_boxes_xy_;
@@ -225,12 +225,12 @@ void SpatialSTKDistributor::UpdateNeighborRanks() {
   neighbor_ranks_.clear();
 
   stk::mesh::EntityVector elements;
-  stk::mesh::get_entities(bulk_, stk::topology::ELEM_RANK,
-                          meta_.aura_part(), elements);
+  stk::mesh::get_entities(bulk_, stk::topology::ELEM_RANK, meta_.aura_part(),
+                          elements);
 
   for (const stk::mesh::Entity& element : elements) {
     auto neighbor = bulk_.parallel_owner_rank(element);
-    neighbor_ranks_.insert(neighbor);  
+    neighbor_ranks_.insert(neighbor);
   }
 }
 
@@ -273,26 +273,28 @@ void SpatialSTKDistributor::MigrateAgents() {
   auto fea = L2F([&](Agent* agent, AgentHandle) {
     auto box_coord = GetBoxCoordinates(agent->GetPosition());
     auto id = GetId(box_coord);
-    auto entity = bulk_.get_entity(stk::topology::ELEM_RANK, id); 
+    auto entity = bulk_.get_entity(stk::topology::ELEM_RANK, id);
     if (!entity.is_local_offset_valid()) {
       // FIXME documentation
-      Log::Error("SpatialSTKDistributor::MigrateAgents", "Found an agent outside the local simulation space and the aura.");
+      Log::Error(
+          "SpatialSTKDistributor::MigrateAgents",
+          "Found an agent outside the local simulation space and the aura.");
     }
     auto owner = bulk_.parallel_owner_rank(entity);
     if (me != owner) {
-      // migrate agent 
+      // migrate agent
       std::cout << "migrate agent " << agent->GetPosition() << std::endl;
 #pragma omp critical
       migrate_out[owner].push_back(agent);
     }
   });
-  
+
   auto* rm = Simulation::GetActive()->GetResourceManager();
   auto* param = Simulation::GetActive()->GetParam();
-  rm->ForEachAgentParallel(param->scheduling_batch_size, fea); 
+  rm->ForEachAgentParallel(param->scheduling_batch_size, fea);
 
   // send/receive agents
-  SendReceive(MPI_COMM_WORLD, neighbor_ranks_, migrate_out, &migrate_in); 
+  SendReceive(MPI_COMM_WORLD, neighbor_ranks_, migrate_out, &migrate_in);
 
   // remove agents from this rank
   // FIXME parallelize
@@ -313,7 +315,8 @@ void SpatialSTKDistributor::MigrateAgents() {
 
 // -----------------------------------------------------------------------------
 uint64_t SpatialSTKDistributor::GetId(const MathArray<int, 3>& box_coord) {
-  return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] + box_coord[0] + 1; 
+  return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
+         box_coord[0] + 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -324,18 +327,14 @@ MathArray<int, 3> SpatialSTKDistributor::GetBoxCoordinates(
   assert(floor(position[1]) <= std::numeric_limits<int32_t>::max());
   assert(floor(position[2]) <= std::numeric_limits<int32_t>::max());
   MathArray<int, 3> box_coord;
-  box_coord[0] =
-      (static_cast<int32_t>(floor(position[0])) - whole_space_[0]) /
-      box_length_;
-  box_coord[1] =
-      (static_cast<int32_t>(floor(position[1])) - whole_space_[2]) /
-      box_length_;
-  box_coord[2] =
-      (static_cast<int32_t>(floor(position[2])) - whole_space_[4]) /
-      box_length_;
+  box_coord[0] = (static_cast<int32_t>(floor(position[0])) - whole_space_[0]) /
+                 box_length_;
+  box_coord[1] = (static_cast<int32_t>(floor(position[1])) - whole_space_[2]) /
+                 box_length_;
+  box_coord[2] = (static_cast<int32_t>(floor(position[2])) - whole_space_[4]) /
+                 box_length_;
   return box_coord;
 }
-
 
 }  // namespace experimental
 }  // namespace bdm
@@ -357,7 +356,7 @@ Distributor* CreateDistributor(DistributorType type) {
              "to the cmake call: '-Ddse=on'");
   return nullptr;
 }
-  
+
 // -----------------------------------------------------------------------------
 void SpatialSTKDistributor::MigrateAgents() {
   Log::Fatal("CreateDistributor",
@@ -365,7 +364,6 @@ void SpatialSTKDistributor::MigrateAgents() {
              "execution.\nTo enable this features add the following argument "
              "to the cmake call: '-Ddse=on'");
 }
-
 
 }  // namespace experimental
 }  // namespace bdm

@@ -18,9 +18,9 @@
 #ifdef USE_DSE
 
 #include <mpi.h>
+#include <set>
 #include <unordered_map>
 #include <vector>
-#include <set>
 
 namespace bdm {
 
@@ -29,22 +29,20 @@ class Agent;
 namespace experimental {
 
 // -----------------------------------------------------------------------------
-void SendReceive(MPI_Comm comm, const std::set<int>& neighbor_ranks, 
-    const std::unordered_map<int, std::vector<Agent*>>& migrate_out, 
-    std::unordered_map<int, std::vector<Agent*>>* migrate_in
-    );
+void SendReceive(
+    MPI_Comm comm, const std::set<int>& neighbor_ranks,
+    const std::unordered_map<int, std::vector<Agent*>>& migrate_out,
+    std::unordered_map<int, std::vector<Agent*>>* migrate_in);
 
 // -----------------------------------------------------------------------------
 void SendReceive(
- MPI_Comm comm, 
- const std::set<int>& neighbor_ranks,
- const std::unordered_map<int, std::pair<char*, uint64_t>>& send,
- std::unordered_map<int, std::pair<char*, uint64_t>>* receive);
+    MPI_Comm comm, const std::set<int>& neighbor_ranks,
+    const std::unordered_map<int, std::pair<char*, uint64_t>>& send,
+    std::unordered_map<int, std::pair<char*, uint64_t>>* receive);
 
 }  // namespace experimental
 }  // namespace bdm
 
-
-#endif   // USE_DSE
+#endif  // USE_DSE
 
 #endif  // CORE_DISTRIBUTION_COMMUNICATION_H__
