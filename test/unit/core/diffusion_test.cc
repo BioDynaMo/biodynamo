@@ -430,6 +430,28 @@ TEST(DISABLED_DiffusionTest, WrongParameters) {
       ".*unphysical behavior*");
 }  // namespace bdm
 
+TEST(DiffusionTest, WrongDecay) {
+  ASSERT_DEATH(
+      {
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -100;
+          param->max_bound = 100;
+          param->diffusion_boundary_condition = "closed";
+        };
+        Simulation simulation(TEST_NAME, set_param);
+        simulation.GetEnvironment()->Update();
+
+        real_t diff_coef = 0.0001;
+        real_t decay = 10;
+        DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay, 10);
+        dgrid->Initialize();
+        dgrid->SetUpperThreshold(1e15);
+        dgrid->Diffuse(1.0);
+      },
+      ".*unphysical behavior*");
+}
+
 TEST(DiffusionTest, CorrectParameters) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;

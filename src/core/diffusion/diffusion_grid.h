@@ -93,7 +93,10 @@ class DiffusionGrid {
   /// Calculates the box index of the substance at specified position
   size_t GetBoxIndex(const Real3& position) const;
 
-  void SetDecayConstant(real_t mu) { mu_ = mu; }
+  void SetDecayConstant(real_t mu) {
+    // Check is done in ParametersCheck within the Diffuse(dt) method
+    mu_ = mu;
+  }
 
   /// Return the last timestep `dt` that was used to run `Diffuse(dt)`
   real_t GetLastTimestep() { return last_dt_; }
