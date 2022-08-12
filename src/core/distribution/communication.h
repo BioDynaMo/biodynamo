@@ -17,6 +17,9 @@
 
 #ifdef USE_DSE
 
+// Hide MPI from Cling
+#if (!defined(__CLING__) && !defined(__ROOTCLING__))
+
 #include <mpi.h>
 #include <set>
 #include <unordered_map>
@@ -42,6 +45,8 @@ void SendReceive(
 
 }  // namespace experimental
 }  // namespace bdm
+
+#endif  // (!defined(__CLING__) && !defined(__ROOTCLING__))
 
 #endif  // USE_DSE
 
