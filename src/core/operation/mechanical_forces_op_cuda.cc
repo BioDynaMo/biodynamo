@@ -55,7 +55,7 @@ struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   real_t* mass = nullptr;
   uint32_t* successors = nullptr;
 
-  std::vector<AgentHandle::ElementIdx_t> offset;
+  std::vector<AgentHandle::SecondaryIndex_t> offset;
 
   uint32_t* starts = nullptr;
   uint16_t* lengths = nullptr;
@@ -72,7 +72,7 @@ struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   virtual ~InitializeGPUData();
 
   void Initialize(uint64_t num_agents, uint64_t num_boxes,
-                  const std::vector<AgentHandle::ElementIdx_t>& offs,
+                  const std::vector<AgentHandle::SecondaryIndex_t>& offs,
                   UniformGridEnvironment* g);
 
   void operator()(Agent* agent, AgentHandle ah) override;
@@ -105,7 +105,7 @@ InitializeGPUData::~InitializeGPUData() {
 // -----------------------------------------------------------------------------
 void InitializeGPUData::Initialize(
     uint64_t num_agents, uint64_t num_boxes,
-    const std::vector<AgentHandle::ElementIdx_t>& offs,
+    const std::vector<AgentHandle::SecondaryIndex_t>& offs,
     UniformGridEnvironment* g) {
   if (current_timestamp == nullptr) {
     CudaAllocPinned(&current_timestamp, 1);
@@ -199,10 +199,10 @@ void InitializeGPUData::operator()(Agent* agent, AgentHandle ah) {
 // -----------------------------------------------------------------------------
 struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
   real_t* cell_movements = nullptr;
-  std::vector<AgentHandle::ElementIdx_t> offset;
+  std::vector<AgentHandle::SecondaryIndex_t> offset;
 
   UpdateCPUResults(real_t* cm,
-                   const std::vector<AgentHandle::ElementIdx_t>& offs);
+                   const std::vector<AgentHandle::SecondaryIndex_t>& offs);
   virtual ~UpdateCPUResults();
 
   void operator()(Agent* agent, AgentHandle ah) override;
@@ -210,7 +210,7 @@ struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
 
 // -----------------------------------------------------------------------------
 UpdateCPUResults::UpdateCPUResults(
-    real_t* cm, const std::vector<AgentHandle::ElementIdx_t>& offs) {
+    real_t* cm, const std::vector<AgentHandle::SecondaryIndex_t>& offs) {
   cell_movements = cm;
   offset = offs;
 }
@@ -246,7 +246,7 @@ void MechanicalForcesOpCuda::SetUp() {
   }
 
   auto num_numa_nodes = ThreadInfo::GetInstance()->GetNumaNodes();
-  std::vector<AgentHandle::ElementIdx_t> offset(num_numa_nodes);
+  std::vector<AgentHandle::SecondaryIndex_t> offset(num_numa_nodes);
   offset[0] = 0;
   for (int nn = 1; nn < num_numa_nodes; nn++) {
     offset[nn] = offset[nn - 1] + rm->GetNumAgents(nn - 1);

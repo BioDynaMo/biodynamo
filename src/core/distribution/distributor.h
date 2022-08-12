@@ -23,8 +23,11 @@ struct Distributor {
   virtual ~Distributor();
 
   /// Moves agents outside the local space to the process that owns
-  /// the corrsponding space
+  /// the corresponding space
   virtual void MigrateAgents() = 0;
+
+  /// TODO documentation
+  virtual void UpdateAura() = 0;
 };
 
 // -----------------------------------------------------------------------------

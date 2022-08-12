@@ -19,6 +19,7 @@
 #include <set>
 
 #include "core/distribution/communication.h"
+#include "core/distribution/distributed_resource_manager.h"
 #include "core/distribution/distribution_param.h"
 #include "core/environment/uniform_grid_environment.h"
 #include "core/simulation.h"
@@ -37,6 +38,15 @@
 #include <stk_balance/internal/privateDeclarations.hpp>
 #include <stk_util/environment/CPUTime.hpp>
 #include <stk_util/environment/WallTime.hpp>
+
+// -----------------------------------------------------------------------------
+// Specialization of std::hash for stk::mesh::Entity
+template <>
+struct std::hash<stk::mesh::Entity> {
+  std::size_t operator()(const stk::mesh::Entity& e) const noexcept {
+    return e.local_offset();
+  }
+};
 
 namespace bdm {
 namespace experimental {
@@ -65,18 +75,22 @@ class SpatialSTKDistributor : public Distributor {
   /// Contains all MPI ranks of neighboring processors
   /// i.e. processors that share an aura
   std::set<int> neighbor_ranks_;
+  /// Map that stores entities that are sent to other procs (aura)
+  std::unordered_map<stk::mesh::Entity, std::vector<int>> entity_aura_send_map_;
 
  public:
   SpatialSTKDistributor();
   virtual ~SpatialSTKDistributor();
 
   void MigrateAgents() override;
+  void UpdateAura() override;
 
  private:
   void InitializeMesh();
   void UpdateProcOwnerField();
   void UpdateLocalSpace();
   void UpdateNeighborRanks();
+  void UpdateEntityAuraSendMap();
   SimulationSpace::Space BoxToSpaceCoordinates(
       const MathArray<int, 6>& box_space) const;
   MathArray<int, 3> GetBoxCoordinates(size_t id) const;
@@ -154,6 +168,7 @@ void SpatialSTKDistributor::InitializeMesh() {
 
   UpdateLocalSpace();
   UpdateNeighborRanks();
+  UpdateEntityAuraSendMap();
 }
 
 // -----------------------------------------------------------------------------
@@ -221,6 +236,7 @@ void SpatialSTKDistributor::UpdateLocalSpace() {
   space->SetLocalSpace(local_space);
 }
 
+// -----------------------------------------------------------------------------
 void SpatialSTKDistributor::UpdateNeighborRanks() {
   neighbor_ranks_.clear();
 
@@ -231,6 +247,21 @@ void SpatialSTKDistributor::UpdateNeighborRanks() {
   for (const stk::mesh::Entity& element : elements) {
     auto neighbor = bulk_.parallel_owner_rank(element);
     neighbor_ranks_.insert(neighbor);
+  }
+}
+
+// -----------------------------------------------------------------------------
+void SpatialSTKDistributor::UpdateEntityAuraSendMap() {
+  entity_aura_send_map_.clear();
+
+  stk::mesh::EntityVector entities;
+  stk::mesh::get_entities(bulk_, stk::topology::ELEM_RANK,
+                          meta_.locally_owned_part(), entities);
+
+  for (const stk::mesh::Entity& entity : entities) {
+    if (bulk_.in_send_ghost(entity)) {
+      bulk_.comm_procs(entity, entity_aura_send_map_[entity]);
+    }
   }
 }
 
@@ -265,6 +296,7 @@ Distributor* CreateDistributor(DistributorType type) {
 
 // -----------------------------------------------------------------------------
 void SpatialSTKDistributor::MigrateAgents() {
+  // FIXME use data structure that allows for parallel additions
   std::unordered_map<int, std::vector<Agent*>> migrate_out;
   std::unordered_map<int, std::vector<Agent*>> migrate_in;
   int me;
@@ -314,6 +346,34 @@ void SpatialSTKDistributor::MigrateAgents() {
 }
 
 // -----------------------------------------------------------------------------
+void SpatialSTKDistributor::UpdateAura() {
+  std::unordered_map<int, std::vector<Agent*>> out;
+  std::unordered_map<int, std::vector<Agent*>> in;
+
+  // determine agents that should be sent to other nodes
+  auto* env = Simulation::GetActive()->GetEnvironment();
+  std::vector<Agent*> agents;
+  for (auto& el : entity_aura_send_map_) {
+    SimulationSpace::Space box_space;
+    agents.clear();
+    // FIXME env->GetAgents(box_space, agents);
+    for (auto proc : el.second) {
+      out[proc].insert(out[proc].end(), agents.begin(), agents.end());
+    }
+  }
+
+  SendReceive(MPI_COMM_WORLD, neighbor_ranks_, out, &in);
+
+  auto* drm = dynamic_cast<DistributedResourceManager*>(
+      Simulation::GetActive()->GetResourceManager());
+  if (!drm) {
+    Log::Fatal("SpatialSTKDistributor",
+               "The distributed engine requires a DistributedResourceManager.");
+  }
+  drm->UpdateAura(in);
+}
+
+// -----------------------------------------------------------------------------
 uint64_t SpatialSTKDistributor::GetId(const MathArray<int, 3>& box_coord) {
   return box_coord[2] * num_boxes_xy_ + box_coord[1] * num_boxes_axis_[0] +
          box_coord[0] + 1;
@@ -359,6 +419,14 @@ Distributor* CreateDistributor(DistributorType type) {
 
 // -----------------------------------------------------------------------------
 void SpatialSTKDistributor::MigrateAgents() {
+  Log::Fatal("CreateDistributor",
+             "BioDynaMo was compiled without support for distributed "
+             "execution.\nTo enable this features add the following argument "
+             "to the cmake call: '-Ddse=on'");
+}
+
+// -----------------------------------------------------------------------------
+void SpatialSTKDistributor::UpdateAura() {
   Log::Fatal("CreateDistributor",
              "BioDynaMo was compiled without support for distributed "
              "execution.\nTo enable this features add the following argument "

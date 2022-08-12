@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <mpi.h>
 #include "core/distribution/distribution_param.h"
+#include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "core/simulation_space.h"
@@ -99,6 +100,66 @@ TEST(SpatialSTKDistributor, MigrateAgents) {
     EXPECT_EQ(123, agent->GetData());
     Real3 expected_position = {0, 0, 15};
     EXPECT_EQ(expected_position, agent->GetPosition());
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Assumes that the space is partitioned like in
+// SpatialSTKDistributor.Initialize
+TEST(SpatialSTKDistributor, SendAuraFirstTime) {
+  auto set_param = [](Param* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -10;
+    param->max_bound = 20;
+    param->interaction_radius = 5;
+    param->Get<DistributionParam>()->box_length_factor = 2;
+  };
+
+  Simulation simulation(TEST_NAME, set_param);
+  auto* space = simulation.GetSimulationSpace();
+  auto* env = simulation.GetEnvironment();
+
+  SimulationSpace::Space expected_ws = {-10, 20, -10, 20, -10, 20};
+  EXPECT_EQ(expected_ws, space->GetWholeSpace());
+
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+  // in each rank create an agent outside the local space
+  if (rank == 0) {
+    auto* agent = new TestAgent({0, 0, 5});
+    agent->SetData(123);
+    rm->AddAgent(agent);
+  } else {
+    auto* agent = new TestAgent({0, 0, 15});
+    agent->SetData(321);
+    rm->AddAgent(agent);
+  }
+
+  simulation.GetDistributor()->UpdateAura();
+  env->Update();
+
+  ASSERT_EQ(1, rm->GetNumAgents());
+
+  std::vector<Agent*> neighbors;
+  auto fen = L2F([&](Agent* agent, real_t) { neighbors.push_back(agent); });
+
+  auto* agent = bdm_static_cast<TestAgent*>(rm->GetAgent(AgentHandle(0, 0)));
+  env->ForEachNeighbor(fen, *agent, 10);
+
+  ASSERT_EQ(1, neighbors.size());
+  auto* neighbor = static_cast<TestAgent*>(neighbors[0]);
+
+  // verify that agents find the neighbor in the aura region
+  if (rank == 0) {
+    EXPECT_EQ(321, neighbor->GetData());
+    Real3 expected_position = {0, 0, 5};
+    EXPECT_EQ(expected_position, neighbor->GetPosition());
+  } else {
+    EXPECT_EQ(123, neighbor->GetData());
+    Real3 expected_position = {0, 0, 15};
+    EXPECT_EQ(expected_position, neighbor->GetPosition());
   }
 }
 

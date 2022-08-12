@@ -91,8 +91,8 @@ class ResourceManager {
     uid_ah_map_.clear();
     auto* agent_uid_generator = Simulation::GetActive()->GetAgentUidGenerator();
     uid_ah_map_.resize(agent_uid_generator->GetHighestIndex() + 1);
-    for (AgentHandle::NumaNode_t n = 0; n < agents_.size(); ++n) {
-      for (AgentHandle::ElementIdx_t i = 0; i < agents_[n].size(); ++i) {
+    for (uint64_t n = 0; n < agents_.size(); ++n) {
+      for (uint64_t i = 0; i < agents_[n].size(); ++i) {
         auto* agent = agents_[n][i];
         this->uid_ah_map_.Insert(agent->GetUid(), AgentHandle(n, i));
       }
@@ -107,7 +107,7 @@ class ResourceManager {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
-  Agent* GetAgent(AgentHandle ah) {
+  virtual Agent* GetAgent(AgentHandle ah) {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
@@ -217,9 +217,9 @@ class ResourceManager {
   virtual void ForEachAgent(
       const std::function<void(Agent*, AgentHandle)>& function,
       Functor<bool, Agent*>* filter = nullptr) {
-    for (AgentHandle::NumaNode_t n = 0; n < agents_.size(); ++n) {
+    for (uint64_t n = 0; n < agents_.size(); ++n) {
       auto& numa_agents = agents_[n];
-      for (AgentHandle::ElementIdx_t i = 0; i < numa_agents.size(); ++i) {
+      for (uint64_t i = 0; i < numa_agents.size(); ++i) {
         auto* a = numa_agents[i];
         if (!filter || (filter && (*filter)(a))) {
           function(a, AgentHandle(n, i));
@@ -318,15 +318,14 @@ class ResourceManager {
   /// NB: This method is not thread-safe! This function might invalidate
   /// agent references pointing into the ResourceManager. AgentPointer are
   /// not affected.
-  void AddAgent(Agent* agent,  // NOLINT
-                typename AgentHandle::NumaNode_t numa_node = 0) {
+  void AddAgent(Agent* agent, uint64_t numa_node = 0) {
     auto uid = agent->GetUid();
     if (uid.GetIndex() >= uid_ah_map_.size()) {
       uid_ah_map_.resize(uid.GetIndex() + 1);
     }
     agents_[numa_node].push_back(agent);
     uid_ah_map_.Insert(
-        uid, AgentHandle(numa_node, static_cast<AgentHandle::ElementIdx_t>(
+        uid, AgentHandle(numa_node, static_cast<AgentHandle::SecondaryIndex_t>(
                                         agents_[numa_node].size() - 1u)));
     if (type_index_) {
       type_index_->Add(agent);
@@ -352,15 +351,15 @@ class ResourceManager {
   /// the index at which the first element is inserted. Agents are inserted
   /// consecutively. This methos is thread safe only if insertion intervals do
   /// not overlap!
-  virtual void AddAgents(typename AgentHandle::NumaNode_t numa_node,
-                         uint64_t offset,
+  virtual void AddAgents(uint64_t numa_node, uint64_t offset,
                          const std::vector<Agent*>& new_agents) {
     uint64_t i = 0;
     for (auto* agent : new_agents) {
       auto uid = agent->GetUid();
       uid_ah_map_.Insert(
-          uid, AgentHandle(numa_node,
-                           static_cast<AgentHandle::ElementIdx_t>(offset + i)));
+          uid,
+          AgentHandle(numa_node,
+                      static_cast<AgentHandle::SecondaryIndex_t>(offset + i)));
       agents_[numa_node][offset + i] = agent;
       i++;
     }

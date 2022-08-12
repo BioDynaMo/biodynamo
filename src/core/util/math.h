@@ -32,7 +32,7 @@ struct Math {
   /// value of pi
   static constexpr real_t kPi = static_cast<real_t>(TMath::Pi());
   /// Helpful constant to identify 'infinity'
-  static constexpr real_t kInfinity = 1e20;
+  static constexpr real_t kInfinity = static_cast<real_t>(1e20);
 
   static real_t ToDegree(real_t rad) { return rad * (180 / kPi); }
   static real_t ToRadian(real_t deg) { return deg * (kPi / 180); }

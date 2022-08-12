@@ -184,5 +184,6 @@
     <class name="bdm::SharedData<bdm::MathArray<double,4>>" />
     <class pattern="bdm::SharedData<*>::AlignedT" />
     <class name="bdm::experimental::DistributionParam" />
+    <class name="bdm::experimental::DistributedResourceManager" />
   </exclusion>
 </lcgdict>

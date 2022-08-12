@@ -28,52 +28,71 @@ namespace bdm {
 /// the element within this vector.
 class AgentHandle {
  public:
-  using NumaNode_t = uint16_t;
-  using ElementIdx_t = uint32_t;
+  using PrimaryIndex_t = uint16_t;
+  using SecondaryIndex_t = uint32_t;
 
   constexpr AgentHandle() noexcept
-      : numa_node_(std::numeric_limits<NumaNode_t>::max()),
-        element_idx_(std::numeric_limits<ElementIdx_t>::max()) {}
+      : primary_idx_(std::numeric_limits<PrimaryIndex_t>::max()),
+        secondary_index_(std::numeric_limits<SecondaryIndex_t>::max()) {}
 
-  explicit AgentHandle(ElementIdx_t element_idx)
-      : numa_node_(0), element_idx_(element_idx) {}
+  explicit AgentHandle(SecondaryIndex_t secondary_index)
+      : primary_idx_(0), secondary_index_(secondary_index) {}
 
-  AgentHandle(NumaNode_t numa_node, ElementIdx_t element_idx)
-      : numa_node_(numa_node), element_idx_(element_idx) {}
+  AgentHandle(PrimaryIndex_t primary_idx, SecondaryIndex_t secondary_index)
+      : primary_idx_(primary_idx), secondary_index_(secondary_index) {}
 
-  NumaNode_t GetNumaNode() const { return numa_node_; }
-  ElementIdx_t GetElementIdx() const { return element_idx_; }
-  void SetElementIdx(ElementIdx_t element_idx) { element_idx_ = element_idx; }
+  AgentHandle(bool in_aura, PrimaryIndex_t primary_idx,
+              SecondaryIndex_t secondary_index)
+      : in_aura_(in_aura),
+        primary_idx_(primary_idx),
+        secondary_index_(secondary_index) {}
+
+  // TODO deprecate
+  PrimaryIndex_t GetNumaNode() const { return primary_idx_; }
+  SecondaryIndex_t GetElementIdx() const { return secondary_index_; }
+  void SetElementIdx(SecondaryIndex_t secondary_index) {
+    secondary_index_ = secondary_index;
+  }
+  // TODO deprecate end
+
+  bool IsInAura() const { return in_aura_; }
+  PrimaryIndex_t GetPrimaryIndex() const { return primary_idx_; }
+  SecondaryIndex_t GetSecondaryIndex() const { return secondary_index_; }
+  void SetSecondaryIndex(SecondaryIndex_t secondary_index) {
+    secondary_index_ = secondary_index;
+  }
 
   bool operator==(const AgentHandle& other) const {
-    return numa_node_ == other.numa_node_ && element_idx_ == other.element_idx_;
+    return in_aura_ == other.in_aura_ && primary_idx_ == other.primary_idx_ &&
+           secondary_index_ == other.secondary_index_;
   }
 
   bool operator!=(const AgentHandle& other) const { return !(*this == other); }
 
   bool operator<(const AgentHandle& other) const {
-    if (numa_node_ == other.numa_node_) {
-      return element_idx_ < other.element_idx_;
+    if (in_aura_ == other.in_aura_ && primary_idx_ == other.primary_idx_) {
+      return secondary_index_ < other.secondary_index_;
+    } else if (in_aura_ == other.in_aura_) {
+      return primary_idx_ < other.primary_idx_;
     } else {
-      return numa_node_ < other.numa_node_;
+      return !in_aura_;
     }
   }
 
   friend std::ostream& operator<<(std::ostream& stream,
                                   const AgentHandle& handle) {
-    stream << "Numa node: " << handle.numa_node_
-           << " element idx: " << handle.element_idx_;
+    stream << "in aura: " << handle.in_aura_
+           << " primary index: " << handle.primary_idx_
+           << " secondary index: " << handle.secondary_index_;
     return stream;
   }
 
  private:
-  NumaNode_t numa_node_;
+  bool in_aura_ = false;
+  PrimaryIndex_t primary_idx_;
+  SecondaryIndex_t secondary_index_;
 
-  /// changed element index to uint32_t after issues with std::atomic with
-  /// size 16 -> max element_idx: 4.294.967.296
-  ElementIdx_t element_idx_;
-
-  BDM_CLASS_DEF_NV(AgentHandle, 1);
+  BDM_CLASS_DEF_NV(AgentHandle, 2);
 };
 
 }  // namespace bdm

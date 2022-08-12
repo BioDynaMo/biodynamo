@@ -70,10 +70,10 @@ class AgentFlatIdxMap {
     }
 
     idx -= offset_[nn];
-    assert(nn <= std::numeric_limits<AgentHandle::NumaNode_t>::max());
-    assert(idx <= std::numeric_limits<AgentHandle::ElementIdx_t>::max());
-    return AgentHandle(static_cast<AgentHandle::NumaNode_t>(nn),
-                       static_cast<AgentHandle::ElementIdx_t>(idx));
+    assert(nn <= std::numeric_limits<AgentHandle::PrimaryIndex_t>::max());
+    assert(idx <= std::numeric_limits<AgentHandle::SecondaryIndex_t>::max());
+    return AgentHandle(static_cast<AgentHandle::PrimaryIndex_t>(nn),
+                       static_cast<AgentHandle::SecondaryIndex_t>(idx));
   }
 
  private:
