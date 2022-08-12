@@ -26,7 +26,7 @@ using experimental::TimeSeries;
 /// for the purpose of parameter optimization
 class Database {
  public:
-  TimeSeries data_;
+  TimeSeries* data_ = nullptr;
 
   static Database* GetInstance() {
     static Database kDatabase;

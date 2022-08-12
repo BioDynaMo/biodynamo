@@ -42,7 +42,7 @@ inline real_t Experiment(
   // the database
   bool use_real_data = true;
   if (!real_ts) {
-    real_ts = &(Database::GetInstance()->data_);
+    real_ts = Database::GetInstance()->data_;
     // If also no real data is present in the database, we just run the
     // simulation
     if (!real_ts) {

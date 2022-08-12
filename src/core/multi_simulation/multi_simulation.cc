@@ -45,7 +45,7 @@ MultiSimulation::MultiSimulation(int argc, const char** argv)
 }
 
 MultiSimulation::MultiSimulation(int argc, const char** argv,
-                                 const TimeSeries& real)
+                                 TimeSeries* real)
     : MultiSimulation(argc, argv) {
   // Register the real data to the database
   auto* db = Database::GetInstance();

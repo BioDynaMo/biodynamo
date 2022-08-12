@@ -71,7 +71,7 @@ int main(int argc, const char** argv) {
   } else {  // Run the multi-simulation fitting routine
     // Generate the analytical data
     auto analytical = GetAnalyticalResults(param);
-    MultiSimulation pe(argc, argv, analytical);
+    MultiSimulation pe(argc, argv, &analytical);
     std::cout << "Simulation completed successfully!" << std::endl;
     return pe.Execute(Simulate);
   }
