@@ -368,13 +368,15 @@ size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
 }
 
 void DiffusionGrid::ParametersCheck(real_t dt) {
-  if (((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) {
+  if ((((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) ||
+      ((mu_ * dt) > 1.0)) {
     Log::Fatal(
         "DiffusionGrid",
         "The specified parameters of the diffusion grid with substance [",
         substance_name_,
         "] will result in unphysical behavior (diffusion coefficient = ",
         (1 - dc_[0]), ", resolution = ", resolution_,
+        ", decay constant * dt = ", mu_ * dt,
         "). Please refer to the user guide for more information.");
   }
 }
