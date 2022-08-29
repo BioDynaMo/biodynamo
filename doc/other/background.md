@@ -27,7 +27,7 @@ References
 
 3.         Zubler F, Hauri A, Pfister S, Bauer R, Anderson JC, Whatley AM, et al. Simulating cortical development as a self constructing process: a novel multi-scale approach combining molecular and physical aspects. PLoS Comput Biol. 2013;9(8):e1003173.
 
-4.         Koene RA, Tijms B, van Hees P, Postma F, de Ridder A, Ramakers GJ, et al. NETMORPH: a framework for the stochastic generation of large scale neuronal networks with realistic neuron morphologies. Neuroinformatics. 2009;7(3):195-210.
+4.         Koene RA, Tijms B, van Hees P, Postma F, de Ridder A, Ramakers GJ, et al. NETMORPH: a framework for the stochastic generation of large scale neuronal networks with real_tistic neuron morphologies. Neuroinformatics. 2009;7(3):195-210.
 
 5.         Macklin P, Edgerton ME, Thompson AM, Cristini V. Patient-calibrated agent-based modelling of ductal carcinoma in situ (DCIS): from microscopic measurements to macroscopic predictions of clinical progression. J Theor Biol. 2012;301:122-40.
 

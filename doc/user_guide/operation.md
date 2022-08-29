@@ -143,7 +143,7 @@ struct CheckDiameter : public AgentOperationImpl {
   }
 
   // The state consists of these two data members
-  double max_diameter_ = 1;
+  real_t max_diameter_ = 1;
   // Data members that can be changed in `operator()(Agent*
   // agent)` need to be of atomic type to avoid race conditions
   std::atomic<uint32_t> counter_;

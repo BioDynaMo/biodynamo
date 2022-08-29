@@ -483,7 +483,7 @@ TEST_F(SchedulerTest, LoadAndBalanceAfterEnvironment) {
   UniformGridEnvironment* env =
       static_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
 
-  ModelInitializer::Grid3D(2, 5, [](const Double3& pos) {
+  ModelInitializer::Grid3D(2, 5, [](const Real3& pos) {
     Cell* cell = new Cell(pos);
     cell->SetDiameter(8);
     return cell;

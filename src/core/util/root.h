@@ -204,4 +204,12 @@
 
 #endif  // defined(USE_DICT)
 
+namespace bdm {
+
+// -----------------------------------------------------------------------------
+/// Writes information of each data member of a class to cout.
+void PrintDataMemberInfo(const std::string& class_name);
+
+}  // namespace bdm
+
 #endif  // CORE_UTIL_ROOT_H_

@@ -31,7 +31,7 @@ namespace mechanical_forces_op_gpu_test_internal {
 // from the CPU version. Once the CPU version supports the same execution
 // context, we can include it for direct comparison of results.
 
-static constexpr double kEps = 10 * abs_error<double>::value;
+static constexpr real_t kEps = 10 * abs_error<real_t>::value;
 
 class MechanicalForcesOpCpuVerify {
  public:
@@ -42,7 +42,7 @@ class MechanicalForcesOpCpuVerify {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
 
-    AgentVector<Double3> displacements;
+    AgentVector<Real3> displacements;
 
     CalculateDisplacement cd(&displacements);
     rm->ForEachAgentParallel(1000, cd);
@@ -51,9 +51,9 @@ class MechanicalForcesOpCpuVerify {
   }
 
   struct CalculateDisplacement : public Functor<void, Agent*, AgentHandle> {
-    AgentVector<Double3>* displacements_;
+    AgentVector<Real3>* displacements_;
 
-    CalculateDisplacement(AgentVector<Double3>* displacements) {
+    CalculateDisplacement(AgentVector<Real3>* displacements) {
       displacements_ = displacements;
     }
 
@@ -72,9 +72,9 @@ class MechanicalForcesOpCpuVerify {
   };
 
   struct UpdateCells : public Functor<void, Agent*, AgentHandle> {
-    AgentVector<Double3>* displacements_;
+    AgentVector<Real3>* displacements_;
 
-    UpdateCells(AgentVector<Double3>* displacements) {
+    UpdateCells(AgentVector<Real3>* displacements) {
       displacements_ = displacements;
     }
 
@@ -213,7 +213,7 @@ void RunTest2(OpComputeTarget mode) {
     auto* env = sim->GetEnvironment();
     uid_ref[i] = AgentUid(sim->GetAgentUidGenerator()->GetHighestIndex());
 
-    double space = 20;
+    real_t space = 20;
     for (size_t i = 0; i < 3; i++) {
       for (size_t j = 0; j < 3; j++) {
         for (size_t k = 0; k < 3; k++) {

@@ -30,7 +30,7 @@ TEST(SecretionTest, Run) {
   auto* s = new Secretion("TestSubstance", 3.14);
 
   auto* cell = new Cell();
-  Double3 pos = {10, 11, 12};
+  Real3 pos = {10, 11, 12};
   cell->SetPosition(pos);
   cell->SetDiameter(40);
   cell->AddBehavior(s);
@@ -41,7 +41,7 @@ TEST(SecretionTest, Run) {
   auto* dgrid = rm->GetDiffusionGrid(0);
   auto conc = dgrid->GetConcentration(pos);
 
-  EXPECT_NEAR(conc, 3.14, 1e-9);
+  EXPECT_REAL_EQ(conc, real_t(3.14));
 }
 
 }  // namespace bdm

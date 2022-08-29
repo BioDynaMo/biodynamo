@@ -49,16 +49,16 @@ class B : public TestAgent {
 
  public:
   B() = default;
-  explicit B(double data) { data_ = data; }
+  explicit B(real_t data) { data_ = data; }
 
-  double GetData() const { return data_; }
-  void SetData(double data) { data_ = data; }
+  real_t GetData() const { return data_; }
+  void SetData(real_t data) { data_ = data; }
 
-  double data_;
+  real_t data_;
 };
 
 inline void RunForEachAgentTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Simulation simulation("RunForEachAgentTest");
   auto* rm = simulation.GetResourceManager();
 
@@ -107,15 +107,15 @@ inline void RunGetNumAgents() {
 
 struct ForEachAgentParallelTestFunctor : Functor<void, Agent*> {
   void operator()(Agent* agent) override {
-    const double kEpsilon = abs_error<double>::value;
+    const real_t kEpsilon = abs_error<real_t>::value;
     B* b = dynamic_cast<B*>(agent);
     AgentUid uid = agent->GetUid();
     if (uid == AgentUid(0)) {
-      EXPECT_EQ(3.14, b->GetData());
+      EXPECT_EQ(real_t(3.14), b->GetData());
     } else if (uid == AgentUid(1)) {
-      EXPECT_EQ(6.28, b->GetData());
+      EXPECT_EQ(real_t(6.28), b->GetData());
     } else if (uid == AgentUid(2)) {
-      EXPECT_NEAR(9.42, b->GetData(), kEpsilon);
+      EXPECT_NEAR(real_t(9.42), b->GetData(), kEpsilon);
     } else {
       FAIL();
     }
@@ -223,7 +223,7 @@ inline void RunClearTest() {
 }
 
 inline void RunPushBackAndGetAgentTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Simulation simulation("RunPushBackAndGetAgentTest");
   auto* rm = simulation.GetResourceManager();
 
@@ -362,10 +362,10 @@ inline void RunSortAndForEachAgentParallel(uint64_t num_agent_per_type) {
   Simulation simulation("RunSortAndForEachAgentParallel");
   auto* rm = simulation.GetResourceManager();
 
-  std::unordered_map<AgentUid, double> a_x_values;
-  std::unordered_map<AgentUid, double> b_x_values;
+  std::unordered_map<AgentUid, real_t> a_x_values;
+  std::unordered_map<AgentUid, real_t> b_x_values;
   for (uint64_t i = 0; i < num_agent_per_type; ++i) {
-    double x_pos = i * 30.0;
+    real_t x_pos = i * 30.0;
 
     A* a = new A(i);
     a->SetDiameter(10);
@@ -460,7 +460,7 @@ struct CheckNumaThreadErrors : Functor<void, Agent*, AgentHandle> {
   }
 
   void operator()(Agent* agent, AgentHandle handle) override {
-    volatile double d = 0;
+    volatile real_t d = 0;
     for (int i = 0; i < 10000; i++) {
       d += std::abs(std::sin(i));
     }
@@ -533,10 +533,10 @@ inline void RunSortAndForEachAgentParallelDynamic(uint64_t num_agent_per_type,
   Simulation simulation("RunSortAndForEachAgentParallelDynamic");
   auto* rm = simulation.GetResourceManager();
 
-  std::unordered_map<AgentUid, double> a_x_values;
-  std::unordered_map<AgentUid, double> b_x_values;
+  std::unordered_map<AgentUid, real_t> a_x_values;
+  std::unordered_map<AgentUid, real_t> b_x_values;
   for (uint64_t i = 0; i < num_agent_per_type; ++i) {
-    double x_pos = i * 30.0;
+    real_t x_pos = i * 30.0;
 
     A* a = new A(i);
     a->SetDiameter(10);
@@ -590,7 +590,7 @@ inline void RunSortAndForEachAgentParallelDynamic() {
 }
 
 inline void RunIOTest() {
-  const double kEpsilon = abs_error<double>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   Simulation simulation("ResourceManagerTest-RunIOTest");
   auto* rm = simulation.GetResourceManager();
 
@@ -640,9 +640,9 @@ inline void RunIOTest() {
   EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetSubstanceId());
   EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrid(0)->GetSubstanceName());
   EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrid(1)->GetSubstanceName());
-  EXPECT_EQ(0.6,
+  EXPECT_EQ(real_t(0.6),
             restored_rm->GetDiffusionGrid(0)->GetDiffusionCoefficients()[0]);
-  EXPECT_EQ(0.8,
+  EXPECT_EQ(real_t(0.8),
             restored_rm->GetDiffusionGrid(1)->GetDiffusionCoefficients()[0]);
 
   delete restored_rm;

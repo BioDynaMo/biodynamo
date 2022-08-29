@@ -48,9 +48,9 @@ inline int Simulate(int argc, const char** argv, TimeSeries* result,
   // Emulate a simulation
   std::this_thread::sleep_for(100ms);
 
-  result->Add("param1", {0}, {static_cast<double>(sparam->param1)});
-  result->Add("param2", {0}, {static_cast<double>(sparam->param2)});
-  result->Add("param3", {0}, {static_cast<double>(sparam->param3)});
+  result->Add("param1", {0}, {static_cast<real_t>(sparam->param1)});
+  result->Add("param2", {0}, {static_cast<real_t>(sparam->param2)});
+  result->Add("param3", {0}, {static_cast<real_t>(sparam->param3)});
 
   std::cout << "Processing parameters: [" << sparam->param1 << ", "
             << sparam->param2 << ", " << sparam->param3 << "]" << std::endl;

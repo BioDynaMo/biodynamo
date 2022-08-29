@@ -63,16 +63,16 @@ class UniformGridEnvironment : public Environment {
   /// A single unit cube of the grid
   struct Box {
     Spinlock lock_;
+    /// length of the linked list (i.e. number of agents)
+    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
+    uint16_t length_;
     // std::atomic<bool> timestamp_;
     uint32_t timestamp_;
     /// start value of the linked list of agents inside this box.
     /// Next element can be found at `successors_[start_]`
     AgentHandle start_;
-    /// length of the linked list (i.e. number of agents)
-    /// uint64_t, because sizeof(Box) = 16, for uint16_t and uint64_t
-    uint16_t length_;
 
-    Box() : timestamp_(0), start_(AgentHandle()), length_(0) {}
+    Box() : length_(0), timestamp_(0), start_(AgentHandle()) {}
     /// Copy Constructor required for boxes_.resize()
     /// Since box values will be overwritten afterwards it forwards to the
     /// default ctor
@@ -145,9 +145,7 @@ class UniformGridEnvironment : public Environment {
       int countdown_ = 0;
     };
 
-    Iterator begin() const {  // NOLINT
-      auto* grid = static_cast<UniformGridEnvironment*>(
-          Simulation::GetActive()->GetEnvironment());
+    Iterator begin(UniformGridEnvironment* grid) const {  // NOLINT
       return Iterator(grid, this);
     }
   };
@@ -155,11 +153,13 @@ class UniformGridEnvironment : public Environment {
   /// An iterator that iterates over the boxes in this grid
   struct NeighborIterator {
     explicit NeighborIterator(
+        UniformGridEnvironment* grid,
         const FixedSizeVector<const Box*, 27>& neighbor_boxes,
         uint64_t grid_timestamp)
-        : neighbor_boxes_(neighbor_boxes),
+        : grid_(grid),
+          neighbor_boxes_(neighbor_boxes),
           // start iterator from box 0
-          box_iterator_(neighbor_boxes_[0]->begin()),
+          box_iterator_(neighbor_boxes_[0]->begin(grid)),
           grid_timestamp_(grid_timestamp) {
       // if first box is empty
       if (neighbor_boxes_[0]->IsEmpty(grid_timestamp)) {
@@ -182,6 +182,7 @@ class UniformGridEnvironment : public Environment {
     }
 
    private:
+    UniformGridEnvironment* grid_;
     /// The 27 neighbor boxes that will be searched for agents
     const FixedSizeVector<const Box*, 27>& neighbor_boxes_;
     /// The box that shall be considered to iterate over for finding simulation
@@ -203,7 +204,7 @@ class UniformGridEnvironment : public Environment {
           continue;
         }
         // a non-empty box has been found
-        box_iterator_ = neighbor_boxes_[box_idx_]->begin();
+        box_iterator_ = neighbor_boxes_[box_idx_]->begin(grid_);
         return *this;
       }
       // all remaining boxes have been empty; reached end
@@ -265,6 +266,8 @@ class UniformGridEnvironment : public Environment {
     is_custom_box_length_ = true;
   }
 
+  void SetDetermineSimSize(bool value) { determine_sim_size_ = value; }
+
   int32_t GetBoxLength() { return box_length_; }
 
   /// @brief      Calculates the squared euclidian distance between two points
@@ -275,31 +278,31 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The distance between the two points
   ///
-  inline double SquaredEuclideanDistance(const Double3& pos1,
-                                         const Double3& pos2) const {
-    const double dx = pos2[0] - pos1[0];
-    const double dy = pos2[1] - pos1[1];
-    const double dz = pos2[2] - pos1[2];
+  inline real_t SquaredEuclideanDistance(const Real3& pos1,
+                                         const Real3& pos2) const {
+    const real_t dx = pos2[0] - pos1[0];
+    const real_t dy = pos2[1] - pos1[1];
+    const real_t dz = pos2[2] - pos1[2];
     return (dx * dx + dy * dy + dz * dz);
   }
 
-  inline bool WithinSquaredEuclideanDistance(double squared_radius,
-                                             const Double3& pos1,
-                                             const Double3& pos2) const {
-    const double dx = pos2[0] - pos1[0];
-    const double dx2 = dx * dx;
+  inline bool WithinSquaredEuclideanDistance(real_t squared_radius,
+                                             const Real3& pos1,
+                                             const Real3& pos2) const {
+    const real_t dx = pos2[0] - pos1[0];
+    const real_t dx2 = dx * dx;
     if (dx2 > squared_radius) {
       return false;
     }
 
-    const double dy = pos2[1] - pos1[1];
-    const double dy2_plus_dx2 = dy * dy + dx2;
+    const real_t dy = pos2[1] - pos1[1];
+    const real_t dy2_plus_dx2 = dy * dy + dx2;
     if (dy2_plus_dx2 > squared_radius) {
       return false;
     }
 
-    const double dz = pos2[2] - pos1[2];
-    const double distance = dz * dz + dy2_plus_dx2;
+    const real_t dz = pos2[2] - pos1[2];
+    const real_t distance = dz * dz + dy2_plus_dx2;
     return distance < squared_radius;
   }
 
@@ -315,8 +318,8 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @return     The box index.
   ///
-  size_t GetBoxIndex(const Double3& position) const {
-    // Check if converstion can be done without loosing information
+  size_t GetBoxIndex(const Real3& position) const {
+    // Check if conversion can be done without loosing information
     assert(floor(position[0]) <= std::numeric_limits<int32_t>::max());
     assert(floor(position[1]) <= std::numeric_limits<int32_t>::max());
     assert(floor(position[2]) <= std::numeric_limits<int32_t>::max());
@@ -341,13 +344,13 @@ class UniformGridEnvironment : public Environment {
   /// Returns true if the provided point is inside the simulation domain.
   /// Compares the points coordinates against grid_dimensions_ (without bounding
   /// boxes).
-  bool ContainedInGrid(const Double3& point) const {
-    double xmin = static_cast<double>(grid_dimensions_[0]) + box_length_;
-    double xmax = static_cast<double>(grid_dimensions_[1]) - box_length_;
-    double ymin = static_cast<double>(grid_dimensions_[2]) + box_length_;
-    double ymax = static_cast<double>(grid_dimensions_[3]) - box_length_;
-    double zmin = static_cast<double>(grid_dimensions_[4]) + box_length_;
-    double zmax = static_cast<double>(grid_dimensions_[5]) - box_length_;
+  bool ContainedInGrid(const Real3& point) const {
+    real_t xmin = static_cast<real_t>(grid_dimensions_[0]) + box_length_;
+    real_t xmax = static_cast<real_t>(grid_dimensions_[1]) - box_length_;
+    real_t ymin = static_cast<real_t>(grid_dimensions_[2]) + box_length_;
+    real_t ymax = static_cast<real_t>(grid_dimensions_[3]) - box_length_;
+    real_t zmin = static_cast<real_t>(grid_dimensions_[4]) + box_length_;
+    real_t zmax = static_cast<real_t>(grid_dimensions_[5]) - box_length_;
     if (point[0] >= xmin && point[0] <= xmax && point[1] >= ymin &&
         point[1] <= ymax && point[2] >= zmin && point[2] <= zmax) {
       return true;
@@ -389,10 +392,10 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @param[in]  lambda    The operation as a lambda
   /// @param      query     The query object
-  /// @param      squared_radius  The squared search radius (type: double*)
+  /// @param      squared_radius  The squared search radius (type: real_t*)
   ///
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) override {
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Agent& query, real_t squared_radius) override {
     ForEachNeighbor(lambda, query.GetPosition(), squared_radius, &query);
   }
 
@@ -404,10 +407,10 @@ class UniformGridEnvironment : public Environment {
   ///
   /// @param[in]  lambda    The operation as a lambda
   /// @param      query_position  The query position
-  /// @param      squared_radius  The squared search radius (type: double*)
+  /// @param      squared_radius  The squared search radius (type: real_t*)
   ///
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Double3& query_position, double squared_radius,
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Real3& query_position, real_t squared_radius,
                        const Agent* query_agent = nullptr) override {
     if (squared_radius > box_length_squared_) {
       Log::Fatal(
@@ -459,21 +462,21 @@ class UniformGridEnvironment : public Environment {
 
     auto* rm = Simulation::GetActive()->GetResourceManager();
 
-    NeighborIterator ni(neighbor_boxes, timestamp_);
+    NeighborIterator ni(this, neighbor_boxes, timestamp_);
     const unsigned batch_size = 64;
     uint64_t size = 0;
     Agent* agents[batch_size] __attribute__((aligned(64)));
-    double x[batch_size] __attribute__((aligned(64)));
-    double y[batch_size] __attribute__((aligned(64)));
-    double z[batch_size] __attribute__((aligned(64)));
-    double squared_distance[batch_size] __attribute__((aligned(64)));
+    real_t x[batch_size] __attribute__((aligned(64)));
+    real_t y[batch_size] __attribute__((aligned(64)));
+    real_t z[batch_size] __attribute__((aligned(64)));
+    real_t squared_distance[batch_size] __attribute__((aligned(64)));
 
     auto process_batch = [&]() {
 #pragma omp simd
       for (uint64_t i = 0; i < size; ++i) {
-        const double dx = x[i] - position[0];
-        const double dy = y[i] - position[1];
-        const double dz = z[i] - position[2];
+        const real_t dx = x[i] - position[0];
+        const real_t dy = y[i] - position[1];
+        const real_t dz = z[i] - position[2];
 
         squared_distance[i] = dx * dx + dy * dy + dz * dz;
       }
@@ -506,12 +509,19 @@ class UniformGridEnvironment : public Environment {
     process_batch();
   };
 
-  void ForEachNeighbor(Functor<void, Agent*>& lambda, const Agent& query,
-                       void* criteria) override {
-    Log::Fatal("UniformGridEnvironment::ForEachNeighbor",
-               "You tried to call a specific ForEachNeighbor in an "
-               "environment that does not yet support it.");
-  }
+  /// @brief      Applies the given functor to each neighbor of the specified
+  ///             agent that is within the same box as the query agent
+  ///             or in the 26 surrounding boxes.
+  ///
+  /// In simulation code do not use this function directly. Use the same
+  /// function from the execution context (e.g. `InPlaceExecutionContext`)
+  ///
+  /// @param[in]  functor    The operation as a functor
+  /// @param[in]      query      The query object
+  /// @param[in]      criteria   This parameter is ignored. Pass a nullptr.
+  ///
+  void ForEachNeighbor(Functor<void, Agent*>& functor, const Agent& query,
+                       void* criteria) override;
 
   // NeighborMutex ---------------------------------------------------------
 
@@ -643,6 +653,10 @@ class UniformGridEnvironment : public Environment {
   int32_t box_length_squared_ = 1;
   /// True when the box length was set manually
   bool is_custom_box_length_ = false;
+  /// If set to true, the UniformGridEnvironment determines the size of the
+  /// simulation space automatically.
+  /// If false, it uses param->min_bound and param->max_bound for each dimension
+  bool determine_sim_size_ = true;
   /// Stores the number of Boxes for each axis
   std::array<uint64_t, 3> num_boxes_axis_ = {{0}};
   /// Number of boxes in the xy plane (=num_boxes_axis_[0] * num_boxes_axis_[1])
@@ -693,7 +707,7 @@ class UniformGridEnvironment : public Environment {
     }
   }
 
-  void RoundOffGridDimensions(const std::array<double, 6>& grid_dimensions) {
+  void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions) {
     // Check if conversion can be done without loosing information
     assert(floor(grid_dimensions_[0]) >= std::numeric_limits<int32_t>::min());
     assert(floor(grid_dimensions_[2]) >= std::numeric_limits<int32_t>::min());

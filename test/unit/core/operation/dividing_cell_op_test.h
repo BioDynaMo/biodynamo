@@ -34,7 +34,7 @@ inline void RunTest() {
 
   Cell* cell_0 = new Cell(41.0);
   Cell* cell_1 = new Cell(19.0);
-  double volume_mother = cell_0->GetVolume();
+  real_t volume_mother = cell_0->GetVolume();
 
   rm->AddAgent(cell_0);
   rm->AddAgent(cell_1);
@@ -51,9 +51,9 @@ inline void RunTest() {
   Cell* final_cell1 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 1));
   Cell* final_cell2 = dynamic_cast<Cell*>(rm->GetAgent(ref_uid + 2));
   EXPECT_NEAR(19.005288996600001, final_cell1->GetDiameter(),
-              abs_error<double>::value);
+              abs_error<real_t>::value);
   EXPECT_NEAR(3594.3640018287319, final_cell1->GetVolume(),
-              abs_error<double>::value);
+              abs_error<real_t>::value);
 
   // cell got divided so it must be smaller than before
   // more detailed division test can be found in `cell_test.h`
@@ -63,7 +63,7 @@ inline void RunTest() {
   // volume of two daughter cells must be equal to volume of the mother
   EXPECT_NEAR(volume_mother,
               final_cell0->GetVolume() + final_cell2->GetVolume(),
-              abs_error<double>::value);
+              abs_error<real_t>::value);
 
   delete op;
 }

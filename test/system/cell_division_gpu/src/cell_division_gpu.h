@@ -30,7 +30,7 @@ namespace bdm {
 // interactions properly handle the creation of new cells.
 // -----------------------------------------------------------------------------
 
-inline void ExpectArrayNear(const Double3& actual, const Double3& expected,
+inline void ExpectArrayNear(const Real3& actual, const Real3& expected,
                             bool* wrong) {
   for (size_t i = 0; i < actual.size(); i++) {
     if (std::fabs(expected[i] - actual[i]) > 1e-9) {
@@ -73,7 +73,7 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
 #pragma omp parallel
   simulation.GetRandom()->SetSeed(1);
 
-  auto construct = [](const Double3& position) {
+  auto construct = [](const Real3& position) {
     auto* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
@@ -83,9 +83,9 @@ inline void RunTest(bool* wrong, OpComputeTarget mode, uint64_t timesteps,
   };
 
   for (size_t x = 0; x < cells_per_dim; x++) {
-    double x_pos = x * 20.0;
+    real_t x_pos = x * 20.0;
     for (size_t y = 0; y < cells_per_dim; y++) {
-      double y_pos = y * 20.0;
+      real_t y_pos = y * 20.0;
       for (size_t z = 0; z < cells_per_dim; z++) {
         auto new_simulation_object = construct({x_pos, y_pos, z * 20.0});
         rm->AddAgent(new_simulation_object);

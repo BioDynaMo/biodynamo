@@ -17,6 +17,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/real_t.h"
 #include "core/util/root.h"
 
 class TCanvas;
@@ -55,13 +56,13 @@ class LineGraph {
               float marker_size = 1, short fill_color = 0,
               float fill_color_alpha = 1.0, short fill_style = 1000);
 
-  void SetLegendPos(double x1, double y1, double x2, double y2);
+  void SetLegendPos(real_t x1, real_t y1, real_t x2, real_t y2);
   /// NDC coordinates are a % of the canvas size:
   /// (0.5,0.5) is the middle of the canvas. (1,1) upper right corner,
   /// (0,0) bottom left corner.
   /// \ref
   /// https://root-forum.cern.ch/t/how-to-imagine-ndc-normalized-coord/24202
-  void SetLegendPosNDC(double x1, double y1, double x2, double y2);
+  void SetLegendPosNDC(real_t x1, real_t y1, real_t x2, real_t y2);
 
   void SetMultiGraphDrawOption(const std::string& s);
 

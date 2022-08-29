@@ -168,7 +168,7 @@ class RootAdaptor {
 
       // The vector that we want to orient the cylinder to (symmetry axis
       // aligns with this vector)
-      Double3 d = neurite->GetSpringAxis();
+      Real3 d = neurite->GetSpringAxis();
       TVector3 dir(d[0], d[1], d[2]);
       dir = dir.Unit();
 

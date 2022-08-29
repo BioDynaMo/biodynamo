@@ -12,9 +12,9 @@
 
 namespace bdm {
 
-void CalculateAnalyticalSolution(TimeSeries* result, double beta, double gamma,
-                                 double susceptible, double infected,
-                                 double tstart, double tend, double step_size);
+void CalculateAnalyticalSolution(TimeSeries* result, real_t beta, real_t gamma,
+                                 real_t susceptible, real_t infected,
+                                 real_t tstart, real_t tend, real_t step_size);
 
 }  // namespace bdm
 

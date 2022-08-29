@@ -102,13 +102,13 @@ TEST(Reduce, GenericReducer) {
 
   // with different result data type and post processing
   {
-    auto post_process = [](double result) { return result / 2.3; };
-    GenericReducer<uint64_t, double> reducer(sum_data, combine_tl_results,
+    auto post_process = [](real_t result) -> real_t { return result / 2.3; };
+    GenericReducer<uint64_t, real_t> reducer(sum_data, combine_tl_results,
                                              nullptr, post_process);
     rm->ForEachAgentParallel(reducer);
     auto result = reducer.GetResult();
-    EXPECT_EQ(typeid(result), typeid(double));
-    EXPECT_NEAR(869130.434782609, result, abs_error<double>::value);
+    EXPECT_EQ(typeid(result), typeid(real_t));
+    EXPECT_REAL_EQ(real_t(869130.434782609), result);
   }
 }
 
@@ -170,12 +170,14 @@ TEST(Reduce, Counter) {
 
   // with different result data type and post processing
   {
-    auto post_process = [](double result) { return result / 2.3; };
-    Counter<double> counter(data_lt_1000, post_process);
+    auto post_process = [](real_t result) {
+      return result / static_cast<real_t>(2.3);
+    };
+    Counter<real_t> counter(data_lt_1000, post_process);
     rm->ForEachAgentParallel(counter);
     auto result = counter.GetResult();
-    EXPECT_EQ(typeid(result), typeid(double));
-    EXPECT_NEAR(434.782608696, result, abs_error<double>::value);
+    EXPECT_EQ(typeid(result), typeid(real_t));
+    EXPECT_NEAR(434.782608696, result, abs_error<real_t>::value);
   }
 }
 

@@ -33,29 +33,29 @@ inline int Simulate(int argc, const char** argv) {
   // Initialize GeneRegulation behavior.
   // To add functions to the behavior use GeneRegulation::AddGene() function.
   // You should pass to the function two variables.
-  // The first is of type  std::function<double(double, double)>.
+  // The first is of type  std::function<real_t(real_t, real_t)>.
   // This is the function by which concentration of the protein will be
   // calculated.
-  // The second is double. This is the initial value for the protein.
+  // The second is real_t. This is the initial value for the protein.
   GeneRegulation regulate_example;
   regulate_example.AddGene(
-      [](double curr_time, double last_concentration) {
+      [](real_t curr_time, real_t last_concentration) {
         return curr_time * last_concentration + 0.2f;
       },
       1);
   regulate_example.AddGene(
-      [](double curr_time, double last_concentration) {
+      [](real_t curr_time, real_t last_concentration) {
         return last_concentration * last_concentration * curr_time;
       },
       5);
   regulate_example.AddGene(
-      [](double curr_time, double last_concentration) {
+      [](real_t curr_time, real_t last_concentration) {
         return last_concentration + curr_time + 3;
       },
       7);
 
   // Define initial model -- in this example just one cell.
-  auto construct = [&](const Double3& position) {
+  auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(30);
     cell->SetAdherence(0.4);
@@ -63,7 +63,7 @@ inline int Simulate(int argc, const char** argv) {
     cell->AddBehavior(regulate_example.NewCopy());
     return cell;
   };
-  const std::vector<Double3>& positions = {{0, 0, 0}};
+  const std::vector<Real3>& positions = {{0, 0, 0}};
   ModelInitializer::CreateAgents(positions, construct);
 
   // Run simulation
@@ -78,7 +78,7 @@ inline int Simulate(int argc, const char** argv) {
   const auto& concentrations = gene_regulation->GetConcentrations();
   std::cout << "Gene concentrations after " << scheduler->GetSimulatedSteps()
             << " time steps" << std::endl;
-  for (double concentration : concentrations) {
+  for (real_t concentration : concentrations) {
     std::cout << concentration << std::endl;
   }
 

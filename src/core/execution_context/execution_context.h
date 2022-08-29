@@ -70,14 +70,14 @@ class ExecutionContext {
 
   /// Applies the lambda `lambda` for each neighbor of the given `query`
   /// agent within the given search radius `sqrt(squared_radius)`
-  virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                               const Agent& query, double squared_radius) = 0;
+  virtual void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                               const Agent& query, real_t squared_radius) = 0;
 
   /// Applies the lambda `lambda` for each neighbor of the given
   /// `query_position` within the given search radius `sqrt(squared_radius)`
-  virtual void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                               const Double3& query_position,
-                               double squared_radius) = 0;
+  virtual void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                               const Real3& query_position,
+                               real_t squared_radius) = 0;
 
   virtual void AddAgent(Agent* new_agent) = 0;
 

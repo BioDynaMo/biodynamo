@@ -85,6 +85,7 @@ struct SetUpIterationOp : public StandaloneOperationImpl {
     auto* sim = Simulation::GetActive();
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
     all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
+    sim->GetEnvironment()->Update();
   }
 };
 
@@ -97,8 +98,6 @@ struct TearDownIterationOp : public StandaloneOperationImpl {
     auto* sim = Simulation::GetActive();
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
     all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
-    auto* env = sim->GetEnvironment();
-    env->ForcedUpdate();
   }
 };
 
@@ -119,8 +118,7 @@ struct UpdateEnvironmentOp : public StandaloneOperationImpl {
 
   void operator()() override {
     auto* sim = Simulation::GetActive();
-    auto* env = sim->GetEnvironment();
-    env->Update();
+    sim->GetEnvironment()->ForcedUpdate();
   }
 };
 

@@ -30,9 +30,9 @@ int Odes(double t, const double y[], double f[], void* params) {
   return GSL_SUCCESS;
 }
 
-void CalculateAnalyticalSolution(TimeSeries* result, double beta, double gamma,
-                                 double susceptible, double infected,
-                                 double tstart, double tend, double step_size) {
+void CalculateAnalyticalSolution(TimeSeries* result, real_t beta, real_t gamma,
+                                 real_t susceptible, real_t infected,
+                                 real_t tstart, real_t tend, real_t step_size) {
   double n = susceptible + infected;
   double params[3] = {beta, gamma, n};
   gsl_odeiv2_system sys = {Odes, nullptr, 3, params};
@@ -41,13 +41,14 @@ void CalculateAnalyticalSolution(TimeSeries* result, double beta, double gamma,
       gsl_odeiv2_driver_alloc_y_new(&sys, gsl_odeiv2_step_rk2, 1e-6, 1e-6, 0.0);
   double y[3] = {susceptible, infected, 0.0};
 
-  std::vector<double> timevec;
-  std::vector<double> susceptiblevec;
-  std::vector<double> infectedvec;
-  std::vector<double> recoveredvec;
+  std::vector<real_t> timevec;
+  std::vector<real_t> susceptiblevec;
+  std::vector<real_t> infectedvec;
+  std::vector<real_t> recoveredvec;
 
-  for (double t = tstart; t < tend; t += step_size) {
-    int status = gsl_odeiv2_driver_apply(d, &tstart, t, y);
+  double tstart_d = static_cast<double>(tstart);
+  for (double t = tstart_d; t < tend; t += step_size) {
+    int status = gsl_odeiv2_driver_apply(d, &tstart_d, t, y);
 
     if (status != GSL_SUCCESS) {
       printf("error, return value=%d\n", status);

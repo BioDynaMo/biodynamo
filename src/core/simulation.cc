@@ -186,6 +186,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
             Concat("du -sh ", sim.GetOutputDir(), " | cut -f1").c_str())
      << std::endl;
   os << "BioDynaMo version:\t\t: " << Version::String() << std::endl;
+  os << "BioDynaMo real type:\t\t: " << kRealtName << std::endl;
   os << std::endl;
   os << "***********************************************" << std::endl;
   os << *(sim.scheduler_->GetOpTimes()) << std::endl;

@@ -40,14 +40,14 @@ class MyCell : public Cell {
 
  public:
   MyCell() {}
-  explicit MyCell(const Double3& position) : Base(position) {}
+  explicit MyCell(const Real3& position) : Base(position) {}
   virtual ~MyCell() {}
 
-  void SetS1(double s1) { s1_ = s1; }
+  void SetS1(real_t s1) { s1_ = s1; }
   int GetS1() const { return s1_; }
 
  private:
-  double s1_ = 100;
+  real_t s1_ = 100;
 };
 
 // Define SbmlBehavior to simulate intracellular chemical reaction network.
@@ -114,12 +114,12 @@ class SbmlBehavior : public Behavior {
   ls::DoubleMatrix result_;
   bool active_ = true;
   rr::RoadRunner* rr_;
-  double dt_;
+  real_t dt_;
 };
 
-inline void AddToPlot(TMultiGraph* mg, const ls::Matrix<double>* result) {
-  ls::Matrix<double> foo1(*result);
-  ls::Matrix<double> foo(*foo1.getTranspose());
+inline void AddToPlot(TMultiGraph* mg, const ls::Matrix<real_t>* result) {
+  ls::Matrix<real_t> foo1(*result);
+  ls::Matrix<real_t> foo(*foo1.getTranspose());
   int rows;
   int cols;
   auto** twod = foo.get2DMatrix(rows, cols);
@@ -201,7 +201,7 @@ inline int Simulate(int argc, const char** argv) {
   }
 
   // Define initial model
-  auto construct = [&](const Double3& position) {
+  auto construct = [&](const Real3& position) {
     auto* cell = new MyCell();
     cell->SetPosition(position);
     cell->SetDiameter(10);

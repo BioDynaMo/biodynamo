@@ -29,39 +29,39 @@ class SphericalAgent : public Agent {
  public:
   SphericalAgent() : diameter_(1.0) {}
 
-  explicit SphericalAgent(double diameter) : diameter_(diameter) {}
+  explicit SphericalAgent(real_t diameter) : diameter_(diameter) {}
 
-  explicit SphericalAgent(const Double3& position)
+  explicit SphericalAgent(const Real3& position)
       : position_(position), diameter_(1.0) {}
 
   virtual ~SphericalAgent() = default;
 
   Shape GetShape() const override { return Shape::kSphere; }
 
-  double GetDiameter() const override { return diameter_; }
+  real_t GetDiameter() const override { return diameter_; }
 
-  const Double3& GetPosition() const override { return position_; }
+  const Real3& GetPosition() const override { return position_; }
 
-  void SetDiameter(double diameter) override {
+  void SetDiameter(real_t diameter) override {
     if (diameter > diameter_) {
       SetPropagateStaticness();
     }
     diameter_ = diameter;
   }
 
-  void SetPosition(const Double3& position) override {
+  void SetPosition(const Real3& position) override {
     position_ = position;
     SetPropagateStaticness();
   }
 
   /// This agent type has an empty implementation for CalculateDisplacement.
   /// Provide an implementation in a derived class if needed.
-  Double3 CalculateDisplacement(const InteractionForce* force,
-                                double squared_radius, double dt) override {
+  Real3 CalculateDisplacement(const InteractionForce* force,
+                              real_t squared_radius, real_t dt) override {
     return {0, 0, 0};
   }
 
-  void ApplyDisplacement(const Double3& displacement) override {
+  void ApplyDisplacement(const Real3& displacement) override {
     if (displacement[0] == 0 && displacement[1] == 0 && displacement[2] == 0) {
       return;
     }
@@ -71,9 +71,9 @@ class SphericalAgent : public Agent {
 
  private:
   /// NB: Use setter and don't assign values directly
-  Double3 position_ = {{0, 0, 0}};
+  Real3 position_ = {{0, 0, 0}};
   /// NB: Use setter and don't assign values directly
-  double diameter_ = 0;
+  real_t diameter_ = 0;
 };
 
 }  // namespace bdm

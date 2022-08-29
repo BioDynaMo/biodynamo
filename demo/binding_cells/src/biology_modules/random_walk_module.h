@@ -23,7 +23,7 @@ struct RandomWalk : public Behavior {
   BDM_BEHAVIOR_HEADER(RandomWalk, Behavior, 1);
 
  public:
-  RandomWalk(double v = 1) : velocity_(v) { AlwaysCopyToNew(); }
+  RandomWalk(real_t v = 1) : velocity_(v) { AlwaysCopyToNew(); }
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -36,9 +36,9 @@ struct RandomWalk : public Behavior {
     }
   }
 
-  Double3 GetRandomDirection() {
+  Real3 GetRandomDirection() {
     auto* r = Simulation::GetActive()->GetRandom();
-    Double3 random_vector = r->UniformArray<3>(-1, 1);
+    Real3 random_vector = r->UniformArray<3>(-1, 1);
     random_vector.Normalize();
     return random_vector;
   }
@@ -50,15 +50,15 @@ struct RandomWalk : public Behavior {
       }
     }
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
-      Double3 direction = GetRandomDirection();
-      Double3 vel = direction * velocity_;
+      Real3 direction = GetRandomDirection();
+      Real3 vel = direction * velocity_;
       auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
       cell->UpdatePosition(vel * dt);
     }
   }
 
  private:
-  double velocity_;
+  real_t velocity_;
 };
 
 /// Make a simulation object move at a constant velocity towards the direction
@@ -66,7 +66,7 @@ struct RandomWalkXY : public Behavior {
   BDM_BEHAVIOR_HEADER(RandomWalkXY, Behavior, 1);
 
  public:
-  RandomWalkXY(double v = 1) : velocity_(v) { AlwaysCopyToNew(); }
+  RandomWalkXY(real_t v = 1) : velocity_(v) { AlwaysCopyToNew(); }
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -79,9 +79,9 @@ struct RandomWalkXY : public Behavior {
     }
   }
 
-  Double3 GetRandomDirection() {
+  Real3 GetRandomDirection() {
     auto* r = Simulation::GetActive()->GetRandom();
-    Double3 random_vector;
+    Real3 random_vector;
     random_vector[0] = r->Uniform(-1, 1);
     random_vector[1] = r->Uniform(-1, 1);
     random_vector[2] = 0;
@@ -91,15 +91,15 @@ struct RandomWalkXY : public Behavior {
 
   void Run(Agent* agent) override {
     if (auto* cell = dynamic_cast<Cell*>(agent)) {
-      Double3 direction = GetRandomDirection();
-      Double3 vel = direction * velocity_;
+      Real3 direction = GetRandomDirection();
+      Real3 vel = direction * velocity_;
       auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
       cell->UpdatePosition(vel * dt);
     }
   }
 
  private:
-  double velocity_;
+  real_t velocity_;
 };
 
 }  // namespace bdm

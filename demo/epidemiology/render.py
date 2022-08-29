@@ -27,7 +27,13 @@ def ExtendDefaultPipeline(renderview, coprocessor, datadescription, script_args)
     # create a new 'Threshold' to filter out agent that was created as a UniformGridEnvironement bug workaround
     threshold1 = Threshold(Input=persons)
     threshold1.Scalars = ['POINTS', 'diameter_']
-    threshold1.ThresholdRange = [2.0, 2.0]
+    pm = paraview.servermanager.vtkSMProxyManager
+    if pm.GetVersionMajor() == 5 and pm.GetVersionMinor() < 10:
+        threshold1.ThresholdRange = [2.0, 2.0]
+    else:
+        threshold1.LowerThreshold = 2.0
+        threshold1.UpperThreshold = 2.0
+        threshold1.ThresholdMethod = "Between"
     SetActiveSource(threshold1)
     Hide(persons)
 
