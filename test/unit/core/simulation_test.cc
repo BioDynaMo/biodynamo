@@ -499,7 +499,7 @@ TEST_F(IOTest, Simulation) {
 
   // store next random number for later comparison
   std::vector<real_t> next_rand;
-  next_rand.resize(omp_get_max_threads());
+  next_rand.resize(ti->GetMaxThreads());
 #pragma omp parallel
   {
     auto* r = sim.GetRandom();
