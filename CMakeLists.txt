@@ -189,9 +189,12 @@ endif()
 
 
 if(NOPYENV)
-   find_package(Python 3.9.1...<3.10 COMPONENTS Interpreter Development)
+   # On macOS
+   # need to give hint which binary to find, however ideally it should be taken from the range spec 
+   set(Python3_EXECUTABLE "${BREW_PREFIX}/bin/python3.9")
+   find_package(Python3 3.9.1...<3.10 COMPONENTS Interpreter Development)
    set(pythonvers ${Python_VERSION})
-   if (NOT Python_FOUND)
+   if (NOT Python3_FOUND)
       message(FATAL_ERROR "We did not find the Python 3.9 interpreter. "
          "Please run ./prerequisites.sh (or \"brew install python@3.9\") "
          "again before calling cmake. The Python 3.9 interpreter "
