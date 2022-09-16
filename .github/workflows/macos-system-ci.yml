@@ -17,21 +17,20 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-10.15, macos-11]
+        os: [macos-11, macos-12]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 12.4 is used on macOS 10.15 as the default /Application/Xcode.app
+    - name: Make sure Xcode 13.1 is used on macOS 12 as the default /Application/Xcode.app
       shell: zsh {0}
       run: |
         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_12.4.app /Applications/Xcode.app
+        sudo ln -s /Applications/Xcode_13.1.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      if: matrix.os == 'macos-10.15'
+      if: matrix.os == 'macos-12'
 
-    # It's not possible to specify 11.6 but we hope that this remains the latest.
-    - name: Make sure Xcode 13.1 is used on macOS 11.6 as the default /Application/Xcode.app
+    - name: Make sure Xcode 13.1 is used on macOS 11 as the default /Application/Xcode.app
       shell: bash
       run: |
         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
