@@ -14,6 +14,10 @@ if(APPLE)
   endif()
 endif()
 
+message(STATUS "Using ROOT tarball: ${ROOT_TAR_FILE}")
+message(STATUS "Using ROOT source dir: ${ROOT_SOURCE_DIR}")
+message(STATUS "Using ROOT version: ${${DETECTED_OS_VERS}-ROOT}")
+
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${ROOT_TAR_FILE}
   ${ROOT_SOURCE_DIR}
