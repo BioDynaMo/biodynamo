@@ -257,6 +257,11 @@ Real3 Boid::GetExtendedCohesionTerm(Real3 centre_of_mass) {
 
   real_t scale = Zeta(ratio, h_1, h_2);
 
+  real_t c_a_3 = FluctuateCoefficient(
+      c_a_3_, sparam->fluctuation_strength_c_a_3, sparam->period_t_c_a_3,
+      sparam->period_x_c_a_3, sparam->period_y_c_a_3, sparam->period_z_c_a_3,
+      elapsed, GetPosition());
+
   Real3 result =
       GetNormalizedArray(centre_of_mass - GetPosition()) * scale * c_a_3;
   return result;
