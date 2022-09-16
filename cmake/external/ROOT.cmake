@@ -6,10 +6,12 @@ SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/root")
 set(ROOT_TAR_FILE root_v6.22.06_python3.9_${DETECTED_OS_VERS}.tar.gz)
 if(APPLE)
   if("${DETECTED_OS_VERS}" MATCHES "^osx-12" OR
-     "${DETECTED_OS_VERS}" MATCHES "^osx-11.6")
+     "${DETECTED_OS_VERS}" MATCHES "^osx-11.6" OR
+     "${DETECTED_OS_VERS}" MATCHES "^osx-11.7")
     set(ROOT_TAR_FILE root_v6.25.01_cxx14_python3.9_${DETECTED_OS_VERS}.tar.gz)
   elseif("${DETECTED_OS_VERS}" MATCHES "^osx-11")
-    message(FATAL_ERROR "We officialy only support the latest macOS 11 version: 11.6.")
+    message(INFO "Your macOS version is ${DETECTED_OS_VERS}.")
+    message(FATAL_ERROR "We officialy only support the latest macOS 11 versions 11.6, 11.7.")
   endif()
 endif()
 
