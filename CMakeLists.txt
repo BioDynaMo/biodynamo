@@ -58,6 +58,7 @@ else()
     SET(DETECTED_OS_VERS ${OS})
     check_detected_os(${DETECTED_OS})
 endif()
+message(STATUS "Detected OS: ${DETECTED_OS}")
 
 
 # Find a suitable compiler
