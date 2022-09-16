@@ -126,22 +126,22 @@ jobs:
           -B build
         cmake --build build --config Release
 
-    # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
-    # runners, while waiting for other targets to be compiled
-    - name: Run notebooks
-      shell: bash
-      run: |
-        export PATH="$HOME/.pyenv/bin:$PATH"
-        eval "$(pyenv init --path)"
-        eval "$(pyenv init -)"
-        pyenv shell 3.9.1
-        . scl_source enable devtoolset-8 || true
-        . /etc/profile.d/modules.sh || true
-        module load mpi
-        cmake \
-          -Dnotebooks=ON \
-          -B build
-        cmake --build build --config Release --target notebooks -- -j1
+    # # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
+    # # runners, while waiting for other targets to be compiled
+    # - name: Run notebooks
+    #   shell: bash
+    #   run: |
+    #     export PATH="$HOME/.pyenv/bin:$PATH"
+    #     eval "$(pyenv init --path)"
+    #     eval "$(pyenv init -)"
+    #     pyenv shell 3.9.1
+    #     . scl_source enable devtoolset-8 || true
+    #     . /etc/profile.d/modules.sh || true
+    #     module load mpi
+    #     cmake \
+    #       -Dnotebooks=ON \
+    #       -B build
+    #     cmake --build build --config Release --target notebooks -- -j1
 
     - name: Run system tests
       shell: bash
