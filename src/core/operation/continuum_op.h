@@ -71,10 +71,10 @@ class ContinuumOp : public StandaloneOperationImpl {
 
  private:
   /// Last time when the operation was executed
-  double last_time_run_ = 0.0;
+  real_t last_time_run_ = 0.0;
   /// Timestep that is useded for `Diffuse(delta_t)` and computed from this and
   /// the last time the grid was updated.
-  double delta_t_ = 0.0;
+  real_t delta_t_ = 0.0;
 };
 
 }  // namespace bdm

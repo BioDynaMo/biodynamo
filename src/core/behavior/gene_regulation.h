@@ -69,7 +69,7 @@ class GeneRegulation : public Behavior {
     concentrations_.push_back(initial_concentration);
   }
 
-  const std::vector<double>& GetValues() const { return concentrations_; }
+  const std::vector<real_t>& GetValues() const { return concentrations_; }
 
   /// Method Run() contains the implementation for Runge-Khutta and Euler
   /// methods for solving ODE.

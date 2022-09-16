@@ -55,9 +55,11 @@ TEST(GeneRegulationTest, EulerTest) {
   gene_regulation.Run(&cell);
 
   const auto& concentrations = gene_regulation.GetValues();
-  EXPECT_NEAR(3.0003000000000002, concentrations[0], 1e-9);
-  EXPECT_NEAR(3.0103, concentrations[1], 1e-9);
-  EXPECT_NEAR(3.0203000000000002, concentrations[2], 1e-9);
+  EXPECT_NEAR(real_t(3.0003000000000002), concentrations[0],
+              abs_error<real_t>::value);
+  EXPECT_NEAR(real_t(3.0103), concentrations[1], abs_error<real_t>::value);
+  EXPECT_NEAR(real_t(3.0203000000000002), concentrations[2],
+              abs_error<real_t>::value);
 }
 
 // Example 1 from:
@@ -79,7 +81,7 @@ TEST(GeneRegulationTest, RK4Test) {
   gene_regulation.Run(&cell);
 
   const auto& concentrations = gene_regulation.GetValues();
-  EXPECT_NEAR(1.3229166667, concentrations[0], 1e-9);
+  EXPECT_REAL_EQ(real_t(1.3229166666666665), concentrations[0]);
 }
 
 }  // namespace gene_regulation_test_internal

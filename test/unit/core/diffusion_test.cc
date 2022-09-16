@@ -336,8 +336,8 @@ TEST(DiffusionTest, Thresholds) {
     dgrid->ChangeConcentrationBy(pos_lower, -1.0);
   }
 
-  EXPECT_DOUBLE_EQ(upper_threshold, dgrid->GetValue(pos_upper));
-  EXPECT_DOUBLE_EQ(lower_threshold, dgrid->GetValue(pos_lower));
+  EXPECT_REAL_EQ(upper_threshold, dgrid->GetValue(pos_upper));
+  EXPECT_REAL_EQ(lower_threshold, dgrid->GetValue(pos_lower));
 
   delete dgrid;
 }

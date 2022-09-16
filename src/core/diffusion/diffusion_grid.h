@@ -34,8 +34,8 @@ class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
-  DiffusionGrid(int substance_id, const std::string& substance_name, double dc,
-                double mu, int resolution = 11)
+  DiffusionGrid(int substance_id, const std::string& substance_name, real_t dc,
+                real_t mu, int resolution = 11)
       : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
         resolution_(resolution) {
@@ -55,7 +55,7 @@ class DiffusionGrid : public ScalarField {
   void Update() override;
 
   void Step(double dt) override { Diffuse(dt); }
-  void Diffuse(double dt);
+  void Diffuse(real_t dt);
 
   virtual void DiffuseWithClosedEdge(real_t dt) = 0;
   virtual void DiffuseWithOpenEdge(real_t dt) = 0;
@@ -78,9 +78,9 @@ class DiffusionGrid : public ScalarField {
   void ChangeConcentrationBy(size_t idx, real_t amount);
 
   /// Get the concentration at specified position
-  double GetValue(const Double3& position) const override;
-  [[deprecated("Use GetValue instead")]] double GetConcentration(
-      const Double3& position) const {
+  real_t GetValue(const Real3& position) const override;
+  [[deprecated("Use GetValue instead")]] real_t GetConcentration(
+      const Real3& position) const {
     return GetValue(position);
   };
 
@@ -92,8 +92,8 @@ class DiffusionGrid : public ScalarField {
   /// vector. Note that the gradient is computed via a central difference scheme
   /// on the underlying spatial discretization.
 
-  Double3 GetGradient(const Double3& position) const override {
-    Double3 gradient;
+  Real3 GetGradient(const Real3& position) const override {
+    Real3 gradient;
     GetGradient(position, &gradient, false);
     return gradient;
   };

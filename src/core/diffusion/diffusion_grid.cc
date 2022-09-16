@@ -314,7 +314,7 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount) {
 }
 
 /// Get the concentration at specified position
-double DiffusionGrid::GetValue(const Double3& position) const {
+real_t DiffusionGrid::GetValue(const Real3& position) const {
   auto idx = GetBoxIndex(position);
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::ChangeConcentrationBy",

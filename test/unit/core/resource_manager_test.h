@@ -639,7 +639,7 @@ inline void RunIOTest() {
   EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetContinuumId());
   EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrid(0)->GetContinuumName());
   EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrid(1)->GetContinuumName());
-  EXPECT_EQ(0.6,
+  EXPECT_EQ(real_t(0.6),
             restored_rm->GetDiffusionGrid(0)->GetDiffusionCoefficients()[0]);
   EXPECT_EQ(real_t(0.8),
             restored_rm->GetDiffusionGrid(1)->GetDiffusionCoefficients()[0]);
