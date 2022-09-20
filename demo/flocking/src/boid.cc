@@ -65,6 +65,24 @@ Real3 GetRandomVectorInUnitSphere() {
   return vec;
 };
 
+// ---------------------------------------------------------------------------
+// Method to allow flocking parameters to fluctuate dependent on space and time.
+real_t FluctuateCoefficient(real_t coefficient, real_t fluctuation_strength,
+                            real_t t_period, real_t x_period, real_t y_period,
+                            real_t z_period, real_t time,
+                            const Real3& position) {
+  real_t t_frequency{2 * Math::kPi / t_period};
+  real_t x_frequency{2 * Math::kPi / x_period};
+  real_t y_frequency{2 * Math::kPi / y_period};
+  real_t z_frequency{2 * Math::kPi / z_period};
+  real_t modulation{std::cos(t_frequency * time) *
+                    std::sin(x_frequency * position[0]) *
+                    std::sin(y_frequency * position[1]) *
+                    std::sin(z_frequency * position[2])};
+  modulation *= fluctuation_strength;
+  return coefficient * (1 + fluctuation_strength);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
 // Boid Class                                                                 //
@@ -182,6 +200,10 @@ void Boid::UpdateData() {
   if (limit_speed_) {
     new_velocity_ = UpperLimit(new_velocity_, max_speed_);
   }
+  // Sinosoidal modification of velocity
+  new_velocity_ *=
+      (1 + 0.001 * std::sin(2 * Math::kPi * GetPosition()[0] / 250));
+
   SetVelocity(new_velocity_);
 
   // update position with new velocity
@@ -224,6 +246,10 @@ Real3 Boid::GetNavigationalFeedbackForce() {
 };
 
 Real3 Boid::GetExtendedCohesionTerm(Real3 centre_of_mass) {
+  auto* scheduler = Simulation::GetActive()->GetScheduler();
+  auto* sparam = Simulation::GetActive()->GetParam()->Get<SimParam>();
+  real_t elapsed = scheduler->GetSimulatedTime();
+
   real_t ratio =
       (centre_of_mass - GetPosition()).Norm() / boid_perception_radius_;
   real_t h_1 = boid_interaction_radius_ / boid_perception_radius_;
@@ -231,25 +257,42 @@ Real3 Boid::GetExtendedCohesionTerm(Real3 centre_of_mass) {
 
   real_t scale = Zeta(ratio, h_1, h_2);
 
+  real_t c_a_3 = FluctuateCoefficient(
+      c_a_3_, sparam->fluctuation_strength_c_a_3, sparam->period_t_c_a_3,
+      sparam->period_x_c_a_3, sparam->period_y_c_a_3, sparam->period_z_c_a_3,
+      elapsed, GetPosition());
+
   Real3 result =
-      GetNormalizedArray(centre_of_mass - GetPosition()) * scale * c_a_3_;
+      GetNormalizedArray(centre_of_mass - GetPosition()) * scale * c_a_3;
   return result;
 };
 
 Real3 Boid::GetBoidInteractionTerm(const Boid* boid) {
+  auto* scheduler = Simulation::GetActive()->GetScheduler();
+  auto* sparam = Simulation::GetActive()->GetParam()->Get<SimParam>();
+  real_t elapsed = scheduler->GetSimulatedTime();
+
   Real3 u_a = {0, 0, 0};
 
   // add gradient-based term to u_a
   Real3 n_ij = GetNormalizedArray(boid->GetPosition() - GetPosition());
 
-  u_a += n_ij * Phi_a(Norm_sig(boid->GetPosition() - GetPosition())) * c_a_1_;
+  real_t c_a_1 = FluctuateCoefficient(
+      c_a_1_, sparam->fluctuation_strength_c_a_1, sparam->period_t_c_a_1,
+      sparam->period_x_c_a_1, sparam->period_y_c_a_1, sparam->period_z_c_a_1,
+      elapsed, GetPosition());
+  u_a += n_ij * Phi_a(Norm_sig(boid->GetPosition() - GetPosition())) * c_a_1;
 
   // add consensus term
   real_t r_a = Norm_sig(boid_interaction_radius_);
   real_t a_ij =
       Rho_h(Norm_sig(boid->GetPosition() - GetPosition()) / r_a, h_a_);
 
-  u_a += (boid->GetVelocity() - GetVelocity()) * a_ij * c_a_2_;
+  real_t c_a_2 = FluctuateCoefficient(
+      c_a_2_, sparam->fluctuation_strength_c_a_2, sparam->period_t_c_a_2,
+      sparam->period_x_c_a_2, sparam->period_y_c_a_2, sparam->period_z_c_a_2,
+      elapsed, GetPosition());
+  u_a += (boid->GetVelocity() - GetVelocity()) * a_ij * c_a_2;
 
   return u_a;
 };
