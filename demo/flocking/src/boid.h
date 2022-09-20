@@ -38,10 +38,10 @@ Real3 GetRandomVectorInUnitSphere();
 // ---------------------------------------------------------------------------
 // Method to allow flocking parameters to fluctuate dependent on space and time.
 // Fluctuations are sinsoidal in space and time.
-double FluctuateCoefficient(double coefficient, double fluctuation_strength,
-                            double t_period, double x_period, double y_period,
-                            double z_period, double time,
-                            const Double3& position);
+real_t FluctuateCoefficient(real_t coefficient, real_t fluctuation_strength,
+                            real_t t_period, real_t x_period, real_t y_period,
+                            real_t z_period, real_t time,
+                            const Real3& position);
 
 ////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------------//
@@ -180,7 +180,7 @@ struct RandomPerturbation : public Behavior {
   BDM_BEHAVIOR_HEADER(RandomPerturbation, Behavior, 1);
 
  public:
-  RandomPerturbation(double v = 1) : velocity_(v) { AlwaysCopyToNew(); }
+  RandomPerturbation(real_t v = 1) : velocity_(v) { AlwaysCopyToNew(); }
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
@@ -193,24 +193,24 @@ struct RandomPerturbation : public Behavior {
     }
   }
 
-  Double3 GetRandomPerturbation(const Double3& pos) {
+  Real3 GetRandomPerturbation(const Real3& pos) {
     auto* r = Simulation::GetActive()->GetRandom();
-    Double3 random_vector = r->UniformArray<3>(-1, 1);
+    Real3 random_vector = r->UniformArray<3>(-1, 1);
     random_vector *= velocity_;
     return random_vector;
   }
 
   void Run(Agent* agent) override {
     if (auto* boid = dynamic_cast<Boid*>(agent)) {
-      Double3 random_perturbation = GetRandomPerturbation(boid->GetPosition());
-      Double3 pos = boid->GetPosition();
+      Real3 random_perturbation = GetRandomPerturbation(boid->GetPosition());
+      Real3 pos = boid->GetPosition();
       pos += random_perturbation;
       boid->SetPosition(pos);
     }
   }
 
  private:
-  double velocity_;
+  real_t velocity_;
 };
 
 // Functor class needed to calculate neighbor data in Flocking
