@@ -194,6 +194,10 @@ class TimeSeries {
   /// Saves a json representation to disk
   void SaveJson(const std::string& full_filepath) const;
 
+  /// Saves raw data in CSV files (one Data object per file) with header:
+  /// x, y, y_error_low, y_error_high
+  void SaveCsv(const std::string& full_dirpath) const;
+
  private:
   std::unordered_map<std::string, Data> data_;
 

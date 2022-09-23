@@ -12,10 +12,13 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/analysis/time_series.h"
 #include <TBufferJSON.h>
+
+#include <fstream>
 #include <iostream>
+
 #include "core/analysis/reduce.h"
+#include "core/analysis/time_series.h"
 #include "core/scheduler.h"
 #include "core/simulation.h"
 #include "core/util/io.h"
@@ -441,6 +444,34 @@ void TimeSeries::Save(const std::string& full_filepath) const {
 // -----------------------------------------------------------------------------
 void TimeSeries::SaveJson(const std::string& full_filepath) const {
   TBufferJSON::ExportToFile(full_filepath.c_str(), this, Class());
+}
+
+void TimeSeries::SaveCsv(const std::string& full_dirpath) const {
+  for (const auto& entry : data_) {
+    const std::string& name = entry.first;
+    const Data& data = entry.second;
+
+    std::ofstream csv_file;
+    csv_file.open(Concat(full_dirpath, "/", name, ".csv"));
+
+    // Write header
+    csv_file << "x,y";
+    if (!data.y_error_low.empty() && !data.y_error_high.empty()) {
+      csv_file << "y_error_low,y_error_high";
+    }
+    csv_file << std::endl;
+
+    auto num_entries = data.x_values.size();
+    for (size_t idx = 0; idx < num_entries; idx++) {
+      csv_file << data.x_values[idx] << "," << data.y_values[idx];
+      if (!data.y_error_low.empty() && !data.y_error_high.empty()) {
+        csv_file << "," << data.y_error_low[idx] << ","
+                 << data.y_error_high[idx];
+      }
+      csv_file << std::endl;
+    }
+    csv_file.close();
+  }
 }
 
 }  // namespace experimental
