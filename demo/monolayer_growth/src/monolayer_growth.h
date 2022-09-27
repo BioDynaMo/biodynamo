@@ -56,7 +56,7 @@ inline int Simulate(int argc, const char** argv) {
   auto* sparam =
       param->Get<SimParam>();  // get a pointer to an instance of SimParam
 
-  double x_coord = sparam->pos0, y_coord;
+  real_t x_coord = sparam->pos0, y_coord;
 
   while (x_coord < sparam->posN) {
     y_coord = sparam->pos0;

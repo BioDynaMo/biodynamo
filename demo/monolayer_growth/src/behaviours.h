@@ -32,7 +32,7 @@ struct Growth : public Behavior {
   void Run(Agent* agent) override {
     if (auto* cell = dynamic_cast<CyclingCell*>(agent)) {
       auto* random = Simulation::GetActive()->GetRandom();
-      double ran = random->Uniform(0, 1) * 1.0;
+      real_t ran = random->Uniform(0, 1) * 1.0;
       auto* sparam =
           Simulation::GetActive()
               ->GetParam()
@@ -45,7 +45,7 @@ struct Growth : public Behavior {
       // If statements for checking what states we are in and if
       // a cell moves to the next state based on cumulative probability.
       if (cell->GetCycle() == 1) {
-        double p1 = (cell->GetDelt() / 7) * cell->GetDelt();
+        real_t p1 = (cell->GetDelt() / 7) * cell->GetDelt();
         if (p1 > ran) {
           // Changing cells state number or "cycle" postiion.
           cell->SetCycle(2);
@@ -55,21 +55,21 @@ struct Growth : public Behavior {
         }
 
       } else if (cell->GetCycle() == 2) {
-        double p2 = (cell->GetDelt() / 6) * cell->GetDelt();
+        real_t p2 = (cell->GetDelt() / 6) * cell->GetDelt();
         if (p2 > ran) {
           cell->SetCycle(3);
           cell->SetDelt(0);
         }
 
       } else if (cell->GetCycle() == 3) {
-        double p3 = (cell->GetDelt() / 3) * cell->GetDelt();
+        real_t p3 = (cell->GetDelt() / 3) * cell->GetDelt();
         if (p3 > ran) {
           cell->SetCycle(4);
           cell->SetDelt(0);
         }
 
       } else {
-        double p4 = (cell->GetDelt() / 2) * cell->GetDelt();
+        real_t p4 = (cell->GetDelt() / 2) * cell->GetDelt();
         if (p4 > ran) {
           cell->SetCycle(1);
           cell->SetDelt(0);
@@ -80,7 +80,7 @@ struct Growth : public Behavior {
             int neighbours_counter = 0;
             auto* ctxt = Simulation::GetActive()->GetExecutionContext();
             auto check_surrounding_cells =
-                L2F([&](Agent* neighbor, double squared_distance) {
+                L2F([&](Agent* neighbor, real_t squared_distance) {
                   neighbours_counter++;
                 });
             ctxt->ForEachNeighbor(check_surrounding_cells, *cell,
@@ -98,7 +98,7 @@ struct Growth : public Behavior {
       // Checking if our cells volume is less than the maximum possible valuable
       // achievalbe. if yes cell grows if no then cell does not grow.
       if (cell->GetVolume() < cell->GetVmax()) {
-        double alpha = 1.0;
+        real_t alpha = 1.0;
         // cell->ChangeVolume(cell->GetVmax() - cell->GetVolume());
         cell->ChangeVolume(
             alpha * cell->GetVolume() *

@@ -26,7 +26,7 @@ class CyclingCell : public Cell {  // our object extends the Cell object
 
  public:
   CyclingCell() {}
-  explicit CyclingCell(const Double3& position) : Base(position) {}
+  explicit CyclingCell(const Real3& position) : Base(position) {}
   virtual ~CyclingCell() {}
 
   /// If CyclingCell divides, the daughter has to initialize its attributes
@@ -57,28 +57,28 @@ class CyclingCell : public Cell {  // our object extends the Cell object
   int GetCycle() const { return cycle_; }
 
   // getter and setter for cells maximum volume
-  void SetVmax(double vm) { vmax_ = vm; }
-  double GetVmax() const { return vmax_; }
+  void SetVmax(real_t vm) { vmax_ = vm; }
+  real_t GetVmax() const { return vmax_; }
 
   // getter and setter for cells initial volume
-  void SetVinit(double vi) { vinit_ = vi; }
-  double GetVinit() const { return vinit_; }
+  void SetVinit(real_t vi) { vinit_ = vi; }
+  real_t GetVinit() const { return vinit_; }
 
   // getter and setter for delt t
-  void SetDelt(double dt) { delt_ = dt; }
-  double GetDelt() const { return delt_; }
+  void SetDelt(real_t dt) { delt_ = dt; }
+  real_t GetDelt() const { return delt_; }
 
   // getter and setter for relative cell volume
-  void SetVrel(double vr) { vrel_ = vr; }
-  double GetVrel() const { return vrel_; }
+  void SetVrel(real_t vr) { vrel_ = vr; }
+  real_t GetVrel() const { return vrel_; }
 
  private:
   bool can_divide_;
   int cycle_;
-  double vmax_;
-  double vinit_;
-  double delt_;
-  double vrel_;
+  real_t vmax_;
+  real_t vinit_;
+  real_t delt_;
+  real_t vrel_;
 };
 
 }  // namespace bdm

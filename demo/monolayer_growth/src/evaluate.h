@@ -31,7 +31,7 @@ inline void SetupResultCollection(Simulation* sim) {
   auto* ts = sim->GetTimeSeries();
   auto get_env_dims = [](Simulation* sim) {
     auto* env = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
-    double env_dim_x, env_dim_y;
+    real_t env_dim_x, env_dim_y;
     env_dim_x = env->GetDimensions()[1] - env->GetDimensions()[0];
     env_dim_y = env->GetDimensions()[3] - env->GetDimensions()[2];
     return std::max(env_dim_x, env_dim_y);
@@ -41,7 +41,7 @@ inline void SetupResultCollection(Simulation* sim) {
     auto* sparam =
         sim->GetParam()
             ->Get<SimParam>();  // get a pointer to an instance of SimParam
-    return (double)(sparam->t0 + scheduler->GetSimulatedSteps() *
+    return (real_t)(sparam->t0 + scheduler->GetSimulatedSteps() *
                                      sparam->step_length / 24.);  // /24 -> days
   };
 
@@ -53,7 +53,7 @@ inline void PrintResults(const std::vector<TimeSeries>& individual_rd,
                          const bool plot_legend = true,
                          const std::string& filename = "result") {
   TimeSeries allts;
-  std::vector<double> times, sizes;
+  std::vector<real_t> times, sizes;
 
   int i = 0;
   for (auto& ind_ts : individual_rd) {

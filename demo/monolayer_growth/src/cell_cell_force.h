@@ -25,7 +25,7 @@ class CellCellForce : public InteractionForce {
   CellCellForce() {}
   virtual ~CellCellForce() {}
 
-  virtual Double4 Calculate(const Agent* lhs, const Agent* rhs) const override;
+  virtual Real4 Calculate(const Agent* lhs, const Agent* rhs) const override;
 };
 
 }  // namespace bdm
