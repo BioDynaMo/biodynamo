@@ -41,10 +41,12 @@ struct CountCells : public StandaloneOperationImpl {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
 
-    (*total_cells_).push_back(rm->GetNumAgents());
+    total_cells_.push_back(rm->GetNumAgents());
   }
 
-  std::vector<size_t>* total_cells_;
+  std::vector<size_t> GetMeasurements() { return total_cells_; }
+
+  std::vector<size_t> total_cells_;
 };
 
 }  // namespace bdm

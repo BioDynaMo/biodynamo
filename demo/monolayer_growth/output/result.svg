@@ -5,7 +5,7 @@ output/result.svg
 </title>
 <desc>
 Creator: ROOT Version 6.25/01
-CreationDate: Tue Sep 27 10:13:31 2022</desc>
+CreationDate: Tue Sep 27 12:52:06 2022</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="404.949" fill="white"/>
@@ -134,24 +134,24 @@ CreationDate: Tue Sep 27 10:13:31 2022</desc>
 <g transform="rotate(-90,11.8386,178.178)">
 <text xml:space="preserve" x="11.8386" y="178.178" fill="black" font-size="13.503" font-family="Helvetica">2D Monolayer size (um)</text>
 </g>
-<path d="M77.8085,334.229l 26.6008, -6.20018l 26.6008, -18.6005l 26.6008, -12.4004l 26.6008, -12.4004l 26.6008, -12.4004l 26.6008, -18.6005l 26.6008, -18.6005l 26.6008, -18.6005l 26.6008, -24.8007l 26.6008, -18.6005l 26.6008, -24.8007l 26.6008,
- -24.8007l 26.6008, -18.6005l 26.6008, -31.0009l 26.6008, -18.6005" fill="none" stroke="#0000ff" fill-opacity="0.20" stroke-opacity="0.20" stroke-width="2"/>
+<path d="M77.8085,334.229l 26.6008, -6.20018l 26.6008, -12.4004l 26.6008, -18.6005l 26.6008, -12.4004l 26.6008, -12.4004l 26.6008, -18.6005l 26.6008, -18.6005l 26.6008, -18.6005l 26.6008, -18.6005l 26.6008, -24.8007l 26.6008, -24.8007l 26.6008,
+ -24.8007l 26.6008, -18.6005l 26.6008, -24.8007l 26.6008, -24.8007" fill="none" stroke="#0000ff" fill-opacity="0.20" stroke-opacity="0.20" stroke-width="2"/>
 <g fill="#0000ff" fill-opacity="0.70" stroke-opacity="0.70">
 <circle cx="77.8085" cy="334.229" r="3.23959"/>
 <circle cx="104.409" cy="328.028" r="3.23959"/>
-<circle cx="131.01" cy="309.428" r="3.23959"/>
+<circle cx="131.01" cy="315.628" r="3.23959"/>
 <circle cx="157.611" cy="297.027" r="3.23959"/>
 <circle cx="184.212" cy="284.627" r="3.23959"/>
 <circle cx="210.812" cy="272.227" r="3.23959"/>
 <circle cx="237.413" cy="253.626" r="3.23959"/>
 <circle cx="264.014" cy="235.026" r="3.23959"/>
 <circle cx="290.615" cy="216.425" r="3.23959"/>
-<circle cx="317.216" cy="191.624" r="3.23959"/>
+<circle cx="317.216" cy="197.825" r="3.23959"/>
 <circle cx="343.816" cy="173.024" r="3.23959"/>
 <circle cx="370.417" cy="148.223" r="3.23959"/>
 <circle cx="397.018" cy="123.422" r="3.23959"/>
 <circle cx="423.619" cy="104.822" r="3.23959"/>
-<circle cx="450.219" cy="73.8209" r="3.23959"/>
+<circle cx="450.219" cy="80.0211" r="3.23959"/>
 <circle cx="476.82" cy="55.2204" r="3.23959"/>
 </g>
 <path d="M77.8085,349.729l 66.502, -40.3012l 29.2609, -29.4509l 97.0928, -69.752l 33.251, -32.551l 186.205, -122.454" fill="none" stroke="black" fill-opacity="0.20" stroke-opacity="0.20" stroke-width="2"/>
