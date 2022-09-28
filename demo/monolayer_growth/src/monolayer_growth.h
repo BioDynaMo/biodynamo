@@ -67,7 +67,6 @@ inline int Simulate(int argc, const char** argv) {
 
       cell->SetDiameter(sparam->cell_diam);
       cell->SetVinit(cell->GetVolume());
-      cell->SetVrel(100.0);
       cell->SetVmax(cell->GetVolume() * 2.0);
       cell->SetDelt(0.0);
       cell->SetCycle(CellState::kG1);
