@@ -54,7 +54,7 @@ inline int Simulate(int argc, const char** argv) {
   auto* rm = simulation.GetResourceManager();
   auto* scheduler = simulation.GetScheduler();  // Get the Scheduler
   auto* param = simulation.GetParam();
-  auto* sparam =
+  const auto* sparam =
       param->Get<SimParam>();  // get a pointer to an instance of SimParam
 
   real_t x_coord = sparam->pos0;

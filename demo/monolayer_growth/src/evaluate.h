@@ -48,7 +48,7 @@ inline void SetupResultCollection(Simulation* sim) {
   // Time
   auto get_time = [](Simulation* sim) {
     auto* scheduler = sim->GetScheduler();
-    auto* sparam =
+    const auto* sparam =
         sim->GetParam()
             ->Get<SimParam>();  // get a pointer to an instance of SimParam
     return (real_t)(sparam->t0 + scheduler->GetSimulatedSteps() *

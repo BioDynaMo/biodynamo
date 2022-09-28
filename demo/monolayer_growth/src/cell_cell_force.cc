@@ -55,7 +55,7 @@ Real4 CellCellForce::Calculate(const Agent* lhs, const Agent* rhs) const {
     return {force2on1[0], force2on1[1], force2on1[2], 0};
   }
   // the force itself
-  auto* sparam =
+  const auto* sparam =
       Simulation::GetActive()
           ->GetParam()
           ->Get<SimParam>();  // get a pointer to an instance of SimParam

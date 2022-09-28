@@ -33,7 +33,7 @@ struct GrowthAndCellCycle : public Behavior {
     if (auto* cell = dynamic_cast<CyclingCell*>(agent)) {
       auto* random = Simulation::GetActive()->GetRandom();
       real_t ran = random->Uniform(0, 1) * 1.0;
-      auto* sparam =
+      const auto* sparam =
           Simulation::GetActive()
               ->GetParam()
               ->Get<SimParam>();  // get a pointer to an instance of SimParam
