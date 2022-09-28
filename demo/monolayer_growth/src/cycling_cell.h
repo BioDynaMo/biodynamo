@@ -20,6 +20,7 @@
 
 namespace bdm {
 
+// In this example our cell have 4 total states which they can exist in.
 enum CellState { kG1, kS, kG2, kM };
 
 class CyclingCell : public Cell {  // our object extends the Cell object
