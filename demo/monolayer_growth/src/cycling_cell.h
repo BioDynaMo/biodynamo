@@ -20,6 +20,8 @@
 
 namespace bdm {
 
+enum CellState { kG1, kS, kG2, kM };
+
 class CyclingCell : public Cell {  // our object extends the Cell object
                                    // create the header with our new data member
   BDM_AGENT_HEADER(CyclingCell, Cell, 1);
@@ -53,8 +55,8 @@ class CyclingCell : public Cell {  // our object extends the Cell object
   bool GetCanDivide() const { return can_divide_; }
 
   // getter and setter for cells current phase of cell cycle
-  void SetCycle(int c) { cycle_ = c; }
-  int GetCycle() const { return cycle_; }
+  void SetCycle(CellState c) { cycle_ = c; }
+  CellState GetCycle() const { return cycle_; }
 
   // getter and setter for cells maximum volume
   void SetVmax(real_t vm) { vmax_ = vm; }
@@ -74,7 +76,7 @@ class CyclingCell : public Cell {  // our object extends the Cell object
 
  private:
   bool can_divide_;
-  int cycle_;
+  CellState cycle_ = CellState::kG1;
   real_t vmax_;
   real_t vinit_;
   real_t delt_;

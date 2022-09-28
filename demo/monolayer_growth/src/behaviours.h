@@ -23,11 +23,11 @@
 namespace bdm {
 
 // Define growth behaviour
-struct Growth : public Behavior {
-  BDM_BEHAVIOR_HEADER(Growth, Behavior, 1);
+struct GrowthAndCellCycle : public Behavior {
+  BDM_BEHAVIOR_HEADER(GrowthAndCellCycle, Behavior, 1);
 
-  Growth() { AlwaysCopyToNew(); }
-  virtual ~Growth() {}
+  GrowthAndCellCycle() { AlwaysCopyToNew(); }
+  virtual ~GrowthAndCellCycle() {}
 
   void Run(Agent* agent) override {
     if (auto* cell = dynamic_cast<CyclingCell*>(agent)) {
@@ -44,34 +44,34 @@ struct Growth : public Behavior {
 
       // If statements for checking what states we are in and if
       // a cell moves to the next state based on cumulative probability.
-      if (cell->GetCycle() == 1) {
+      if (cell->GetCycle() == CellState::kG1) {
         real_t p1 = (cell->GetDelt() / 7) * cell->GetDelt();
         if (p1 > ran) {
           // Changing cells state number or "cycle" postiion.
-          cell->SetCycle(2);
+          cell->SetCycle(CellState::kS);
           // Delta t is always reset when exiting a state for use in the next
           // state.
           cell->SetDelt(0);
         }
 
-      } else if (cell->GetCycle() == 2) {
+      } else if (cell->GetCycle() == CellState::kS) {
         real_t p2 = (cell->GetDelt() / 6) * cell->GetDelt();
         if (p2 > ran) {
-          cell->SetCycle(3);
+          cell->SetCycle(CellState::kG2);
           cell->SetDelt(0);
         }
 
-      } else if (cell->GetCycle() == 3) {
+      } else if (cell->GetCycle() == CellState::kG2) {
         real_t p3 = (cell->GetDelt() / 3) * cell->GetDelt();
         if (p3 > ran) {
-          cell->SetCycle(4);
+          cell->SetCycle(CellState::kM);
           cell->SetDelt(0);
         }
 
       } else {
         real_t p4 = (cell->GetDelt() / 2) * cell->GetDelt();
         if (p4 > ran) {
-          cell->SetCycle(1);
+          cell->SetCycle(CellState::kG1);
           cell->SetDelt(0);
           // Checking if cell has reached the critical volume which leads to
           // cell division. Here 0.975 Vmax is roughly 195% the initial cell
@@ -99,13 +99,10 @@ struct Growth : public Behavior {
       // achievalbe. if yes cell grows if no then cell does not grow.
       if (cell->GetVolume() < cell->GetVmax()) {
         real_t alpha = 1.0;
-        // cell->ChangeVolume(cell->GetVmax() - cell->GetVolume());
         cell->ChangeVolume(
             alpha * cell->GetVolume() *
             ((cell->GetVmax() - cell->GetVolume()) / cell->GetVmax()));
       }
-
-      // cell->SetVrel((cell->GetVolume()/cell->GetVinit())*100.0);
     }
   }
 };

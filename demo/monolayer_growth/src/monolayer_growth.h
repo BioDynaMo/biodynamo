@@ -57,7 +57,8 @@ inline int Simulate(int argc, const char** argv) {
   auto* sparam =
       param->Get<SimParam>();  // get a pointer to an instance of SimParam
 
-  real_t x_coord = sparam->pos0, y_coord;
+  real_t x_coord = sparam->pos0;
+  real_t y_coord;
 
   while (x_coord < sparam->posN) {
     y_coord = sparam->pos0;
@@ -69,9 +70,9 @@ inline int Simulate(int argc, const char** argv) {
       cell->SetVrel(100.0);
       cell->SetVmax(cell->GetVolume() * 2.0);
       cell->SetDelt(0.0);
-      cell->SetCycle(1);
+      cell->SetCycle(CellState::kG1);
       cell->SetCanDivide(true);
-      cell->AddBehavior(new Growth());
+      cell->AddBehavior(new GrowthAndCellCycle());
       rm->AddAgent(cell);  // put the created cell in our cells structure
       y_coord += sparam->cell_diam;
     }
