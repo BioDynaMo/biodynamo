@@ -17,6 +17,9 @@
 
 namespace bdm {
 
+/// Custom force. Changed adhesive and repulsive parameters compared to standard
+/// force to achieve quick separation of mother and daughter cells after
+/// division.
 Real4 CellCellForce::Calculate(const Agent* lhs, const Agent* rhs) const {
   const Real3& ref_mass_location = lhs->GetPosition();
   real_t ref_diameter = lhs->GetDiameter();
