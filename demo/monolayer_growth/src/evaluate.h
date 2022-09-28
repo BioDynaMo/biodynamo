@@ -29,6 +29,8 @@ namespace bdm {
 
 inline void SetupResultCollection(Simulation* sim) {
   auto* ts = sim->GetTimeSeries();
+
+  // Monolayer size
   auto get_env_dims = [](Simulation* sim) {
     auto* env = dynamic_cast<UniformGridEnvironment*>(sim->GetEnvironment());
     real_t env_dim_x, env_dim_y;
@@ -36,6 +38,14 @@ inline void SetupResultCollection(Simulation* sim) {
     env_dim_y = env->GetDimensions()[3] - env->GetDimensions()[2];
     return std::max(env_dim_x, env_dim_y);
   };
+
+  // Number of cells
+  auto get_num_cells = [](Simulation* sim) {
+    auto* rm = sim->GetResourceManager();
+    return static_cast<real_t>(rm->GetNumAgents());
+  };
+
+  // Time
   auto get_time = [](Simulation* sim) {
     auto* scheduler = sim->GetScheduler();
     auto* sparam =
@@ -44,59 +54,50 @@ inline void SetupResultCollection(Simulation* sim) {
     return (real_t)(sparam->t0 + scheduler->GetSimulatedSteps() *
                                      sparam->step_length / 24.);  // /24 -> days
   };
-
+  ts->AddCollector("total_cells", get_num_cells, get_time);
   ts->AddCollector("env_dims", get_env_dims, get_time);
 }
 
-inline void PrintResults(const std::vector<TimeSeries>& individual_rd,
-                         const std::string& folder,
-                         const bool plot_legend = true,
-                         const std::string& filename = "result") {
+inline void ExportResults(const bool plot_legend = true,
+                          const std::string& filename = "result") {
+  // Prerequisites
+  const std::string folder = Simulation::GetActive()->GetOutputDir();
+  auto* ts = Simulation::GetActive()->GetTimeSeries();
   TimeSeries allts;
   std::vector<real_t> times, sizes;
 
-  int i = 0;
-  for (auto& ind_ts : individual_rd) {
-    allts.Add(ind_ts, Concat("i", i++));
-    times = ind_ts.GetXValues("env_dims");
-    sizes = ind_ts.GetYValues("env_dims");
-  }
+  // Add simulated data
+  allts.Add(*ts, Concat("i", 0));
+  times = ts->GetXValues("env_dims");
+  sizes = ts->GetYValues("env_dims");
 
-  // Add exp data from Figure 1 from Drasdo and Hoehme (2005)
+  // Add experimental data from Figure 1 from Drasdo and Hoehme (2005)
   allts.Add("experimental_data",
             {336 / 24., 386 / 24., 408 / 24., 481 / 24., 506 / 24., 646 / 24.},
             {1140, 1400, 1590, 2040, 2250, 3040});
 
+  // Initialize line graph
   LineGraph lg(&allts, "", "Time [days]", "2D Monolayer size (um)", plot_legend,
                nullptr, 350, 250);
 
-  for (uint64_t i = 0; i < individual_rd.size(); ++i) {
-    lg.Add(Concat("env_dims-i", i), "Sim data ", "LP", kBlue, 0.2, kSolid, 2,
-           kBlue, 0.7, kFullCircle, 0.5);
-  }
+  // Add simulated data
+  lg.Add(Concat("env_dims-i", 0), "Sim data ", "LP", kBlue, 0.2, kSolid, 2,
+         kBlue, 0.7, kFullCircle, 0.5);
 
   // Add style for exp data
   lg.Add("experimental_data", "Exp data ", "LP", kBlack, 0.2, kSolid, 2, kBlack,
          0.7, kFullCircle, 0.5);
 
+  // Add legend
   if (plot_legend) {
     lg.SetLegendPosNDC(0.1, 0.7, 0.3, 0.9);
   }
 
-  // Export monolayer size to csv file
-  std::ofstream file;
-  if (!file.is_open()) {
-    file.open("monolayer_diam.csv");
-  }
+  // Save plot
+  lg.SaveAs(Concat(folder, "/", filename), {".svg", ".png"});
 
-  for (size_t i = 0; i < times.size(); i++) {
-    file << (int)times[i] << "\t " << sizes[i] << std::endl;
-  }
-
-  file.close();
-
-  // lg.GetTMultiGraph()->SetMinimum(0.);
-  lg.SaveAs(Concat(folder, "/", filename), {".svg"});
+  // Save data
+  ts->SaveJson(Concat(folder, "/monolayer_growth.json"));
 }
 
 }  // namespace bdm

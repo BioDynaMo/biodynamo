@@ -33,6 +33,7 @@ using experimental::TimeSeries;
 inline int Simulate(int argc, const char** argv) {
   // Adding space edge of but to be used in larger use case.
   auto set_param = [](Param* param) {
+    param->use_progress_bar = true;
     param->bound_space = Param::BoundSpaceMode::kOpen;
     param->min_bound = -2000;
     param->max_bound = 2000;
@@ -87,11 +88,6 @@ inline int Simulate(int argc, const char** argv) {
   auto* move_cells_back = NewOperation("move_cells_plane");
   simulation.GetScheduler()->ScheduleOp(move_cells_back);
 
-  // Count number of cells every 30 min (half hour = 5 time steps)
-  auto* count_cells = NewOperation("count_cells");
-  count_cells->frequency_ = sparam->count_cell_freq;
-  simulation.GetScheduler()->ScheduleOp(count_cells);
-
   // Set time series freq (will measure the size of the uniform grid
   // environment)
   auto* updatetimeseries_op = scheduler->GetOps("update time series")[0];
@@ -103,30 +99,12 @@ inline int Simulate(int argc, const char** argv) {
   auto* force_implementation = op->GetImplementation<MechanicalForcesOp>();
   force_implementation->SetInteractionForce(custom_force);
 
+  // Run simulation
   simulation.GetScheduler()->Simulate(sparam->time_steps);
-
-  // Export cell number
-  std::ofstream file1;
-  if (!file1.is_open()) {
-    file1.open("total_cells.csv");
-  }
-
-  std::vector<size_t> total_cells =
-      count_cells->GetImplementation<CountCells>()->GetMeasurements();
-
-  for (size_t i = 0; i < total_cells.size(); i++) {
-    file1 << i * sparam->count_cell_freq << "\t " << total_cells[i]
-          << std::endl;
-  }
-
-  file1.close();
-
   std::cout << "Simulation completed successfully!" << std::endl;
 
-  // Export grid size
-  std::vector<TimeSeries> results;
-  results.push_back(*simulation.GetTimeSeries());
-  PrintResults(results, "output");
+  // Export results (images and data)
+  ExportResults();
 
   return 0;
 }

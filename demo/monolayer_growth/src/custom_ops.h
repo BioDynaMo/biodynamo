@@ -33,22 +33,6 @@ struct MoveCellsPlane : public AgentOperationImpl {
   }
 };
 
-// Counts the number of cells
-struct CountCells : public StandaloneOperationImpl {
-  BDM_OP_HEADER(CountCells);
-
-  void operator()() override {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-
-    total_cells_.push_back(rm->GetNumAgents());
-  }
-
-  std::vector<size_t> GetMeasurements() { return total_cells_; }
-
-  std::vector<size_t> total_cells_;
-};
-
 }  // namespace bdm
 
 #endif
