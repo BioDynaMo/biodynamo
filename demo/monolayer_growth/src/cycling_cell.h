@@ -62,21 +62,23 @@ class CyclingCell : public Cell {  // our object extends the Cell object
   CellState GetCycle() const { return cycle_; }
 
   // getter and setter for cells maximum volume
-  // in this case cells have a maximum volue they can reach before having to divide
-  // thus we set it here.
+  // in this case cells have a maximum volue they can reach before having to
+  // divide thus we set it here.
   void SetVmax(real_t vm) { vmax_ = vm; }
   real_t GetVmax() const { return vmax_; }
 
   // getter and setter for cells initial volume
-  // cells initial volume needs to be handle during simulation so is simply stored
-  // here and kept within the agents themselves. Especially important if one wishes
-  // to have multiple agents which divide differently/ different initial condtions.
+  // cells initial volume needs to be handle during simulation so is simply
+  // stored here and kept within the agents themselves. Especially important if
+  // one wishes to have multiple agents which divide differently/ different
+  // initial condtions.
   void SetVinit(real_t vi) { vinit_ = vi; }
   real_t GetVinit() const { return vinit_; }
 
   // getter and setter for delt t
-  // Delt is used for comparing against a cells maximum amount of time it can be within
-  // a given state and needs to be kept track of throughout the whole simulation.
+  // Delt is used for comparing against a cells maximum amount of time it can be
+  // within a given state and needs to be kept track of throughout the whole
+  // simulation.
   void SetDelt(real_t dt) { delt_ = dt; }
   real_t GetDelt() const { return delt_; }
 
