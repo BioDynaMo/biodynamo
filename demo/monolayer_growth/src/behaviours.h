@@ -30,6 +30,12 @@ struct GrowthAndCellCycle : public Behavior {
   virtual ~GrowthAndCellCycle() {}
 
   void Run(Agent* agent) override {
+    // Define the maximum times for each phase of the cell cycle
+    const double kG1Duration = 7;
+    const double kSDuration = 6;
+    const double kG2Duration = 3;
+    const double kMDuration = 2;
+
     if (auto* cell = dynamic_cast<CyclingCell*>(agent)) {
       auto* random = Simulation::GetActive()->GetRandom();
       real_t ran = random->Uniform(0, 1) * 1.0;
@@ -45,7 +51,7 @@ struct GrowthAndCellCycle : public Behavior {
       // If statements for checking what states we are in and if
       // a cell moves to the next state based on cumulative probability.
       if (cell->GetCycle() == CellState::kG1) {
-        real_t p1 = (cell->GetDeltaT() / 7) * cell->GetDeltaT();
+        real_t p1 = (cell->GetDeltaT() / kG1Duration) * cell->GetDeltaT();
         if (p1 > ran) {
           // Changing cells state number or "cycle" postiion.
           cell->SetCycle(CellState::kS);
@@ -55,21 +61,21 @@ struct GrowthAndCellCycle : public Behavior {
         }
 
       } else if (cell->GetCycle() == CellState::kS) {
-        real_t p2 = (cell->GetDeltaT() / 6) * cell->GetDeltaT();
+        real_t p2 = (cell->GetDeltaT() / kSDuration) * cell->GetDeltaT();
         if (p2 > ran) {
           cell->SetCycle(CellState::kG2);
           cell->SetDeltaT(0);
         }
 
       } else if (cell->GetCycle() == CellState::kG2) {
-        real_t p3 = (cell->GetDeltaT() / 3) * cell->GetDeltaT();
+        real_t p3 = (cell->GetDeltaT() / kG2Duration) * cell->GetDeltaT();
         if (p3 > ran) {
           cell->SetCycle(CellState::kM);
           cell->SetDeltaT(0);
         }
 
       } else {
-        real_t p4 = (cell->GetDeltaT() / 2) * cell->GetDeltaT();
+        real_t p4 = (cell->GetDeltaT() / kMDuration) * cell->GetDeltaT();
         if (p4 > ran) {
           cell->SetCycle(CellState::kG1);
           cell->SetDeltaT(0);
