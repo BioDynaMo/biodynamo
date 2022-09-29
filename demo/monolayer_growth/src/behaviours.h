@@ -44,8 +44,9 @@ struct GrowthAndCellCycle : public Behavior {
 
       // Counter for Delta t at each stage
       // Used for calculating probability of moving to next state.
-      cell->SetDeltaT(cell->GetDeltaT() +
-                      sparam->time_scale * param->simulation_time_step);
+      //cell->SetDeltaT(cell->GetDeltaT() +
+      //                sparam->time_scale * param->simulation_time_step);
+      cell->SetDeltaT(cell->GetDeltaT() + 1.0);
 
       // If statements for checking what states we are in and if
       // a cell moves to the next state based on cumulative probability.
