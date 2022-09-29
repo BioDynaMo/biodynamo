@@ -40,39 +40,39 @@ struct GrowthAndCellCycle : public Behavior {
 
       // Counter for Delta t at each stage
       // Used for calculating probability of moving to next state.
-      cell->SetDelt(cell->GetDelt() + 0.1);
+      cell->SetDeltaT(cell->GetDeltaT() + 0.1);
 
       // If statements for checking what states we are in and if
       // a cell moves to the next state based on cumulative probability.
       if (cell->GetCycle() == CellState::kG1) {
-        real_t p1 = (cell->GetDelt() / 7) * cell->GetDelt();
+        real_t p1 = (cell->GetDeltaT() / 7) * cell->GetDeltaT();
         if (p1 > ran) {
           // Changing cells state number or "cycle" postiion.
           cell->SetCycle(CellState::kS);
           // Delta t is always reset when exiting a state for use in the next
           // state.
-          cell->SetDelt(0);
+          cell->SetDeltaT(0);
         }
 
       } else if (cell->GetCycle() == CellState::kS) {
-        real_t p2 = (cell->GetDelt() / 6) * cell->GetDelt();
+        real_t p2 = (cell->GetDeltaT() / 6) * cell->GetDeltaT();
         if (p2 > ran) {
           cell->SetCycle(CellState::kG2);
-          cell->SetDelt(0);
+          cell->SetDeltaT(0);
         }
 
       } else if (cell->GetCycle() == CellState::kG2) {
-        real_t p3 = (cell->GetDelt() / 3) * cell->GetDelt();
+        real_t p3 = (cell->GetDeltaT() / 3) * cell->GetDeltaT();
         if (p3 > ran) {
           cell->SetCycle(CellState::kM);
-          cell->SetDelt(0);
+          cell->SetDeltaT(0);
         }
 
       } else {
-        real_t p4 = (cell->GetDelt() / 2) * cell->GetDelt();
+        real_t p4 = (cell->GetDeltaT() / 2) * cell->GetDeltaT();
         if (p4 > ran) {
           cell->SetCycle(CellState::kG1);
-          cell->SetDelt(0);
+          cell->SetDeltaT(0);
           // Checking if cell has reached the critical volume which leads to
           // cell division. Here 0.975 Vmax is roughly 195% the initial cell
           // volume.

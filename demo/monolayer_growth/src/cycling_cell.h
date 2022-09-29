@@ -38,9 +38,9 @@ class CyclingCell : public Cell {  // our object extends the Cell object
 
     if (auto* mother = dynamic_cast<CyclingCell*>(event.existing_agent)) {
       cycle_ = mother->cycle_;
-      delt_ = mother->delt_;
+      delta_t_ = mother->delta_t_;
       vmax_ = mother->vmax_;
-      delt_ = mother->vinit_;
+      delta_t_ = mother->vinit_;
       if (event.GetUid() == CellDivisionEvent::kUid) {
         // the daughter will be able to divide
         can_divide_ = true;
@@ -74,19 +74,19 @@ class CyclingCell : public Cell {  // our object extends the Cell object
   void SetVinit(real_t vi) { vinit_ = vi; }
   real_t GetVinit() const { return vinit_; }
 
-  // getter and setter for delt t
-  // Delt is used for comparing against a cells maximum amount of time it can be
-  // within a given state and needs to be kept track of throughout the whole
+  // getter and setter for delta_t_
+  // Delta_t is used for comparing against a cells maximum amount of time it can
+  // be within a given state and needs to be kept track of throughout the whole
   // simulation.
-  void SetDelt(real_t dt) { delt_ = dt; }
-  real_t GetDelt() const { return delt_; }
+  void SetDeltaT(real_t dt) { delta_t_ = dt; }
+  real_t GetDeltaT() const { return delta_t_; }
 
  private:
-  bool can_divide_;
-  CellState cycle_ = CellState::kG1;
-  real_t vmax_;
-  real_t vinit_;
-  real_t delt_;
+  bool can_divide_;                   // can the cell divide?
+  CellState cycle_ = CellState::kG1;  // what state is the cell in?
+  real_t vmax_;     // maximum volume the cell can reach before dividing
+  real_t vinit_;    // initial volume of the cell
+  real_t delta_t_;  // time spent in a given state
 };
 
 }  // namespace bdm
