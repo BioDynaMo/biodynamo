@@ -41,6 +41,7 @@ inline int Simulate(int argc, const char** argv) {
     param->visualization_interval = 500;
     param->visualize_agents["CyclingCell"] = {};
     param->statistics = false;
+    param->simulation_time_step = 0.01;
     param->simulation_max_displacement = 100;  // 3 is the default value
   };
 
@@ -51,11 +52,10 @@ inline int Simulate(int argc, const char** argv) {
   // Create a new simulation
   Simulation simulation(argc, argv, set_param);
   SetupResultCollection(&simulation);
-  auto* rm = simulation.GetResourceManager();
-  auto* scheduler = simulation.GetScheduler();  // Get the Scheduler
-  auto* param = simulation.GetParam();
-  const auto* sparam =
-      param->Get<SimParam>();  // get a pointer to an instance of SimParam
+  auto* rm = simulation.GetResourceManager();   // Get the resource manager
+  auto* scheduler = simulation.GetScheduler();  // Get the scheduler
+  auto* param = simulation.GetParam();          // Get the parameters
+  const auto* sparam = param->Get<SimParam>();  // Get the simulation parameters
 
   real_t x_coord = sparam->pos0;
   real_t y_coord;
@@ -100,7 +100,9 @@ inline int Simulate(int argc, const char** argv) {
   force_implementation->SetInteractionForce(custom_force);
 
   // Run simulation
-  simulation.GetScheduler()->Simulate(sparam->time_steps);
+  size_t time_steps = static_cast<size_t>(
+      sparam->total_time / (sparam->time_scale * param->simulation_time_step));
+  simulation.GetScheduler()->Simulate(time_steps);
   std::cout << "Simulation completed successfully!" << std::endl;
 
   // Export results (images and data)

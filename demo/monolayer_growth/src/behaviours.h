@@ -39,14 +39,13 @@ struct GrowthAndCellCycle : public Behavior {
     if (auto* cell = dynamic_cast<CyclingCell*>(agent)) {
       auto* random = Simulation::GetActive()->GetRandom();
       real_t ran = random->Uniform(0, 1) * 1.0;
-      const auto* sparam =
-          Simulation::GetActive()
-              ->GetParam()
-              ->Get<SimParam>();  // get a pointer to an instance of SimParam
+      const auto* param = Simulation::GetActive()->GetParam();
+      const auto* sparam = param->Get<SimParam>();
 
       // Counter for Delta t at each stage
       // Used for calculating probability of moving to next state.
-      cell->SetDeltaT(cell->GetDeltaT() + 0.1);
+      cell->SetDeltaT(cell->GetDeltaT() +
+                      sparam->time_scale * param->simulation_time_step);
 
       // If statements for checking what states we are in and if
       // a cell moves to the next state based on cumulative probability.

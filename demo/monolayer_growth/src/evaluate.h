@@ -45,14 +45,13 @@ inline void SetupResultCollection(Simulation* sim) {
     return static_cast<real_t>(rm->GetNumAgents());
   };
 
-  // Time
+  // Time in days
   auto get_time = [](Simulation* sim) {
     auto* scheduler = sim->GetScheduler();
-    const auto* sparam =
-        sim->GetParam()
-            ->Get<SimParam>();  // get a pointer to an instance of SimParam
-    return (real_t)(sparam->t0 + scheduler->GetSimulatedSteps() *
-                                     sparam->step_length / 24.);  // /24 -> days
+    const auto* param = sim->GetParam();
+    const auto* sparam = param->Get<SimParam>();
+    return (real_t)(sparam->t0 +
+                    scheduler->GetSimulatedTime() * sparam->time_scale / 24.);
   };
   ts->AddCollector("total_cells", get_num_cells, get_time);
   ts->AddCollector("env_dims", get_env_dims, get_time);
