@@ -41,7 +41,6 @@ class CyclingCell : public Cell {  // our object extends the Cell object
       delt_ = mother->delt_;
       vmax_ = mother->vmax_;
       delt_ = mother->vinit_;
-      vrel_ = mother->vrel_;
       if (event.GetUid() == CellDivisionEvent::kUid) {
         // the daughter will be able to divide
         can_divide_ = true;
@@ -62,7 +61,7 @@ class CyclingCell : public Cell {  // our object extends the Cell object
   CellState GetCycle() const { return cycle_; }
 
   // getter and setter for cells maximum volume
-  // in this case cells have a maximum volue they can reach before having to
+  // in this case cells have a maximum volume they can reach before having to
   // divide thus we set it here.
   void SetVmax(real_t vm) { vmax_ = vm; }
   real_t GetVmax() const { return vmax_; }
@@ -71,7 +70,7 @@ class CyclingCell : public Cell {  // our object extends the Cell object
   // cells initial volume needs to be handle during simulation so is simply
   // stored here and kept within the agents themselves. Especially important if
   // one wishes to have multiple agents which divide differently/ different
-  // initial condtions.
+  // initial conditions.
   void SetVinit(real_t vi) { vinit_ = vi; }
   real_t GetVinit() const { return vinit_; }
 
