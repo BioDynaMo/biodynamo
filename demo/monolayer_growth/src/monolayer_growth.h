@@ -41,7 +41,7 @@ inline int Simulate(int argc, const char** argv) {
     param->visualization_interval = 500;
     param->visualize_agents["CyclingCell"] = {};
     param->statistics = false;
-    param->simulation_time_step = 0.01;
+    param->simulation_time_step = 0.1;
     param->simulation_max_displacement = 100;  // 3 is the default value
   };
 
@@ -95,13 +95,15 @@ inline int Simulate(int argc, const char** argv) {
 
   // Custom force module
   auto* custom_force = new CellCellForce();
-  auto* op = scheduler->GetOps("mechanical forces")[0];
-  auto* force_implementation = op->GetImplementation<MechanicalForcesOp>();
+  auto* mech_op = scheduler->GetOps("mechanical forces")[0];
+  auto* force_implementation = mech_op->GetImplementation<MechanicalForcesOp>();
   force_implementation->SetInteractionForce(custom_force);
+  mech_op->frequency_ = static_cast<size_t>(param->simulation_time_step / 0.01);
 
   // Run simulation
-  size_t time_steps = static_cast<size_t>(
-      sparam->total_time / (sparam->time_scale * param->simulation_time_step));
+  size_t time_steps =
+      static_cast<size_t>(sparam->total_time / param->simulation_time_step);
+
   simulation.GetScheduler()->Simulate(time_steps);
   std::cout << "Simulation completed successfully!" << std::endl;
 

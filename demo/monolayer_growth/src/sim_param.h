@@ -45,13 +45,10 @@ struct SimParam : public ParamGroup {
   real_t attraction_coeff = 0.001;
 
   // Forces: repulsion coeff default 2
-  real_t repulsion_coeff = 30000;
+  real_t repulsion_coeff = 300;
 
   // Threshold for cell division depending on how "filled" the surrounding is
   int neighbours_threshold = 20;
-
-  // Time scale (transforms from simulation_time_step to relevant time scale)
-  double time_scale = 10.;
 };
 
 }  // namespace bdm

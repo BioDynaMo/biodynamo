@@ -50,8 +50,7 @@ inline void SetupResultCollection(Simulation* sim) {
     auto* scheduler = sim->GetScheduler();
     const auto* param = sim->GetParam();
     const auto* sparam = param->Get<SimParam>();
-    return (real_t)(sparam->t0 +
-                    scheduler->GetSimulatedTime() * sparam->time_scale / 24.);
+    return (real_t)(sparam->t0 + scheduler->GetSimulatedTime() / 24.);
   };
   ts->AddCollector("total_cells", get_num_cells, get_time);
   ts->AddCollector("env_dims", get_env_dims, get_time);

@@ -31,10 +31,10 @@ struct GrowthAndCellCycle : public Behavior {
 
   void Run(Agent* agent) override {
     // Define the maximum times for each phase of the cell cycle
-    const double kG1Duration = 7;
-    const double kSDuration = 6;
-    const double kG2Duration = 3;
-    const double kMDuration = 2;
+    const real_t kG1Duration = 7;
+    const real_t kSDuration = 6;
+    const real_t kG2Duration = 3;
+    const real_t kMDuration = 2;
 
     if (auto* cell = dynamic_cast<CyclingCell*>(agent)) {
       auto* random = Simulation::GetActive()->GetRandom();
@@ -44,14 +44,12 @@ struct GrowthAndCellCycle : public Behavior {
 
       // Counter for Delta t at each stage
       // Used for calculating probability of moving to next state.
-      //cell->SetDeltaT(cell->GetDeltaT() +
-      //                sparam->time_scale * param->simulation_time_step);
-      cell->SetDeltaT(cell->GetDeltaT() + 1.0);
+      cell->SetDeltaT(cell->GetDeltaT() + param->simulation_time_step);
 
       // If statements for checking what states we are in and if
       // a cell moves to the next state based on cumulative probability.
       if (cell->GetCycle() == CellState::kG1) {
-        real_t p1 = (cell->GetDeltaT() / kG1Duration) * cell->GetDeltaT();
+        real_t p1 = (cell->GetDeltaT() / kG1Duration);
         if (p1 > ran) {
           // Changing cells state number or "cycle" postiion.
           cell->SetCycle(CellState::kS);
@@ -61,21 +59,21 @@ struct GrowthAndCellCycle : public Behavior {
         }
 
       } else if (cell->GetCycle() == CellState::kS) {
-        real_t p2 = (cell->GetDeltaT() / kSDuration) * cell->GetDeltaT();
+        real_t p2 = (cell->GetDeltaT() / kSDuration);
         if (p2 > ran) {
           cell->SetCycle(CellState::kG2);
           cell->SetDeltaT(0);
         }
 
       } else if (cell->GetCycle() == CellState::kG2) {
-        real_t p3 = (cell->GetDeltaT() / kG2Duration) * cell->GetDeltaT();
+        real_t p3 = (cell->GetDeltaT() / kG2Duration);
         if (p3 > ran) {
           cell->SetCycle(CellState::kM);
           cell->SetDeltaT(0);
         }
 
       } else {
-        real_t p4 = (cell->GetDeltaT() / kMDuration) * cell->GetDeltaT();
+        real_t p4 = (cell->GetDeltaT() / kMDuration);
         if (p4 > ran) {
           cell->SetCycle(CellState::kG1);
           cell->SetDeltaT(0);
