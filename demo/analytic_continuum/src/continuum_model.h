@@ -38,21 +38,21 @@ class AnalyticContinuum : public ScalarField {
   /// solution of a differential equation. Here, the time dependence is
   /// completley characterized by the parameter `t` in f(x,y,z,t). Thus, we only
   /// need to make sure that `t` (`time_`) is updated..
-  void Step(double dt) final { time_ += dt; }
+  void Step(real_t dt) final { time_ += dt; }
 
   /// This function implements f(x,y,z,t) = (1-e^{-t}) sin(w_x*x) * sin(w_y*y).
-  virtual double GetValue(const Double3 &position) const final {
-    double time_scale_factor = 1.0 - std::exp(-time_);
-    double w_x = 2 * Math::kPi / 50;
-    double sin_factor_x = std::sin(position[0] * w_x);
-    double w_y = 2 * Math::kPi / 100;
-    double sin_factor_y = std::sin(position[1] * w_y);
+  virtual real_t GetValue(const Real3 &position) const final {
+    real_t time_scale_factor = 1.0 - std::exp(-time_);
+    real_t w_x = 2 * Math::kPi / 50;
+    real_t sin_factor_x = std::sin(position[0] * w_x);
+    real_t w_y = 2 * Math::kPi / 100;
+    real_t sin_factor_y = std::sin(position[1] * w_y);
     return time_scale_factor * sin_factor_x * sin_factor_y;
   }
 
   /// Our simulation does not not make use of the gradient information so we
   /// omit this function.
-  virtual Double3 GetGradient(const Double3 &position) const final {
+  virtual Real3 GetGradient(const Real3 &position) const final {
     // Not implemented
     Log::Warning("AnalyticContinuum::GetGradient() not implemented");
     return {0, 0, 0};
@@ -61,7 +61,7 @@ class AnalyticContinuum : public ScalarField {
   BDM_CLASS_DEF_OVERRIDE(AnalyticContinuum, 1);  // NOLINT
 
  private:
-  double time_ = 0.0;
+  real_t time_ = 0.0;
 };
 
 }  // namespace bdm

@@ -25,14 +25,14 @@ class TestField : public Continuum {
  public:
   void Initialize() final {}
   void Update() final {}
-  void Step(double dt) final { n_steps_ += 1; }
+  void Step(real_t dt) final { n_steps_ += 1; }
   int GetNSteps() { return n_steps_; }
 
  private:
   int n_steps_ = 0;
 };
 
-inline void CellFactory(const std::vector<Double3>& positions) {
+inline void CellFactory(const std::vector<Real3>& positions) {
   auto* rm = Simulation::GetActive()->GetResourceManager();
   rm->Reserve(positions.size());
   for (size_t i = 0; i < positions.size(); i++) {
@@ -44,19 +44,19 @@ inline void CellFactory(const std::vector<Double3>& positions) {
 
 TEST(ContinuumTest, AsynchronousUpdates) {
   Simulation simulation(TEST_NAME);
-  std::vector<Double3> positions;
+  std::vector<Real3> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
   auto* tf1 = new TestField();
-  double ts1 = 0.05;
+  real_t ts1 = 0.05;
   tf1->SetContinuumId(0);
   tf1->SetContinuumName("TestField1");
   tf1->SetTimeStep(ts1);
 
   auto* tf2 = new TestField();
-  double ts2 = 0.002;
+  real_t ts2 = 0.002;
   tf2->SetContinuumId(1);
   tf2->SetContinuumName("TestField2");
   tf2->SetTimeStep(ts2);
@@ -85,12 +85,12 @@ TEST(ContinuumTest, AsynchronousUpdates) {
   EXPECT_EQ(param->simulation_time_step * n_sim_steps / ts1, tf1->GetNSteps());
   EXPECT_EQ(param->simulation_time_step * n_sim_steps / ts2, tf2->GetNSteps());
   EXPECT_EQ(n_sim_steps / frequency, tf3->GetNSteps());
-  EXPECT_DOUBLE_EQ(n_sim_steps * param->simulation_time_step,
-                   tf1->GetSimulatedTime());
-  EXPECT_DOUBLE_EQ(n_sim_steps * param->simulation_time_step,
-                   tf2->GetSimulatedTime());
-  EXPECT_DOUBLE_EQ(n_sim_steps * param->simulation_time_step,
-                   tf3->GetSimulatedTime());
+  EXPECT_REAL_EQ(n_sim_steps * param->simulation_time_step,
+                 tf1->GetSimulatedTime());
+  EXPECT_REAL_EQ(n_sim_steps * param->simulation_time_step,
+                 tf2->GetSimulatedTime());
+  EXPECT_REAL_EQ(n_sim_steps * param->simulation_time_step,
+                 tf3->GetSimulatedTime());
 }
 
 }  // namespace bdm

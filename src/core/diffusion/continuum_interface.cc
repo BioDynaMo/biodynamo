@@ -16,8 +16,8 @@
 
 namespace bdm {
 
-void Continuum::IntegrateTimeAsynchronously(double dt) {
-  if (time_step_ != std::numeric_limits<double>::max()) {
+void Continuum::IntegrateTimeAsynchronously(real_t dt) {
+  if (time_step_ != std::numeric_limits<real_t>::max()) {
     // Uptdate the total time to simulate
     time_to_simulate_ += dt;
     // Compute the number of time steps to simulate
@@ -38,8 +38,8 @@ void Continuum::IntegrateTimeAsynchronously(double dt) {
   }
 }
 
-void Continuum::SetTimeStep(double dt) { time_step_ = dt; }
+void Continuum::SetTimeStep(real_t dt) { time_step_ = dt; }
 
-double Continuum::GetTimeStep() const { return time_step_; }
+real_t Continuum::GetTimeStep() const { return time_step_; }
 
 }  // namespace bdm

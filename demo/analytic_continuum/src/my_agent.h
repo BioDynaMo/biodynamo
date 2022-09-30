@@ -27,17 +27,17 @@ class ContinuumRetrieverAgent : public SphericalAgent {
 
  public:
   ContinuumRetrieverAgent() {}
-  explicit ContinuumRetrieverAgent(const Double3& position) : Base(position) {}
+  explicit ContinuumRetrieverAgent(const Real3& position) : Base(position) {}
   virtual ~ContinuumRetrieverAgent() {}
 
-  double GetMyContinuumValue() const { return my_continuum_value_; }
-  void SetMyContinuumValue(double continuum_value) {
+  real_t GetMyContinuumValue() const { return my_continuum_value_; }
+  void SetMyContinuumValue(real_t continuum_value) {
     my_continuum_value_ = continuum_value;
   }
 
  private:
   /// This member stores the value of the continuum at the agent's position.
-  double my_continuum_value_ = 0.0;
+  real_t my_continuum_value_ = 0.0;
 };
 
 }  // namespace bdm

@@ -31,7 +31,7 @@ inline int Simulate(int argc, const char** argv) {
   Simulation simulation(argc, argv);
 
   // Define function to create an agent.
-  auto create_agent = [](const Double3& position) {
+  auto create_agent = [](const Real3& position) {
     auto* agent = new ContinuumRetrieverAgent(position);
     agent->SetDiameter(1.0);
     // Add a behavior to the agent that allows it to sense the continuum value.
@@ -41,7 +41,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // Use the ModelInitializer to distribute agents in a 3D grid (cube).
   uint64_t agents_per_dim = 50;
-  double space_between_agents = 5;
+  real_t space_between_agents = 5;
   ModelInitializer::Grid3D(agents_per_dim, space_between_agents, create_agent);
 
   // Add a new continuum model to the simulation.

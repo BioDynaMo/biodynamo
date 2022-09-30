@@ -54,7 +54,7 @@ class DiffusionGrid : public ScalarField {
   /// concentration / gradient
   void Update() override;
 
-  void Step(double dt) override { Diffuse(dt); }
+  void Step(real_t dt) override { Diffuse(dt); }
   void Diffuse(real_t dt);
 
   virtual void DiffuseWithClosedEdge(real_t dt) = 0;
@@ -98,7 +98,7 @@ class DiffusionGrid : public ScalarField {
     return gradient;
   };
 
-  virtual void GetGradient(const Double3& position, Double3* gradient,
+  virtual void GetGradient(const Real3& position, Real3* gradient,
                            bool normalize = true) const;
 
   std::array<uint32_t, 3> GetBoxCoordinates(const Real3& position) const;

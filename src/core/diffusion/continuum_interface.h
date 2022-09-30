@@ -56,7 +56,7 @@ class Continuum {
   /// `ContinuumOp::operator()` method. The method calles the `Step` method with
   /// the appropriate time step(s) as defined via the `time_step_` member. If
   /// the time step is not set, `dt` is used.
-  void IntegrateTimeAsynchronously(double dt);
+  void IntegrateTimeAsynchronously(real_t dt);
 
   /// Initializes the continuum. This method is called via
   /// `Scheduler::Initialize`. For some implementations, this method may be
@@ -78,7 +78,7 @@ class Continuum {
   /// the step method is used to advance the solution in time. If your numerical
   /// scheme has requirements for it's parameters depending on `dt`, make sure
   /// to verify them in this method.
-  virtual void Step(double dt) = 0;
+  virtual void Step(real_t dt) = 0;
 
   /// Returns the ID of the continuum.
   int GetContinuumId() const { return continuum_id_; }
@@ -93,28 +93,28 @@ class Continuum {
   void SetContinuumName(const std::string &name) { continuum_name_ = name; }
 
   /// Returns the time simulated by the continuum.
-  double GetSimulatedTime() const { return simulated_time_; }
+  real_t GetSimulatedTime() const { return simulated_time_; }
 
   /// Sets the (max.) time step for the continuum time integration with `Step`.
-  void SetTimeStep(double dt);
+  void SetTimeStep(real_t dt);
 
   /// Returns the time step for the continuum. If no time time step was set, it
-  /// returns std::numeric_limits<double>::max(). Note however, the continuum
+  /// returns std::numeric_limits<real_t>::max(). Note however, the continuum
   /// uses the time step of the diffusion operation / simulation.
-  double GetTimeStep() const;
+  real_t GetTimeStep() const;
 
  private:
   /// Name of the continuum.
   std::string continuum_name_ = "";
 
   /// Time step of the continuum (may differ from the simulation time step).
-  double time_step_ = std::numeric_limits<double>::max();
+  real_t time_step_ = std::numeric_limits<real_t>::max();
 
   /// Passed simulation time for the continuum.
-  double simulated_time_ = 0.0;
+  real_t simulated_time_ = 0.0;
 
   /// Time that the continuum (still) has to integrate.
-  double time_to_simulate_ = 0.0;
+  real_t time_to_simulate_ = 0.0;
 
   /// Id of the continuum.
   int continuum_id_ = -1;
@@ -130,10 +130,10 @@ class ScalarField : public Continuum {
   ~ScalarField() override = default;
 
   /// Returns the value of the scalar field at the given position.
-  virtual double GetValue(const Double3 &position) const = 0;
+  virtual real_t GetValue(const Real3 &position) const = 0;
 
   /// Returns the gradient of the scalar field at the given position.
-  virtual Double3 GetGradient(const Double3 &position) const = 0;
+  virtual Real3 GetGradient(const Real3 &position) const = 0;
 
   BDM_CLASS_DEF_OVERRIDE(ScalarField, 1);  // NOLINT
 };
@@ -146,13 +146,13 @@ class VectorField : public Continuum {
   ~VectorField() override = default;
 
   /// Returns the value of the vector field at the given position.
-  virtual Double3 GetValue(const Double3 &position) const = 0;
+  virtual Real3 GetValue(const Real3 &position) const = 0;
 
   /// Returns the divergence of the vector field at the given position.
-  virtual double GetDiv(const Double3 &position) const = 0;
+  virtual real_t GetDiv(const Real3 &position) const = 0;
 
   /// Returns the curl of the vector field at the given position.
-  virtual double GetCurl(const Double3 &position) const = 0;
+  virtual real_t GetCurl(const Real3 &position) const = 0;
 
   BDM_CLASS_DEF_OVERRIDE(VectorField, 1);  // NOLINT
 };

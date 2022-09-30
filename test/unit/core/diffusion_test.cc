@@ -805,13 +805,13 @@ TEST(DiffusionTest, GradientComputation) {
   }
 
   // Check alternative GetGradient method
-  Double3 grad4 = d_grid->GetGradient(pos1);
-  Double3 grad5 = d_grid->GetGradient(pos2);
-  Double3 grad6 = d_grid->GetGradient(pos3);
+  Real3 grad4 = d_grid->GetGradient(pos1);
+  Real3 grad5 = d_grid->GetGradient(pos2);
+  Real3 grad6 = d_grid->GetGradient(pos3);
   for (size_t i = 0; i < 3; i++) {
-    EXPECT_DOUBLE_EQ(grad1[i], grad4[i]);
-    EXPECT_DOUBLE_EQ(grad2[i], grad5[i]);
-    EXPECT_DOUBLE_EQ(grad3[i], grad6[i]);
+    EXPECT_REAL_EQ(grad1[i], grad4[i]);
+    EXPECT_REAL_EQ(grad2[i], grad5[i]);
+    EXPECT_REAL_EQ(grad3[i], grad6[i]);
   }
 }
 
