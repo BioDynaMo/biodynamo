@@ -25,6 +25,13 @@ void Continuum::IntegrateTimeAsynchronously(real_t dt) {
     time_to_simulate_ += dt;
     // Compute the number of time steps to simulate
     auto n_steps = static_cast<int>(std::floor(time_to_simulate_ / time_step_));
+    // Treat numerical instabilities. E.g. if time_to_simulate_ = 0.19999999999
+    // and time_step_ = 0.1, n_steps = 1, but we want n_steps = 2.
+    double left_over = time_to_simulate_ - (n_steps + 1) * time_step_;
+    const double absolute_tolerance = 1e-9;
+    if (left_over < 0 && left_over > -absolute_tolerance) {
+      n_steps++;
+    }
     // Simulate for the appropriate number of time steps
     for (int i = 0; i < n_steps; i++) {
       Step(time_step_);

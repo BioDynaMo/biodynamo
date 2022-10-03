@@ -99,6 +99,8 @@ class Continuum {
   real_t GetSimulatedTime() const { return simulated_time_; }
 
   /// Sets the (max.) time step for the continuum time integration with `Step`.
+  /// The way that the time step is treated in the `IntegrateTimeAsynchronously`
+  /// call suggests to use dt > 1e-7.
   void SetTimeStep(real_t dt);
 
   /// Returns the time step for the continuum.
