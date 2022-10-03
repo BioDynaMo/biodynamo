@@ -100,7 +100,8 @@ class Continuum {
 
   /// Sets the (max.) time step for the continuum time integration with `Step`.
   /// The way that the time step is treated in the `IntegrateTimeAsynchronously`
-  /// call suggests to use dt > 1e-7.
+  /// call suggests to use dt > 1e-6 (real_t = float) or dt > 1e-8 (real_t =
+  /// double).
   void SetTimeStep(real_t dt);
 
   /// Returns the time step for the continuum.

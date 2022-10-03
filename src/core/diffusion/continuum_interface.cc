@@ -28,7 +28,14 @@ void Continuum::IntegrateTimeAsynchronously(real_t dt) {
     // Treat numerical instabilities. E.g. if time_to_simulate_ = 0.19999999999
     // and time_step_ = 0.1, n_steps = 1, but we want n_steps = 2.
     double left_over = time_to_simulate_ - (n_steps + 1) * time_step_;
-    const double absolute_tolerance = 1e-9;
+    double absolute_tolerance = 0;
+    if (sizeof(real_t) == 8) {
+      // for double precision
+      absolute_tolerance = 1e-10;
+    } else {
+      // for single precision
+      absolute_tolerance = 1e-8;
+    }
     if (left_over < 0 && left_over > -absolute_tolerance) {
       n_steps++;
     }
