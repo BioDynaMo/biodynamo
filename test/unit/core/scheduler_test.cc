@@ -193,7 +193,7 @@ TEST_F(SchedulerTest, OperationManagement) {
   // remove operation
   scheduler->UnscheduleOp(op2);
   scheduler->Simulate(10);
-  EXPECT_EQ(18u, op1_impl->counter);
+  EXPECT_EQ(17u, op1_impl->counter);
   EXPECT_EQ(20u, op2_impl->counter);
   EXPECT_EQ(0u, op3_impl->counter);
 

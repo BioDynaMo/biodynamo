@@ -98,16 +98,17 @@ class Continuum {
   /// Sets the (max.) time step for the continuum time integration with `Step`.
   void SetTimeStep(real_t dt);
 
-  /// Returns the time step for the continuum. If no time time step was set, it
-  /// returns std::numeric_limits<real_t>::max(). Note however, the continuum
-  /// uses the time step of the diffusion operation / simulation.
+  /// Returns the time step for the continuum.
   real_t GetTimeStep() const;
 
  private:
   /// Name of the continuum.
   std::string continuum_name_ = "";
 
-  /// Time step of the continuum (may differ from the simulation time step).
+  /// Time step of the continuum (may differ from the simulation time step). If
+  /// not set, defaults to parameter `simulation_time_step` in the first step
+  /// and `simulation_time_step * diffusion_op->frequency_` for all further
+  /// iterations.
   real_t time_step_ = std::numeric_limits<real_t>::max();
 
   /// Passed simulation time for the continuum.

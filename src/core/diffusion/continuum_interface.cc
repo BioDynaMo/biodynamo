@@ -13,6 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "continuum_interface.h"
+#include "core/param/param.h"
+#include "core/scheduler.h"
+#include "core/simulation.h"
 
 namespace bdm {
 
@@ -40,6 +43,14 @@ void Continuum::IntegrateTimeAsynchronously(real_t dt) {
 
 void Continuum::SetTimeStep(real_t dt) { time_step_ = dt; }
 
-real_t Continuum::GetTimeStep() const { return time_step_; }
-
+real_t Continuum::GetTimeStep() const {
+  if (time_step_ != std::numeric_limits<real_t>::max()) {
+    return time_step_;
+  } else {
+    auto* scheduler = Simulation::GetActive()->GetScheduler();
+    auto* op = scheduler->GetOps("continuum")[0];
+    return Simulation::GetActive()->GetParam()->simulation_time_step *
+           op->frequency_;
+  }
+}
 }  // namespace bdm

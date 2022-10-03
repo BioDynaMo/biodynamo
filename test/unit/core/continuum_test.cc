@@ -43,7 +43,12 @@ inline void CellFactory(const std::vector<Real3>& positions) {
 };
 
 TEST(ContinuumTest, AsynchronousUpdates) {
-  Simulation simulation(TEST_NAME);
+  const double time_step = 0.01;
+  auto set_param = [&](Param* param) {
+    param->simulation_time_step = time_step;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* param = simulation.GetParam();
   std::vector<Real3> positions;
   positions.push_back({-10, -10, -10});
   positions.push_back({90, 90, 90});
@@ -77,20 +82,38 @@ TEST(ContinuumTest, AsynchronousUpdates) {
   op->frequency_ = frequency;
   simulation.GetScheduler()->Simulate(n_sim_steps);
 
-  auto* param = simulation.GetParam();
+  // The frequency of 2 triggest the operation every 2 time steps, e.g. 10 times
+  // for a total simulation time of 19/20*0.01=0.19.
 
-  // The first step in the simulation is not included in the number of steps
-  // performed by the TestFields.
+  // 1.1 TestField1 steps: 0.19 / 0.05 = 3.8 -> 3
+  const int expected_n_steps_tf1 = 3;
+  // 1.2 Expected time trivially obtained by multiplying the number of steps
+  //     with the time step
+  const double expected_time_tf1 = expected_n_steps_tf1 * ts1;
+  // 2.1 TestField2 steps: 0.19 / 0.002 = 95 -> 95
+  const int expected_n_steps_tf2 = 95;
+  // 2.2. Simulated time is trivially computed as time steps * time step size.
+  const double expected_time_tf2 = expected_n_steps_tf2 * ts2;
+  // 3.1 Without time step, the field will by default adapt a time step of
+  //      simulation_time_ for the first step and  simulation_time_step *
+  //      frequency for all further steps.
+  const int expected_n_steps_tf3 = 10;
+  // 3.2 According to previous point, the expected time is 0.01 * 1 + 0.02 * 9 =
+  //     0.19.
+  const double expected_time_tf3 = 0.19;
 
-  EXPECT_EQ(param->simulation_time_step * n_sim_steps / ts1, tf1->GetNSteps());
-  EXPECT_EQ(param->simulation_time_step * n_sim_steps / ts2, tf2->GetNSteps());
-  EXPECT_EQ(n_sim_steps / frequency, tf3->GetNSteps());
-  EXPECT_REAL_EQ(n_sim_steps * param->simulation_time_step,
-                 tf1->GetSimulatedTime());
-  EXPECT_REAL_EQ(n_sim_steps * param->simulation_time_step,
-                 tf2->GetSimulatedTime());
-  EXPECT_REAL_EQ(n_sim_steps * param->simulation_time_step,
-                 tf3->GetSimulatedTime());
+  // Check time step
+  EXPECT_EQ(tf1->GetTimeStep(), ts1);
+  EXPECT_EQ(tf2->GetTimeStep(), ts2);
+  EXPECT_EQ(tf3->GetTimeStep(), param->simulation_time_step * frequency);
+  // Check simulated steps
+  EXPECT_EQ(expected_n_steps_tf1, tf1->GetNSteps());
+  EXPECT_EQ(expected_n_steps_tf2, tf2->GetNSteps());
+  EXPECT_EQ(expected_n_steps_tf3, tf3->GetNSteps());
+  // Check simulated time
+  EXPECT_REAL_EQ(expected_time_tf1, tf1->GetSimulatedTime());
+  EXPECT_REAL_EQ(expected_time_tf2, tf2->GetSimulatedTime());
+  EXPECT_REAL_EQ(expected_time_tf3, tf3->GetSimulatedTime());
 }
 
 }  // namespace bdm
