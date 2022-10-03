@@ -398,7 +398,24 @@ void Scheduler::PrintInfo(std::ostream& out) {
     out << std::setw(60) << post_op->name_ << std::setw(20)
         << post_op->frequency_ << "\n";
   }
-
+  // unschedule ops
+  if (!unschedule_ops_.empty()) {
+    out << "\nUnschedule operations:\n";
+    for (auto* unschedule_op : unschedule_ops_) {
+      out << std::setw(60) << unschedule_op->name_ << std::setw(20)
+          << unschedule_op->frequency_ << "\n";
+    }
+  }
+  // schedule ops
+  if (!schedule_ops_.empty()) {
+    out << "\nSchedule operations:\n";
+    out << "(0) kSchedule, (1) kPreSchedule, (2) kPostSchedule\n";
+    for (auto schedule_op : schedule_ops_) {
+      out << "(" << schedule_op.first << ")" << std::setw(57)
+          << schedule_op.second->name_ << std::setw(20)
+          << schedule_op.second->frequency_ << "\n";
+    }
+  }
   out << "\n" << std::string(80, '-') << "\n";
 }
 
