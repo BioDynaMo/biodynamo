@@ -134,9 +134,9 @@ void Scheduler::Simulate(uint64_t steps) {
 
   Initialize(steps);
   for (unsigned step = 0; step < steps; step++) {
-    UpdateSimulatedTime();
     Execute();
     total_steps_++;
+    UpdateSimulatedTime();
     Backup();
   }
 }
@@ -144,9 +144,9 @@ void Scheduler::Simulate(uint64_t steps) {
 void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
   Initialize();
   while (!exit_condition()) {
-    UpdateSimulatedTime();
     Execute();
     total_steps_++;
+    UpdateSimulatedTime();
   }
 }
 

@@ -83,24 +83,24 @@ TEST(ContinuumTest, AsynchronousUpdates) {
   simulation.GetScheduler()->Simulate(n_sim_steps);
 
   // The frequency of 2 triggest the operation every 2 time steps, e.g. 10 times
-  // for a total simulation time of 19/20*0.01=0.19.
+  // for a total simulation time of (10-1)*0.01*2 = 0.18. The -1 is due to the
+  // fact that the first operation is executed at t=0 which does not trigger the
+  // Step() function of the continuum.
 
-  // 1.1 TestField1 steps: 0.19 / 0.05 = 3.8 -> 3
+  // 1.1 TestField1 steps: 0.18 / 0.05 = 3.6 -> 3
   const int expected_n_steps_tf1 = 3;
   // 1.2 Expected time trivially obtained by multiplying the number of steps
   //     with the time step
   const double expected_time_tf1 = expected_n_steps_tf1 * ts1;
   // 2.1 TestField2 steps: 0.19 / 0.002 = 95 -> 95
-  const int expected_n_steps_tf2 = 95;
+  const int expected_n_steps_tf2 = 90;
   // 2.2. Simulated time is trivially computed as time steps * time step size.
   const double expected_time_tf2 = expected_n_steps_tf2 * ts2;
   // 3.1 Without time step, the field will by default adapt a time step of
-  //      simulation_time_ for the first step and  simulation_time_step *
-  //      frequency for all further steps.
-  const int expected_n_steps_tf3 = 10;
-  // 3.2 According to previous point, the expected time is 0.01 * 1 + 0.02 * 9 =
-  //     0.19.
-  const double expected_time_tf3 = 0.19;
+  //      simulation_time_step * frequency.
+  const int expected_n_steps_tf3 = 9;
+  // 3.2 According to previous point, the expected time is 0.02 * 9 = 0.18.
+  const double expected_time_tf3 = 0.18;
 
   // Check time step
   EXPECT_EQ(tf1->GetTimeStep(), ts1);

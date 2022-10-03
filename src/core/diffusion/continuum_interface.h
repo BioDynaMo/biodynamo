@@ -45,7 +45,10 @@ namespace bdm {
 /// the synchronisation of the simulation: the frequency of the `ContinuumOp`
 /// and the time step of the `Continuum`. The former defines the synchronization
 /// frequency between ABM and the continuum. The latter defines the time step of
-/// the continuum.
+/// the continuum. Note that the scheduler passes a time step of 0 to the
+/// ContinuumOp in the first simulation step, which does not call back to Step
+/// in this case. Thus, Step() is called in the second time step the earliest
+/// (later for higher frequencies).
 class Continuum {
  public:
   Continuum() = default;
@@ -106,9 +109,8 @@ class Continuum {
   std::string continuum_name_ = "";
 
   /// Time step of the continuum (may differ from the simulation time step). If
-  /// not set, defaults to parameter `simulation_time_step` in the first step
-  /// and `simulation_time_step * diffusion_op->frequency_` for all further
-  /// iterations.
+  /// not set, the implementation defaults to stepping with
+  /// `simulation_time_step * continuum_op->frequency_`.
   real_t time_step_ = std::numeric_limits<real_t>::max();
 
   /// Passed simulation time for the continuum.
