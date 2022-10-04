@@ -47,7 +47,7 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
                           decay_constant, resolution);
   }
 
-  rm->AddDiffusionGrid(dgrid);
+  rm->AddContinuum(dgrid);
 }
 
 }  // namespace bdm

@@ -606,8 +606,8 @@ inline void RunIOTest() {
 
   DiffusionGrid* dgrid_1 = new EulerGrid(0, "Kalium", 0.4, 0, 2);
   DiffusionGrid* dgrid_2 = new EulerGrid(1, "Natrium", 0.2, 0.1, 1);
-  rm->AddDiffusionGrid(dgrid_1);
-  rm->AddDiffusionGrid(dgrid_2);
+  rm->AddContinuum(dgrid_1);
+  rm->AddContinuum(dgrid_2);
 
   // backup
   WritePersistentObject(ROOTFILE, "rm", *rm, "new");
@@ -635,10 +635,10 @@ inline void RunIOTest() {
               dynamic_cast<B*>(restored_rm->GetAgent(ref_uid + 4))->GetData(),
               kEpsilon);
 
-  EXPECT_EQ(0, restored_rm->GetDiffusionGrid(0)->GetSubstanceId());
-  EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetSubstanceId());
-  EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrid(0)->GetSubstanceName());
-  EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrid(1)->GetSubstanceName());
+  EXPECT_EQ(0, restored_rm->GetDiffusionGrid(0)->GetContinuumId());
+  EXPECT_EQ(1, restored_rm->GetDiffusionGrid(1)->GetContinuumId());
+  EXPECT_EQ("Kalium", restored_rm->GetDiffusionGrid(0)->GetContinuumName());
+  EXPECT_EQ("Natrium", restored_rm->GetDiffusionGrid(1)->GetContinuumName());
   EXPECT_EQ(real_t(0.6),
             restored_rm->GetDiffusionGrid(0)->GetDiffusionCoefficients()[0]);
   EXPECT_EQ(real_t(0.8),

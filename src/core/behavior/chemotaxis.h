@@ -36,7 +36,7 @@ class Chemotaxis : public Behavior {
 
   explicit Chemotaxis(DiffusionGrid* dgrid, real_t speed)
       : dgrid_(dgrid), speed_(speed) {
-    substance_ = dgrid->GetSubstanceName();
+    substance_ = dgrid->GetContinuumName();
   }
 
   virtual ~Chemotaxis() = default;

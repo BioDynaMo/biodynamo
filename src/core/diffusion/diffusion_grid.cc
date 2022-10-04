@@ -23,7 +23,7 @@ namespace bdm {
 void DiffusionGrid::Initialize() {
   if (resolution_ == 0) {
     Log::Fatal("DiffusionGrid::Initialize",
-               "Resolution cannot be zero. (substance '", substance_name_,
+               "Resolution cannot be zero. (substance '", GetContinuumName(),
                "')");
   }
 
@@ -51,7 +51,7 @@ void DiffusionGrid::Initialize() {
     Log::Fatal("DiffusionGrid::Initialize",
                "The box length was found to be (close to) zero. Please check "
                "the parameters for substance '",
-               substance_name_, "'");
+               GetContinuumName(), "'");
   }
 
   box_volume_ = box_length_ * box_length_ * box_length_;
@@ -314,7 +314,7 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount) {
 }
 
 /// Get the concentration at specified position
-real_t DiffusionGrid::GetConcentration(const Real3& position) const {
+real_t DiffusionGrid::GetValue(const Real3& position) const {
   auto idx = GetBoxIndex(position);
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::ChangeConcentrationBy",
@@ -373,7 +373,7 @@ void DiffusionGrid::ParametersCheck(real_t dt) {
     Log::Fatal(
         "DiffusionGrid",
         "The specified parameters of the diffusion grid with substance [",
-        substance_name_,
+        GetContinuumName(),
         "] will result in unphysical behavior (diffusion coefficient = ",
         (1 - dc_[0]), ", resolution = ", resolution_,
         ", decay constant * dt = ", mu_ * dt,

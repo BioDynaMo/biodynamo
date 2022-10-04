@@ -141,7 +141,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
   std::vector<uint64_t> dgrid_voxels;
 
   sim.rm_->ForEachDiffusionGrid([&](auto* dgrid) {
-    dgrid_names.push_back(dgrid->GetSubstanceName());
+    dgrid_names.push_back(dgrid->GetContinuumName());
     dgrid_resolutions.push_back(dgrid->GetResolution());
     dgrid_dimensions.push_back(dgrid->GetGridSize());
     dgrid_voxels.push_back(dgrid->GetNumBoxes());

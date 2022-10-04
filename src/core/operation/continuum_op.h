@@ -32,23 +32,16 @@
 namespace bdm {
 
 /// A class that sets up diffusion grids of the substances in this simulation
-class DiffusionOp : public StandaloneOperationImpl {
- protected:
-  /// Last time when the operation was executed
-  real_t last_time_run_ = 0.0;
-  /// Timestep that is useded for `Diffuse(delta_t)` and computed from this and
-  /// the last time the grid was updated.
-  real_t delta_t_ = 0.0;
+class ContinuumOp : public StandaloneOperationImpl {
+  BDM_OP_HEADER(ContinuumOp);
 
  public:
-  BDM_OP_HEADER(DiffusionOp);
-
   void operator()() override {
     // Get active simulation and related pointers
     auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    auto* env = sim->GetEnvironment();
-    auto* param = sim->GetParam();
+    const auto* rm = sim->GetResourceManager();
+    const auto* env = sim->GetEnvironment();
+    const auto* param = sim->GetParam();
 
     // Compute the passed time to update the diffusion grid accordingly.
     real_t current_time = sim->GetScheduler()->GetSimulatedTime();
@@ -60,20 +53,28 @@ class DiffusionOp : public StandaloneOperationImpl {
       return;
     }
 
-    rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
+    rm->ForEachContinuum([this, &env, &param](Continuum* cm) {
       // Update the diffusion grid dimension if the environment dimensions
       // have changed. If the space is bound, we do not need to update the
       // dimensions, because these should not be changing anyway
       if (env->HasGrown() &&
           param->bound_space == Param::BoundSpaceMode::kOpen) {
-        dgrid->Update();
+        cm->Update();
       }
-      dgrid->Diffuse(delta_t_);
-      if (param->calculate_gradients) {
+      cm->IntegrateTimeAsynchronously(delta_t_);
+      auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+      if (dgrid && param->calculate_gradients) {
         dgrid->CalculateGradient();
       }
     });
   }
+
+ private:
+  /// Last time when the operation was executed
+  real_t last_time_run_ = 0.0;
+  /// Timestep that is useded for `Diffuse(delta_t)` and computed from this and
+  /// the last time the grid was updated.
+  real_t delta_t_ = 0.0;
 };
 
 }  // namespace bdm

@@ -39,7 +39,7 @@ TEST(SecretionTest, Run) {
   simulation.Simulate(1);
 
   auto* dgrid = rm->GetDiffusionGrid(0);
-  auto conc = dgrid->GetConcentration(pos);
+  auto conc = dgrid->GetValue(pos);
 
   EXPECT_REAL_EQ(conc, real_t(3.14));
 }

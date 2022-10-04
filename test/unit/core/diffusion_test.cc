@@ -336,8 +336,8 @@ TEST(DiffusionTest, Thresholds) {
     dgrid->ChangeConcentrationBy(pos_lower, -1.0);
   }
 
-  EXPECT_REAL_EQ(upper_threshold, dgrid->GetConcentration(pos_upper));
-  EXPECT_REAL_EQ(lower_threshold, dgrid->GetConcentration(pos_lower));
+  EXPECT_REAL_EQ(upper_threshold, dgrid->GetValue(pos_upper));
+  EXPECT_REAL_EQ(lower_threshold, dgrid->GetValue(pos_lower));
 
   delete dgrid;
 }
@@ -373,7 +373,7 @@ TEST(DiffusionTest, IOTest) {
 
   auto eps = abs_error<real_t>::value;
 
-  EXPECT_EQ("Kalium", restored_dgrid->GetSubstanceName());
+  EXPECT_EQ("Kalium", restored_dgrid->GetContinuumName());
   EXPECT_EQ(10, restored_dgrid->GetBoxLength());
   EXPECT_EQ(42, restored_dgrid->GetUpperThreshold());
   EXPECT_EQ(-42, restored_dgrid->GetLowerThreshold());
@@ -601,8 +601,8 @@ TEST(DiffusionTest, DynamicTimeStepping) {
   auto* rm = simulation.GetResourceManager();
   auto* param = simulation.GetParam();
   auto* scheduler = simulation.GetScheduler();
-  auto diff_op = scheduler->GetOps("diffusion")[0];
-  diff_op->frequency_ = 2;
+  auto cm_op = scheduler->GetOps("continuum")[0];
+  cm_op->frequency_ = 2;
 
   // Create one cell at a random position
   auto construct = [](const Real3& position) {
@@ -638,12 +638,12 @@ TEST(DiffusionTest, DynamicTimeStepping) {
   // the update.
   auto* dgrid = rm->GetDiffusionGrid(0);
   EXPECT_FLOAT_EQ(0.2, dgrid->GetLastTimestep());
-  diff_op->frequency_ = 5;
+  cm_op->frequency_ = 5;
   scheduler->Simulate(3);
   EXPECT_FLOAT_EQ(0.3, dgrid->GetLastTimestep());
   scheduler->Simulate(5);
   EXPECT_FLOAT_EQ(0.5, dgrid->GetLastTimestep());
-  diff_op->frequency_ = 3;
+  cm_op->frequency_ = 3;
   scheduler->Simulate(2);
   EXPECT_FLOAT_EQ(0.2, dgrid->GetLastTimestep());
   scheduler->Simulate(3);
@@ -750,7 +750,7 @@ TEST(DiffusionTest, GradientComputation) {
   // Define the substance for our simulation
   DiffusionGrid* d_grid = nullptr;
   d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 100);
-  rm->AddDiffusionGrid(d_grid);
+  rm->AddContinuum(d_grid);
 
   // Define scalar field for initialization
   auto scalar_field = [&](real_t x, real_t y, real_t z) {
@@ -802,6 +802,16 @@ TEST(DiffusionTest, GradientComputation) {
     EXPECT_LT(abs(res[0] / grad[0]), 1e-5);  // This gradient is very easy
     EXPECT_LT(abs(res[1] / grad[1]), 0.05);  // Require 5 precent accuracy
     EXPECT_LT(abs(res[2] / grad[2]), 0.03);  // Require 3 precent accuracy
+  }
+
+  // Check alternative GetGradient method
+  Real3 grad4 = d_grid->GetGradient(pos1);
+  Real3 grad5 = d_grid->GetGradient(pos2);
+  Real3 grad6 = d_grid->GetGradient(pos3);
+  for (size_t i = 0; i < 3; i++) {
+    EXPECT_REAL_EQ(grad1[i], grad4[i]);
+    EXPECT_REAL_EQ(grad2[i], grad5[i]);
+    EXPECT_REAL_EQ(grad3[i], grad6[i]);
   }
 }
 

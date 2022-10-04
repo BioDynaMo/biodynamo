@@ -19,7 +19,7 @@
 #include <utility>
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/operation/bound_space_op.h"
-#include "core/operation/diffusion_op.h"
+#include "core/operation/continuum_op.h"
 #include "core/operation/mechanical_forces_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
@@ -46,7 +46,7 @@ Scheduler::Scheduler() {
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
       "mechanical forces", "discretization", "propagate staticness agentop",
-      "diffusion"};
+      "continuum"};
 
   std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
                                                       "propagate staticness"};
@@ -135,7 +135,6 @@ void Scheduler::Simulate(uint64_t steps) {
   Initialize(steps);
   for (unsigned step = 0; step < steps; step++) {
     Execute();
-
     total_steps_++;
     UpdateSimulatedTime();
     Backup();
@@ -146,7 +145,6 @@ void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
   Initialize();
   while (!exit_condition()) {
     Execute();
-
     total_steps_++;
     UpdateSimulatedTime();
   }
@@ -489,11 +487,14 @@ void Scheduler::Initialize(uint64_t steps) {
   // an operation would not mark the environment as OutOfSync and hence the
   // forced update at this place.
   env->ForcedUpdate();
-  rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
+  rm->ForEachContinuum([](Continuum* cm) {
     // Create data structures, whose size depend on the env dimensions
-    dgrid->Initialize();
-    // Initialize data structures with user-defined values
-    dgrid->RunInitializers();
+    cm->Initialize();
+    auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+    if (dgrid != nullptr) {
+      // Initialize data structures with user-defined values
+      dgrid->RunInitializers();
+    }
   });
 
   ScheduleOps();

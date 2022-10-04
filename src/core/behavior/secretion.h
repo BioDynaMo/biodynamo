@@ -38,7 +38,7 @@ class Secretion : public Behavior {
 
   explicit Secretion(DiffusionGrid* dgrid, real_t quantity = 1)
       : dgrid_(dgrid), quantity_(quantity) {
-    substance_ = dgrid->GetSubstanceName();
+    substance_ = dgrid->GetContinuumName();
   }
 
   virtual ~Secretion() = default;
