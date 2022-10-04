@@ -574,7 +574,11 @@ if(paraview)
 
   # We link against python3 libraries, so that the paraview libraries can
   # resolve missing python symbols when creating binaries
-  set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
+  if(APPLE)
+    set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python3_LIBRARIES}")
+  else()
+    set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
+  endif()
   build_shared_library(VisualizationAdaptor
                     SELECTION selection-libVisualizationAdaptor.xml
                     SOURCES ${PV_SOURCES}
