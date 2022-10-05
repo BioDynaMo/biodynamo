@@ -112,8 +112,9 @@ void GpuHelper::CompileOpenCLKernels() {
   std::string options;
   if (param->opencl_debug) {
     Log::Info("", "Building OpenCL kernels with debugging symbols");
-    options = "-g -O0";
+    options = Concat("-g -O0 -DBDM_REALT=", kRealtName, " -DBDM_REALT3=", kRealtName, "3");
   } else {
+    options = Concat("-DBDM_REALT=", kRealtName, " -DBDM_REALT3=", kRealtName, "3");
     Log::Info("", "Building OpenCL kernels without debugging symbols");
   }
 
@@ -160,10 +161,6 @@ void GpuHelper::FindGpuDevicesOpenCL() {
 
         for (auto d = pldev.begin(); d != pldev.end(); d++) {
           if (!d->getInfo<CL_DEVICE_AVAILABLE>())  // NOLINT
-            continue;
-
-          // Only select GPU's with real_t support
-          if (!d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>())  // NOLINT
             continue;
 
           // The OpenCL extension available on this device

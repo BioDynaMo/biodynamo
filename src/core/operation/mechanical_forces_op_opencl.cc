@@ -27,6 +27,12 @@
 #include <CL/cl2.hpp>
 #endif
 
+#ifndef BDM_REALT
+using cl_real_t = cl_double;
+#else
+using cl_real_t = BDM_CL_REALT;
+#endif
+
 #include "core/agent/cell.h"
 #include "core/environment/environment.h"
 #include "core/environment/uniform_grid_environment.h"
@@ -35,6 +41,7 @@
 #include "core/operation/mechanical_forces_op_opencl.h"
 #include "core/operation/operation.h"
 #include "core/operation/operation_registry.h"
+#include "core/real_t.h"
 #include "core/shape.h"
 #include "core/util/thread_info.h"
 #include "core/util/type.h"
@@ -79,18 +86,18 @@ void MechanicalForcesOpOpenCL::operator()() {
   // pointer to the underlying array, whereas the CUDA kernal will cast it to
   // a void pointer. The conversion of `const real_t *` to `void *` is
   // illegal.
-  std::vector<std::array<cl_double, 3>> cell_movements(num_objects);
-  std::vector<std::array<cl_double, 3>> cell_positions(num_objects);
-  std::vector<cl_double> cell_diameters(num_objects);
-  std::vector<cl_double> cell_adherence(num_objects);
-  std::vector<std::array<cl_double, 3>> cell_tractor_force(num_objects);
+  std::vector<std::array<cl_real_t, 3>> cell_movements(num_objects);
+  std::vector<std::array<cl_real_t, 3>> cell_positions(num_objects);
+  std::vector<cl_real_t> cell_diameters(num_objects);
+  std::vector<cl_real_t> cell_adherence(num_objects);
+  std::vector<std::array<cl_real_t, 3>> cell_tractor_force(num_objects);
   std::vector<cl_uint> cell_boxid(num_objects);
-  std::vector<cl_double> mass(num_objects);
+  std::vector<cl_real_t> mass(num_objects);
   std::vector<cl_uint> starts;
   std::vector<cl_ushort> lengths;
   std::vector<cl_uint> successors(num_objects);
   std::array<cl_uint, 3> num_boxes_axis;
-  cl_double squared_radius =
+  cl_real_t squared_radius =
       grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
 
   bool is_non_spherical_object = false;
@@ -137,24 +144,24 @@ void MechanicalForcesOpOpenCL::operator()() {
 
   // Allocate GPU buffers
   cl::Buffer positions_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                           num_objects * 3 * sizeof(cl_double),
+                           num_objects * 3 * sizeof(cl_real_t),
                            cell_positions.data()->data());
   cl::Buffer diameters_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                           num_objects * sizeof(cl_double),
+                           num_objects * sizeof(cl_real_t),
                            cell_diameters.data());
   cl::Buffer tractor_force_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                               num_objects * 3 * sizeof(cl_double),
+                               num_objects * 3 * sizeof(cl_real_t),
                                cell_tractor_force.data()->data());
   cl::Buffer adherence_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                           num_objects * sizeof(cl_double),
+                           num_objects * sizeof(cl_real_t),
                            cell_adherence.data());
   cl::Buffer box_id_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                         num_objects * sizeof(cl_uint), cell_boxid.data());
   cl::Buffer mass_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-                      num_objects * sizeof(cl_double), mass.data());
+                      num_objects * sizeof(cl_real_t), mass.data());
   cl::Buffer cell_movements_arg(
       *context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
-      num_objects * 3 * sizeof(cl_double), cell_movements.data()->data());
+      num_objects * 3 * sizeof(cl_real_t), cell_movements.data()->data());
   cl::Buffer starts_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
                         starts.size() * sizeof(cl_uint), starts.data());
   cl::Buffer lengths_arg(*context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
@@ -207,7 +214,7 @@ void MechanicalForcesOpOpenCL::operator()() {
 
   try {
     queue->enqueueReadBuffer(cell_movements_arg, CL_TRUE, 0,
-                             num_objects * 3 * sizeof(cl_double),
+                             num_objects * 3 * sizeof(cl_real_t),
                              cell_movements.data()->data());
   } catch (const cl::Error& err) {
     Log::Error("MechanicalForcesOpOpenCL", err.what(), "(", err.err(),

@@ -84,11 +84,11 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
     }                                                                          \
   }(__VA_ARGS__);
 
-#define EXPECT_ARR_NEAR_GPU(...)                   \
-  [](const Real3& actual, const Real3& expected) { \
-    for (size_t i = 0; i < actual.size(); i++) {   \
-      EXPECT_NEAR(expected[i], actual[i], 1e-8);   \
-    }                                              \
+#define EXPECT_ARR_NEAR3(...)                                     \
+  [](const Real3& actual, const Real3& expected) {                   \
+    for (size_t i = 0; i < actual.size(); i++) {                     \
+      EXPECT_NEAR(expected[i], actual[i], abs_error<real_t>::value); \
+    }                                                                \
   }(__VA_ARGS__);
 
 #define EXPECT_ARR_NEAR4(...)                                        \
