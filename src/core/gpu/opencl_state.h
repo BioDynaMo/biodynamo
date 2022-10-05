@@ -46,6 +46,13 @@ class OpenCLState {
   /// Returns the OpenCL program (kernel) list
   std::vector<cl::Program>* GetOpenCLProgramList();
 
+  /// Returns whether or not a GPU without support for double-precision was
+  /// found
+  bool HasSupportForDouble();
+
+  /// Disable support for double-precision floating point operations
+  void DisableSupportForDouble();
+
   const char* GetErrorString(int error);
 
   int ClAssert(int const code, char const* const file, int const line,
