@@ -55,6 +55,8 @@
         link: /docs/userguide/release_notes_v1.0/
       - title: BioDynaMo v1.02
         link: /docs/userguide/release_notes_v1.02/
+      - title: BioDynaMo v1.04
+        link: /docs/userguide/release_notes_v1.04/
   - group: Changelog
     items:
       - title: Log
