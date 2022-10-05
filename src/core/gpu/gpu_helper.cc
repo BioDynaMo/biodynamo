@@ -110,13 +110,24 @@ void GpuHelper::CompileOpenCLKernels() {
   Log::Info("", "Compiling OpenCL kernels...");
 
   std::string options;
-  if (param->opencl_debug) {
-    Log::Info("", "Building OpenCL kernels with debugging symbols");
-    options = Concat("-g -O0 -DBDM_REALT=", kRealtName,
-                     " -DBDM_REALT3=", kRealtName, "3");
+  if (!ocl_state->HasSupportForDouble() &&
+      std::string(kRealtName) == "double") {
+    // We cannot force the GPU code to run floats because the types won't match
+    // with the CPU-sided code (which would expect doubles), causing all kinds
+    // of mismatches in data type sizes
+    Log::Fatal("GpuHelper",
+               "Your GPU does not support double-precision floating point "
+               "operators. In order to use your GPU, consider compiling "
+               "BioDynaMo with -Dreal_t=float");
   } else {
     options =
         Concat("-DBDM_REALT=", kRealtName, " -DBDM_REALT3=", kRealtName, "3");
+  }
+
+  if (param->opencl_debug) {
+    Log::Info("", "Building OpenCL kernels with debugging symbols");
+    options = Concat(options, " -g -O0");
+  } else {
     Log::Info("", "Building OpenCL kernels without debugging symbols");
   }
 
@@ -164,6 +175,10 @@ void GpuHelper::FindGpuDevicesOpenCL() {
         for (auto d = pldev.begin(); d != pldev.end(); d++) {
           if (!d->getInfo<CL_DEVICE_AVAILABLE>())  // NOLINT
             continue;
+
+          if (!d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()) {
+            ocl_state->DisableSupportForDouble();
+          }
 
           // The OpenCL extension available on this device
           std::string ext = d->getInfo<CL_DEVICE_EXTENSIONS>();
