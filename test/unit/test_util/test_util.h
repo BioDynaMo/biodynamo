@@ -84,7 +84,7 @@ void EXPECT_ARR_EQ(const std::array<T, N>& expected,  // NOLINT
     }                                                                          \
   }(__VA_ARGS__);
 
-#define EXPECT_ARR_NEAR3(...)                                     \
+#define EXPECT_ARR_NEAR3(...)                                        \
   [](const Real3& actual, const Real3& expected) {                   \
     for (size_t i = 0; i < actual.size(); i++) {                     \
       EXPECT_NEAR(expected[i], actual[i], abs_error<real_t>::value); \

@@ -112,9 +112,11 @@ void GpuHelper::CompileOpenCLKernels() {
   std::string options;
   if (param->opencl_debug) {
     Log::Info("", "Building OpenCL kernels with debugging symbols");
-    options = Concat("-g -O0 -DBDM_REALT=", kRealtName, " -DBDM_REALT3=", kRealtName, "3");
+    options = Concat("-g -O0 -DBDM_REALT=", kRealtName,
+                     " -DBDM_REALT3=", kRealtName, "3");
   } else {
-    options = Concat("-DBDM_REALT=", kRealtName, " -DBDM_REALT3=", kRealtName, "3");
+    options =
+        Concat("-DBDM_REALT=", kRealtName, " -DBDM_REALT3=", kRealtName, "3");
     Log::Info("", "Building OpenCL kernels without debugging symbols");
   }
 
