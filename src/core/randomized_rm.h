@@ -23,22 +23,33 @@
 
 namespace bdm {
 
+/// A specialized implementation of ResourceManager that randomly shuffles the
+/// order of agents to enable looping over agents randomly. By default, the
+/// random reordering happens at the end of every iterations (during the
+/// teardown operation), but this can be turned off by initializing the
+/// `auto_randomize_` variable with `false`. To manually trigger the random
+/// reordering of agents, you can call the `RandomizeAgentsOrder` function.
 template <typename TBaseRm>
 class RandomizedRm : public TBaseRm {
  public:
   explicit RandomizedRm(TRootIOCtor* r) {}
-  RandomizedRm();
+  RandomizedRm(bool auto_randomize = true);
   virtual ~RandomizedRm();
 
+  void RandomizeAgentsOrder();
   void EndOfIteration() override;
 
  protected:
+  // Automatically randomize the agent order at the end of each iteration
+  // If false, you can call RandomizeAgentsOrder() manually
+  bool auto_randomize_ = true;
   BDM_CLASS_DEF_NV(RandomizedRm, 1);
 };
 
 // -----------------------------------------------------------------------------
 template <typename TBaseRm>
-RandomizedRm<TBaseRm>::RandomizedRm() = default;
+RandomizedRm<TBaseRm>::RandomizedRm(bool auto_randomize)
+    : auto_randomize_(auto_randomize){};
 
 // -----------------------------------------------------------------------------
 template <typename TBaseRm>
@@ -57,10 +68,8 @@ struct Ubrng {
   }
 };
 
-// -----------------------------------------------------------------------------
 template <typename TBaseRm>
-void RandomizedRm<TBaseRm>::EndOfIteration() {
-  TBaseRm::EndOfIteration();
+void RandomizedRm<TBaseRm>::RandomizeAgentsOrder() {
   // shuffle
 #pragma omp parallel for schedule(static, 1)
   for (uint64_t n = 0; n < this->agents_.size(); ++n) {
@@ -79,6 +88,15 @@ void RandomizedRm<TBaseRm>::EndOfIteration() {
     this->uid_ah_map_.Insert(a->GetUid(), ah);
   });
   TBaseRm::ForEachAgentParallel(update_agent_map);
+}
+
+// -----------------------------------------------------------------------------
+template <typename TBaseRm>
+void RandomizedRm<TBaseRm>::EndOfIteration() {
+  TBaseRm::EndOfIteration();
+  if (auto_randomize_) {
+    RandomizeAgentsOrder();
+  }
 }
 
 }  // namespace bdm
