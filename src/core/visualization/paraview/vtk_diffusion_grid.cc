@@ -173,9 +173,6 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     real_t piece_origin_z = origin_z + box_length * sum;
     data_[i]->SetOrigin(origin_x, origin_y, piece_origin_z);
     data_[i]->SetSpacing(box_length, box_length, box_length);
-    // // Debug
-    // std::cout << "sum: " << sum << std::endl;
-    // std::cout << "piece_origin_z : " << piece_origin_z << std::endl;
 
     if (concentration_array_idx_ != -1) {
       auto* co_ptr = const_cast<real_t*>(grid->GetAllConcentrations());
@@ -184,22 +181,10 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
           data_[i]->GetPointData()->GetArray(concentration_array_idx_));
       auto offset = sum * xy_num_boxes;
       if (i < piece_boxes_z_.size() - 1) {
-        // // Debug
-        // std::cout << "Offset : " << offset << std::endl;
-        // std::cout << "Value (begin) : " << co_ptr[offset] << std::endl;
-        // std::cout << "Value (end): " << co_ptr[offset + elements - 1]
-        //           << std::endl;
         array->SetArray(co_ptr + offset, elements, 1);
       } else {
-        // // Debug
-        // std::cout << "Offset : " << offset << std::endl;
-        // std::cout << "Value (begin) : " << co_ptr[offset] << std::endl;
-        // std::cout << "Value (end): " << co_ptr[offset + elements - 1]
-        //           << std::endl;
         array->SetArray(co_ptr + offset, elements, 1);
       }
-      // // Debug
-      // std::cout << "elements : " << elements << std::endl;
     }
     if (gradient_array_idx_ != -1) {
       auto gr_ptr = const_cast<real_t*>(grid->GetAllGradients());
@@ -241,13 +226,6 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   auto min_slices = static_cast<uint64_t>(std::floor(boxes_per_piece));
   auto leftover = boxes_z % num_pieces_target;
 
-  // // Debug print info of all variables
-  // std::cout << "boxes_z : " << boxes_z << std::endl;
-  // std::cout << "num_pieces_target : " << num_pieces_target << std::endl;
-  // std::cout << "boxes_per_piece : " << boxes_per_piece << std::endl;
-  // std::cout << "min_slices : " << min_slices << std::endl;
-  // std::cout << "leftover : " << leftover << std::endl;
-
   // Distribute default slices and leftover slices
   for (uint64_t i = 0; i < piece_boxes_z_.size(); ++i) {
     piece_boxes_z_[i] = min_slices;
@@ -260,16 +238,6 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   // Check dissection
   auto sum = std::accumulate(piece_boxes_z_.begin(), piece_boxes_z_.end(), 0);
   assert(sum == boxes_z);
-  // // Debug: Calculate sum of all entries
-  // std::cout << "Sum : " << sum << std::endl;
-  // std::cout << "boxes_z : " << boxes_z << std::endl;
-
-  // // Debug print the vector
-  // std::cout << "piece_boxes_z_ : ";
-  // for (auto i : piece_boxes_z_) {
-  //   std::cout << i << " ";
-  // }
-  // std::cout << std::endl;
 }
 
 // -----------------------------------------------------------------------------
