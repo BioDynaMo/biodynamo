@@ -156,17 +156,10 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   for (uint64_t i = 0; i < piece_boxes_z_.size(); ++i) {
     uint64_t piece_elements;
     auto* e = piece_extents_[i].data();
-    if (i < piece_boxes_z_.size() - 1) {
-      piece_elements = piece_boxes_z_[i] * xy_num_boxes;
-      data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_[i]);
-      data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
-                          e[4] + piece_boxes_z_[i] - 1);
-    } else {
-      piece_elements = piece_boxes_z_[i] * xy_num_boxes;
-      data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_[i]);
-      data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
-                          e[4] + piece_boxes_z_[i] - 1);
-    }
+    piece_elements = piece_boxes_z_[i] * xy_num_boxes;
+    data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_[i]);
+    data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
+                        e[4] + piece_boxes_z_[i] - 1);
     // Compute partial sum of boxes until index i
     auto sum =
         std::accumulate(piece_boxes_z_.begin(), piece_boxes_z_.begin() + i, 0);
@@ -180,11 +173,7 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
       auto* array = static_cast<vtkRealArray*>(
           data_[i]->GetPointData()->GetArray(concentration_array_idx_));
       auto offset = sum * xy_num_boxes;
-      if (i < piece_boxes_z_.size() - 1) {
-        array->SetArray(co_ptr + offset, elements, 1);
-      } else {
-        array->SetArray(co_ptr + offset, elements, 1);
-      }
+      array->SetArray(co_ptr + offset, elements, 1);
     }
     if (gradient_array_idx_ != -1) {
       auto gr_ptr = const_cast<real_t*>(grid->GetAllGradients());
@@ -236,8 +225,8 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   }
 
   // Check dissection
-  auto sum = std::accumulate(piece_boxes_z_.begin(), piece_boxes_z_.end(), 0);
-  assert(sum == boxes_z);
+  assert(boxes_z ==
+         std::accumulate(piece_boxes_z_.begin(), piece_boxes_z_.end(), 0));
 }
 
 // -----------------------------------------------------------------------------
