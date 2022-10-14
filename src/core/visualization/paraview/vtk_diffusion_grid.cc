@@ -227,27 +227,34 @@ void VtkDiffusionGrid::WriteToFile(uint64_t step) const {
 
 // -----------------------------------------------------------------------------
 void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
+  // The following lines are used to reduce the number of pieces such that every
+  // .vti file contains at least 2 boxes in the z direction. For unknown reason,
+  // the .pvti file does not load correctly if we export 6 slices with 6
+  // threads, e.g. write each slice to a separate .vti file.
+  if (num_pieces_target > boxes_z / 2 && num_pieces_target > 1) {
+    num_pieces_target = std::floor(static_cast<float>(boxes_z) / 2);
+  }
+  piece_boxes_z_.resize(num_pieces_target);
+
+  // Compute the number of boxes in each piece
   auto boxes_per_piece = static_cast<real_t>(boxes_z) / num_pieces_target;
   auto min_slices = static_cast<uint64_t>(std::floor(boxes_per_piece));
   auto leftover = boxes_z % num_pieces_target;
+
   // // Debug print info of all variables
   // std::cout << "boxes_z : " << boxes_z << std::endl;
   // std::cout << "num_pieces_target : " << num_pieces_target << std::endl;
   // std::cout << "boxes_per_piece : " << boxes_per_piece << std::endl;
   // std::cout << "min_slices : " << min_slices << std::endl;
   // std::cout << "leftover : " << leftover << std::endl;
-  // Distribute leftover slices
+
+  // Distribute default slices and leftover slices
   for (uint64_t i = 0; i < piece_boxes_z_.size(); ++i) {
     piece_boxes_z_[i] = min_slices;
     if (leftover > 0) {
       piece_boxes_z_[i]++;
       leftover--;
     }
-  }
-  // Shorten vector by removing all tailing zeros
-  auto it = std::find(piece_boxes_z_.begin(), piece_boxes_z_.end(), 0);
-  if (it != piece_boxes_z_.end()) {
-    piece_boxes_z_.resize(std::distance(piece_boxes_z_.begin(), it));
   }
 
   // Check dissection
