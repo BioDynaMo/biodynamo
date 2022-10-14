@@ -156,6 +156,17 @@ TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_PrimeNumberSlice) {
 }
 
 // -----------------------------------------------------------------------------
+// Stress test scanning different grid resolutions. Used to run through GHA
+// once, disabled afterwards. Also related to #285.
+TEST(FLAKY_ParaviewIntegrationTest,
+     ExportDiffusionGrid_ScanResolutionForFailure) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  for (size_t i = 3; i < 25; i++) {
+    LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, i));
+  }
+}
+
+// -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(
