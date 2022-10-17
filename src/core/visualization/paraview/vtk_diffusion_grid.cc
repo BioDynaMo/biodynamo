@@ -106,10 +106,6 @@ VtkDiffusionGrid::~VtkDiffusionGrid() {
 bool VtkDiffusionGrid::IsUsed() const { return used_; }
 
 // -----------------------------------------------------------------------------
-// ToDo (tobias):
-// * remove debug code (print statements)
-// * remove now unnecessary branching
-// * add comments
 void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   used_ = true;
 
