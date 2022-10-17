@@ -153,9 +153,10 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     uint64_t piece_elements;
     auto* e = piece_extents_[i].data();
     piece_elements = piece_boxes_z_[i] * xy_num_boxes;
-    data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_[i]);
+    data_[i]->SetDimensions(num_boxes[0], num_boxes[1],
+                            static_cast<int>(piece_boxes_z_[i]));
     data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
-                        e[4] + piece_boxes_z_[i] - 1);
+                        e[4] + static_cast<int>(piece_boxes_z_[i]) - 1);
     // Compute partial sum of boxes until index i
     auto sum =
         std::accumulate(piece_boxes_z_.begin(), piece_boxes_z_.begin() + i, 0);
@@ -202,7 +203,8 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   // the .pvti file does not load correctly if we export 6 slices with 6
   // threads, e.g. write each slice to a separate .vti file.
   if (num_pieces_target > boxes_z / 2 && num_pieces_target > 1) {
-    num_pieces_target = std::floor(static_cast<float>(boxes_z) / 2);
+    num_pieces_target =
+        static_cast<uint64_t>(std::floor(static_cast<float>(boxes_z) / 2));
   }
   piece_boxes_z_.resize(num_pieces_target);
 
@@ -233,14 +235,14 @@ void VtkDiffusionGrid::CalcPieceExtents(
     piece_extents_[0] = whole_extent_;
     return;
   }
-  int c = piece_boxes_z_[0];
+  int c = static_cast<int>(piece_boxes_z_[0]);
   piece_extents_[0] = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
                         static_cast<int>(num_boxes[1]) - 1, 0, c}};
   for (uint64_t i = 1; i < piece_boxes_z_.size() - 1; ++i) {
     piece_extents_[i] = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
                           static_cast<int>(num_boxes[1]) - 1, c,
                           c + static_cast<int>(piece_boxes_z_[i])}};
-    c += piece_boxes_z_[i];
+    c += static_cast<int>(piece_boxes_z_[i]);
   }
   piece_extents_.back() = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
                             static_cast<int>(num_boxes[1]) - 1, c,
