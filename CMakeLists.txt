@@ -60,6 +60,19 @@ else()
 endif()
 message(STATUS "Detected OS: ${DETECTED_OS_VERS}")
 
+if(APPLE)
+  find_program(BREW_BIN brew)
+  if(BREW_BIN)
+    execute_process(COMMAND ${BREW_BIN} --prefix llvm
+                    OUTPUT_VARIABLE LLVM_BREW_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${BREW_BIN} --prefix
+                        OUTPUT_VARIABLE BREW_PREFIX
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+  endif()
+  # Necessary to find the OpenMP library
+  set(ENV{LDFLAGS} "-L${BREW_PREFIX}/opt/libomp/lib")
+endif(APPLE)
 
 # Find a suitable compiler
 include(CheckCompiler)
@@ -119,16 +132,6 @@ option(rpath     "Link libraries with built-in RPATH (run-time search path)." OF
 option(real_t    "Define data type for real numbers. Currently supported: float, double" double)
 
 if(APPLE)
-  find_program(BREW_BIN brew)
-  if(BREW_BIN)
-    execute_process(COMMAND ${BREW_BIN} --prefix llvm
-                    OUTPUT_VARIABLE LLVM_BREW_PREFIX
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND ${BREW_BIN} --prefix
-                        OUTPUT_VARIABLE BREW_PREFIX
-                        OUTPUT_STRIP_TRAILING_WHITESPACE)
-  endif()
-  
   # ParaView on Apple devices
   set(CMAKE_BDM_PVVERSION "5.10")
   
@@ -246,6 +249,16 @@ if(paraview)
       SET(paraview OFF)
   endif()
 endif()
+
+if(APPLE)
+  # After migrating to libomp 15.0.3, libomp does no longer symlink into 
+  # $(brew --prefix)/lib/libomp.dylib. Instead, it is located in 
+  # $(brew --prefix)/opt/libomp/.. . This fix should work accross all platforms.
+  # find_package(OpenMP) can be guieded with OpenMP_<lang>_INCLUDE_DIR.
+  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -I${BREW_PREFIX}/opt/libomp/include")
+  set(OpenMP_C_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
+  set(OpenMP_CXX_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
+endif(APPLE)
 
 # Check if we have a compatible openmp compiler
 find_package(OpenMP)
