@@ -232,6 +232,13 @@ _source_thisbdm()
     fi
   fi    
 
+  # If we run on macOS, we add the following exports
+  if [ "$(uname)" = "Darwin" ]; then
+    BREWPREFIX=$(brew --prefix)
+    export CPPFLAGS="-I$BREWPREFIX/opt/libomp/include"
+    export LDFLAGS="-L$BREWPREFIX/opt/libomp/lib"
+  fi
+
   # paraview versions might be different between OSes
   local bdm_pv_version='5.9'
   if [ "$(uname)" = 'Darwin' ]; then
