@@ -55,7 +55,9 @@ _drop_bdm_from_path()
   _newpath=$(echo "$p" | sed -e "s;:${drop}:;:;g"\
                              -e "s;:${drop}\$;;g"\
                              -e "s;^${drop}:;;g" \
-                             -e "s;^${drop}\$;;g")
+                             -e "s;^${drop}\$;;g"\
+                             -e "s; ${drop}\$;;g"\
+                             -e "s;^${drop} ;;g")
 }
 
 _bdm_define_command()
@@ -231,6 +233,21 @@ _source_thisbdm()
       fi
     fi
   fi    
+
+  # If we run on macOS, we add the following exports for libomp support
+  if [ "$(uname)" = "Darwin" ]; then
+    BREWPREFIX=$(brew --prefix)
+    if [ -n "${CPPFLAGS}" ]; then
+      _drop_bdm_from_path "$CPPFLAGS" "-I$BREWPREFIX/opt/libomp/include"
+      CPPFLAGS=$_newpath
+    fi
+    if [ -n "${LDFLAGS}" ]; then
+      _drop_bdm_from_path "$LDFLAGS" "-L$BREWPREFIX/opt/libomp/lib"
+      LDFLAGS=$_newpath
+    fi
+    export CPPFLAGS="-I$BREWPREFIX/opt/libomp/include $CPPFLAGS"
+    export LDFLAGS="-L$BREWPREFIX/opt/libomp/lib $LDFLAGS"
+  fi
 
   # paraview versions might be different between OSes
   local bdm_pv_version='5.9'
