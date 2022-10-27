@@ -162,6 +162,19 @@ else(MPI_FOUND)
   calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif(MPI_FOUND)
 
+if(APPLE)
+  find_program(BREW_BIN brew)
+  execute_process(COMMAND ${BREW_BIN} --prefix
+                      OUTPUT_VARIABLE BREW_PREFIX
+                      OUTPUT_STRIP_TRAILING_WHITESPACE)
+  # After migrating to libomp 15.0.3, libomp does no longer symlink into 
+  # $(brew --prefix)/opt/lib/libomp.dylib. Instead, it is located in 
+  # $(brew --prefix)/opt/libomp/.. . This fix should work accross all platforms.
+  # find_package(OpenMP) can be guieded with OpenMP_<lang>_INCLUDE_DIR.
+  set(OpenMP_C_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
+  set(OpenMP_CXX_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
+endif(APPLE)
+
 find_package(OpenMP REQUIRED)
 
 if (OpenMP_CXX_FOUND)
