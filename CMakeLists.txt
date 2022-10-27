@@ -63,15 +63,18 @@ message(STATUS "Detected OS: ${DETECTED_OS_VERS}")
 if(APPLE)
   find_program(BREW_BIN brew)
   if(BREW_BIN)
+    execute_process(COMMAND ${BREW_BIN} --prefix
+                    OUTPUT_VARIABLE BREW_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
     execute_process(COMMAND ${BREW_BIN} --prefix llvm
                     OUTPUT_VARIABLE LLVM_BREW_PREFIX
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND ${BREW_BIN} --prefix
-                        OUTPUT_VARIABLE BREW_PREFIX
-                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${BREW_BIN} --prefix libomp
+                    OUTPUT_VARIABLE LIBOMP_BREW_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
   # Necessary to find the OpenMP library
-  set(ENV{LDFLAGS} "-L${BREW_PREFIX}/opt/libomp/lib")
+  set(ENV{LDFLAGS} "$ENV{LDFLAGS} -L${LIBOMP_BREW_PREFIX}/lib")
 endif(APPLE)
 
 # Find a suitable compiler
@@ -251,13 +254,13 @@ if(paraview)
 endif()
 
 if(APPLE)
-  # After migrating to libomp 15.0.3, libomp does no longer symlink into 
+  # After migrating to libomp 15.0.3, libomp is no longer symlinked into 
   # $(brew --prefix)/lib/libomp.dylib. Instead, it is located in 
-  # $(brew --prefix)/opt/libomp/.. . This fix should work accross all platforms.
-  # find_package(OpenMP) can be guieded with OpenMP_<lang>_INCLUDE_DIR.
-  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -I${BREW_PREFIX}/opt/libomp/include")
-  set(OpenMP_C_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
-  set(OpenMP_CXX_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
+  # $(brew --prefix libomp)/lib . This fix should work accross all platforms.
+  # find_package(OpenMP) can be guided with OpenMP_<lang>_INCLUDE_DIR.
+  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -I${LIBOMP_BREW_PREFIX}/include")
+  set(OpenMP_C_INCLUDE_DIR "${LIBOMP_BREW_PREFIX}/include")
+  set(OpenMP_CXX_INCLUDE_DIR "${LIBOMP_BREW_PREFIX}/include")
 endif(APPLE)
 
 # Check if we have a compatible openmp compiler
