@@ -342,6 +342,149 @@ TEST(DiffusionTest, Thresholds) {
   delete dgrid;
 }
 
+TEST(DiffusionTest, ChangeConcentrationByAdditive) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 50);
+
+  Real3 pos_upper({{0, 0, 0}});
+  Real3 pos_lower({{10, 10, 10}});
+  real_t upper_threshold = 100;
+  real_t lower_threshold = 0;
+  dgrid->Initialize();
+  dgrid->SetUpperThreshold(upper_threshold);
+  dgrid->SetLowerThreshold(lower_threshold);
+
+  EXPECT_EQ(upper_threshold, dgrid->GetUpperThreshold());
+  EXPECT_EQ(lower_threshold, dgrid->GetLowerThreshold());
+
+  const double init_concentration = 1.5;
+  dgrid->ChangeConcentrationBy(pos_upper, init_concentration,
+                               InteractionMode::kAdditive);
+  dgrid->ChangeConcentrationBy(pos_lower, init_concentration,
+                               InteractionMode::kAdditive);
+
+  const int n_iterations = 4;
+  for (int i = 0; i < n_iterations; i++) {
+    dgrid->ChangeConcentrationBy(pos_upper, 0.1, InteractionMode::kAdditive);
+    dgrid->ChangeConcentrationBy(
+        pos_lower,
+        -0.1);  // Interaction Mode not specified, test default
+  }
+
+  double expected_upper = 0.1 * n_iterations + init_concentration;
+  double expected_lower = -0.1 * n_iterations + init_concentration;
+
+  EXPECT_REAL_EQ(expected_upper, dgrid->GetValue(pos_upper));
+  EXPECT_REAL_EQ(expected_lower, dgrid->GetValue(pos_lower));
+
+  delete dgrid;
+}
+
+TEST(DiffusionTest, ChangeConcentrationByExponential) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 50);
+
+  Real3 pos_upper({{0, 0, 0}});
+  Real3 pos_lower({{10, 10, 10}});
+  real_t upper_threshold = 100;
+  real_t lower_threshold = 0;
+  dgrid->Initialize();
+  dgrid->SetUpperThreshold(upper_threshold);
+  dgrid->SetLowerThreshold(lower_threshold);
+
+  EXPECT_EQ(upper_threshold, dgrid->GetUpperThreshold());
+  EXPECT_EQ(lower_threshold, dgrid->GetLowerThreshold());
+
+  const double init_concentration = 1.5;
+  dgrid->ChangeConcentrationBy(pos_upper, init_concentration,
+                               InteractionMode::kAdditive);
+  dgrid->ChangeConcentrationBy(pos_lower, init_concentration,
+                               InteractionMode::kAdditive);
+
+  const int n_iterations = 4;
+  for (int i = 0; i < n_iterations; i++) {
+    dgrid->ChangeConcentrationBy(pos_upper, 1.1, InteractionMode::kExponential);
+    dgrid->ChangeConcentrationBy(pos_lower, 0.9, InteractionMode::kExponential);
+  }
+
+  double expected_upper = std::pow(1.1, n_iterations) * init_concentration;
+  double expected_lower = std::pow(0.9, n_iterations) * init_concentration;
+
+  EXPECT_REAL_EQ(expected_upper, dgrid->GetValue(pos_upper));
+  EXPECT_REAL_EQ(expected_lower, dgrid->GetValue(pos_lower));
+
+  delete dgrid;
+}
+
+TEST(DiffusionTest, ChangeConcentrationByLogistic) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 50);
+
+  Real3 pos_upper({{0, 0, 0}});
+  Real3 pos_lower({{10, 10, 10}});
+  real_t upper_threshold = 1;
+  real_t lower_threshold = 0;
+  dgrid->Initialize();
+  dgrid->SetUpperThreshold(upper_threshold);
+  dgrid->SetLowerThreshold(lower_threshold);
+
+  EXPECT_EQ(upper_threshold, dgrid->GetUpperThreshold());
+  EXPECT_EQ(lower_threshold, dgrid->GetLowerThreshold());
+
+  const double init_concentration = 0.5;
+  dgrid->ChangeConcentrationBy(pos_upper, init_concentration,
+                               InteractionMode::kAdditive);
+  dgrid->ChangeConcentrationBy(pos_lower, init_concentration,
+                               InteractionMode::kAdditive);
+
+  const int n_iterations = 4;
+  for (int i = 0; i < n_iterations; i++) {
+    dgrid->ChangeConcentrationBy(pos_upper, 0.1, InteractionMode::kLogistic);
+    dgrid->ChangeConcentrationBy(pos_lower, -0.1, InteractionMode::kLogistic);
+  }
+
+  // Reference solution computed with python for the given setup.
+  double expected_upper = 0.67195;
+  double expected_lower = 0.32805000000000006;
+
+  EXPECT_REAL_EQ(expected_upper, dgrid->GetValue(pos_upper));
+  EXPECT_REAL_EQ(expected_lower, dgrid->GetValue(pos_lower));
+
+  // Keep iterating
+  for (int i = 0; i < 100 * n_iterations; i++) {
+    dgrid->ChangeConcentrationBy(pos_upper, 0.1, InteractionMode::kLogistic);
+    dgrid->ChangeConcentrationBy(pos_lower, -0.1, InteractionMode::kLogistic);
+  }
+
+  // Expect convergence to 0 and 1
+  EXPECT_LE(dgrid->GetValue(pos_upper), 1);
+  EXPECT_LT(dgrid->GetValue(pos_lower), 1);
+  EXPECT_GT(dgrid->GetValue(pos_upper), 0);
+  EXPECT_GE(dgrid->GetValue(pos_lower), 0);
+  EXPECT_GT(dgrid->GetValue(pos_upper), 1 - 1e-8);
+  EXPECT_LT(dgrid->GetValue(pos_lower), 1e-8);
+
+  delete dgrid;
+}
+
 #ifdef USE_DICT
 
 // Test if all the data members of the diffusion grid are correctly serialized
