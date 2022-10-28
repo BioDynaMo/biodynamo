@@ -30,7 +30,7 @@
 
 namespace bdm {
 
-enum InteractionMode { kAdditive, kExponential, kLogistic };
+enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
 
 class DiffusionGrid : public ScalarField {
  public:
@@ -87,9 +87,9 @@ class DiffusionGrid : public ScalarField {
   /// is positive or negative, respectively. Should be used with thresholds 1.0
   /// and 0.0.
   void ChangeConcentrationBy(const Real3& position, real_t amount,
-                             InteractionMode mode = kAdditive);
+                             InteractionMode mode = InteractionMode::kAdditive);
   void ChangeConcentrationBy(size_t idx, real_t amount,
-                             InteractionMode mode = kAdditive);
+                             InteractionMode mode = InteractionMode::kAdditive);
 
   /// Get the concentration at specified position
   real_t GetValue(const Real3& position) const override;
