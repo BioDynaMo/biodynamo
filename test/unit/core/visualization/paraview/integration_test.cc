@@ -153,7 +153,7 @@ TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_PrimeNumberSlice) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   RunDiffusionGridTest(3 * max_threads + 1, 19);
   // LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, 19));
-  if (!(max_threads == 4) || !(max_threads == 8)) {
+  if (!(max_threads == 4 || max_threads == 8)) {
     Log::Warning("ExportDiffusionGrid_PrimeNumberSlice",
                  "This test needs to be executed with 4 or 8 threads.");
   }
