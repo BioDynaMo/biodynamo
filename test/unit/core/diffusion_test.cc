@@ -479,8 +479,8 @@ TEST(DiffusionTest, ChangeConcentrationByLogistic) {
   EXPECT_LT(dgrid->GetValue(pos_lower), 1);
   EXPECT_GT(dgrid->GetValue(pos_upper), 0);
   EXPECT_GE(dgrid->GetValue(pos_lower), 0);
-  EXPECT_GT(dgrid->GetValue(pos_upper), 1 - 1e-8);
-  EXPECT_LT(dgrid->GetValue(pos_lower), 1e-8);
+  EXPECT_GE(dgrid->GetValue(pos_upper), 1 - 1e-7);
+  EXPECT_LE(dgrid->GetValue(pos_lower), 1e-7);
 
   delete dgrid;
 }
