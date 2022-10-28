@@ -125,24 +125,20 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   }
   ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
   // Test will run in separate process.
-  // exit(0);
+  exit(0);
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesLtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(std::max(max_threads - 1, 1),
-                       std::max(max_threads - 1, 1));
-  // LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(std::max(max_threads - 1, 1),
-  //                                            std::max(max_threads - 1, 1)));
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(std::max(max_threads - 1, 1),
+                                             std::max(max_threads - 1, 1)));
 }
 
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(3 * max_threads + 1, max_threads);
-  // LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1,
-  // max_threads));
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, max_threads));
 }
 
 // -----------------------------------------------------------------------------
@@ -151,12 +147,11 @@ TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
 // ensure that this does not happen again.
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_PrimeNumberSlice) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(3 * max_threads + 1, 19);
-  // LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, 19));
   if (!(max_threads == 4 || max_threads == 8)) {
     Log::Warning("ExportDiffusionGrid_PrimeNumberSlice",
                  "This test needs to be executed with 4 or 8 threads.");
   }
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, 19));
 }
 
 // -----------------------------------------------------------------------------
@@ -173,11 +168,8 @@ TEST(DISABLED_FLAKY_ParaviewIntegrationTest,
 // -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
-  RunDiffusionGridTest(std::max(max_threads - 1, 1),
-                       std::max(max_threads - 1, 1), true, false);
-  // LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(
-  //     std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), true,
-  //     false));
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(
+      std::max(max_threads - 1, 1), std::max(max_threads - 1, 1), true, false));
 }
 
 // Insitu-visualization not supported on macOS. Thus, we do not run these test
