@@ -83,8 +83,9 @@ class DiffusionGrid : public ScalarField {
   /// product of the old concentration and the amount.
   /// If the interaction mode is kLogistic, the new concentration is the
   /// logistic function of the old concentration and the amount, e.g. additive
-  /// but scaled with (u_max - u) or (u - u_min) if amount is positive or
-  /// negative, respectively.
+  /// but scaled with (upper_threshold_ - u) or (u - lower_threshold_) if amount
+  /// is positive or negative, respectively. Should be used with thresholds 1.0
+  /// and 0.0.
   void ChangeConcentrationBy(const Real3& position, real_t amount,
                              InteractionMode mode = kAdditive);
   void ChangeConcentrationBy(size_t idx, real_t amount,
