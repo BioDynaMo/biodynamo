@@ -475,12 +475,13 @@ TEST(DiffusionTest, ChangeConcentrationByLogistic) {
   }
 
   // Expect convergence to 0 and 1
+  double presicion = (sizeof(real_t) == 4) ? 1e-6 : 1e-8;
   EXPECT_LE(dgrid->GetValue(pos_upper), 1);
   EXPECT_LT(dgrid->GetValue(pos_lower), 1);
   EXPECT_GT(dgrid->GetValue(pos_upper), 0);
   EXPECT_GE(dgrid->GetValue(pos_lower), 0);
-  EXPECT_GE(dgrid->GetValue(pos_upper), 1 - 1e-7);
-  EXPECT_LE(dgrid->GetValue(pos_lower), 1e-7);
+  EXPECT_GE(dgrid->GetValue(pos_upper), 1 - presicion);
+  EXPECT_LE(dgrid->GetValue(pos_lower), presicion);
 
   delete dgrid;
 }
