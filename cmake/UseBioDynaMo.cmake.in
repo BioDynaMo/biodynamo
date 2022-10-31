@@ -349,7 +349,6 @@ set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} biodynamo ${ROOT_LIBRARIES}
 include_directories("$ENV{BDMSYS}/include")
 # armadillo is added as a subdirectory in optimlib
 include_directories("$ENV{BDMSYS}/include/optim")
-MESSAGE(DEBUG "This is ENV{BDMSYS} $ENV{BDMSYS}")
 link_directories("$ENV{BDMSYS}/lib")
 
 # -------------------- Instructions for GoogleTest -----------------------------
