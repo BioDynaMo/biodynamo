@@ -206,6 +206,7 @@ void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
   if (num_pieces_target > boxes_z / 2 && num_pieces_target > 1) {
     num_pieces_target =
         static_cast<uint64_t>(std::floor(static_cast<float>(boxes_z) / 2));
+    num_pieces_target += (num_pieces_target == 0) ? 1 : 0;
   }
   piece_boxes_z_.resize(num_pieces_target);
 
