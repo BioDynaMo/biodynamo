@@ -286,14 +286,15 @@ void DiffusionGrid::CalculateGradient() {
   }
 }
 
-void DiffusionGrid::ChangeConcentrationBy(const Real3& position,
-                                          real_t amount) {
+void DiffusionGrid::ChangeConcentrationBy(const Real3& position, real_t amount,
+                                          InteractionMode mode) {
   auto idx = GetBoxIndex(position);
-  ChangeConcentrationBy(idx, amount);
+  ChangeConcentrationBy(idx, amount, mode);
 }
 
 /// Increase the concentration at specified box with specified amount
-void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount) {
+void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
+                                          InteractionMode mode) {
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::ChangeConcentrationBy",
                "You tried to change the concentration outside the bounds of "
@@ -302,8 +303,24 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount) {
   }
   std::lock_guard<Spinlock> guard(locks_[idx]);
   assert(idx < locks_.size());
-  c1_[idx] += amount;
-  // Use std::clamp() when moving to C++17
+  switch (mode) {
+    case InteractionMode::kAdditive:
+      c1_[idx] += amount;
+      break;
+    case InteractionMode::kExponential:
+      c1_[idx] *= amount;
+      break;
+    case InteractionMode::kLogistic:
+      c1_[idx] += ((amount > 0) ? upper_threshold_ - c1_[idx]
+                                : c1_[idx] - lower_threshold_) *
+                  amount;
+      break;
+    default:
+      Log::Fatal("DiffusionGrid::ChangeConcentrationBy",
+                 "Unknown interaction mode!");
+  }
+
+  // Enforce upper and lower bounds. (use std::clamp() when moving to C++17)
   if (c1_[idx] > upper_threshold_) {
     c1_[idx] = upper_threshold_;
   } else if (c1_[idx] < lower_threshold_) {

@@ -30,6 +30,8 @@
 
 namespace bdm {
 
+enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
+
 class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
@@ -73,9 +75,21 @@ class DiffusionGrid : public ScalarField {
   /// Initialize the diffusion grid according to the initialization functions
   void RunInitializers();
 
-  /// Increase the concentration at specified box with specified amount
-  void ChangeConcentrationBy(const Real3& position, real_t amount);
-  void ChangeConcentrationBy(size_t idx, real_t amount);
+  /// Increase the concentration at specified position with specified amount.
+  /// Interaction mode defines how the new concentration is calculated.
+  /// If the interaction mode is kAdditive, the new concentration is the sum of
+  /// the old concentration and the amount.
+  /// If the interaction mode is kExponential, the new concentration is the
+  /// product of the old concentration and the amount.
+  /// If the interaction mode is kLogistic, the new concentration is the
+  /// logistic function of the old concentration and the amount, e.g. additive
+  /// but scaled with (upper_threshold_ - u) or (u - lower_threshold_) if amount
+  /// is positive or negative, respectively. Should be used with thresholds 1.0
+  /// and 0.0.
+  void ChangeConcentrationBy(const Real3& position, real_t amount,
+                             InteractionMode mode = InteractionMode::kAdditive);
+  void ChangeConcentrationBy(size_t idx, real_t amount,
+                             InteractionMode mode = InteractionMode::kAdditive);
 
   /// Get the concentration at specified position
   real_t GetValue(const Real3& position) const override;
