@@ -30,14 +30,16 @@ class Secretion : public Behavior {
 
  public:
   Secretion() = default;
-  explicit Secretion(const std::string& substance, real_t quantity = 1)
-      : substance_(substance), quantity_(quantity) {
+  explicit Secretion(const std::string& substance, real_t quantity = 1,
+                     InteractionMode mode = InteractionMode::kAdditive)
+      : substance_(substance), quantity_(quantity), mode_(mode) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);
   }
 
-  explicit Secretion(DiffusionGrid* dgrid, real_t quantity = 1)
-      : dgrid_(dgrid), quantity_(quantity) {
+  explicit Secretion(DiffusionGrid* dgrid, real_t quantity = 1,
+                     InteractionMode mode = InteractionMode::kAdditive)
+      : dgrid_(dgrid), quantity_(quantity), mode_(mode) {
     substance_ = dgrid->GetContinuumName();
   }
 
@@ -53,13 +55,14 @@ class Secretion : public Behavior {
 
   void Run(Agent* agent) override {
     auto& secretion_position = agent->GetPosition();
-    dgrid_->ChangeConcentrationBy(secretion_position, quantity_);
+    dgrid_->ChangeConcentrationBy(secretion_position, quantity_, mode_);
   }
 
  private:
   std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
   real_t quantity_ = 1;
+  InteractionMode mode_ = InteractionMode::kAdditive;
 };
 
 }  // namespace bdm
