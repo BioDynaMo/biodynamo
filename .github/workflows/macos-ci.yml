@@ -15,11 +15,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 13.1 is used on macOS 12 as the default /Application/Xcode.app
+    - name: Make sure Xcode 14.1 is used on macOS 12 as the default /Application/Xcode.app
       shell: bash
       run: |
         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_13.1.app /Applications/Xcode.app
+        sudo ln -s /Applications/Xcode_14.1.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       if: matrix.os == 'macos-12'
 
