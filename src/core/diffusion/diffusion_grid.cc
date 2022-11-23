@@ -63,6 +63,12 @@ void DiffusionGrid::Initialize() {
   c1_.resize(total_num_boxes_);
   c2_.resize(total_num_boxes_);
   gradients_.resize(total_num_boxes_);
+
+  // Print Info
+  initialized_ = true;
+  if (print_info_with_initialization_) {
+    PrintInfo();
+  }
 }
 
 void DiffusionGrid::Diffuse(real_t dt) {
@@ -383,6 +389,46 @@ size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
   auto box_coord = GetBoxCoordinates(position);
   return GetBoxIndex(box_coord);
 }
+
+void DiffusionGrid::PrintInfo(std::ostream& out) {
+  auto continuum_name = GetContinuumName();
+  if (!IsInitialized()) {
+    // If the grid is not yet initialized, many of the variables have no vaild
+    // values. We print a warning and print the info after the grid is
+    // initialized.
+    out << "DiffusionGrid" << continuum_name
+        << "is not yet initialized. Will print info after initialization."
+        << std::endl;
+    print_info_with_initialization_ = true;
+    return;
+  }
+
+  // Get all the info
+  auto box_length = GetBoxLength();
+  auto diffusion_coefficient = 1 - GetDiffusionCoefficients()[0];
+  auto decay = GetDecayConstant();
+  auto max_dt =
+      (box_length * box_length) / (decay + 12.0 * diffusion_coefficient) * 2.0;
+  auto domain = GetDimensions();
+  auto umin = GetLowerThreshold();
+  auto umax = GetUpperThreshold();
+  auto resolution = GetResolution();
+  auto num_boxes = GetNumBoxes();
+
+  // Print the info
+  out << "DiffusionGrid: " << continuum_name << "\n";
+  out << "    D          = " << diffusion_coefficient << "\n";
+  out << "    decay      = " << decay << "\n";
+  out << "    dx         = " << box_length << "\n";
+  out << "    max(dt)    <= " << max_dt << "\n";
+  out << "    bounds     : " << umin << " < c < " << umax << "\n";
+  out << "    domain     : "
+      << "[" << domain[0] << ", " << domain[1] << "] x [" << domain[2] << ", "
+      << domain[3] << "] x [" << domain[4] << ", " << domain[5] << "]\n";
+  out << "    resolution : " << resolution << " x " << resolution << " x "
+      << resolution << "\n";
+  out << "    num boxes  : " << num_boxes << "\n";
+};
 
 void DiffusionGrid::ParametersCheck(real_t dt) {
   if ((((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) ||
