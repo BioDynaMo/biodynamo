@@ -959,6 +959,54 @@ TEST(DiffusionTest, GradientComputation) {
   }
 }
 
+TEST(DiffusionTest, PrintInfoBeforeInititialization) {
+  Simulation simulation(TEST_NAME);
+
+  // Add continuum
+  ModelInitializer::DefineSubstance(0, "Nutrients", 1, 2, 10);
+
+  auto* dgrid = simulation.GetResourceManager()->GetDiffusionGrid(0);
+
+  // Check that that we get a warning saying it's not yet initialized
+  std::stringstream buffer;
+  dgrid->PrintInfo(buffer);
+  EXPECT_TRUE(buffer.str().find("not yet initialized") != std::string::npos);
+}
+
+TEST(DiffusionTest, PrintInfoAfterInititialization) {
+  auto set_param = [&](Param* p) {
+    p->bound_space = Param::BoundSpaceMode::kClosed;
+    p->min_bound = -3;
+    p->max_bound = 4;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  auto* scheduler = simulation.GetScheduler();
+  auto* rm = simulation.GetResourceManager();
+
+  // Add continuum
+  ModelInitializer::DefineSubstance(0, "Nutrients", 1, 2, 10);
+  // Add cell
+  rm->AddAgent(new Cell());
+
+  auto* dgrid = simulation.GetResourceManager()->GetDiffusionGrid(0);
+  dgrid->SetLowerThreshold(-5.0);
+  dgrid->SetUpperThreshold(5.0);
+
+  // Initialize the grid
+  scheduler->Simulate(1);
+
+  // Check that we get the correct resolution, decay, and diffusion coefficient
+  std::stringstream buffer;
+  dgrid->PrintInfo(buffer);
+  EXPECT_TRUE(buffer.str().find("decay      = 2") != std::string::npos);
+  EXPECT_TRUE(buffer.str().find("D          = 1") != std::string::npos);
+  EXPECT_TRUE(buffer.str().find("resolution : 10 x 10 x 10") !=
+              std::string::npos);
+  EXPECT_TRUE(buffer.str().find("domain     : [-3, 4]") != std::string::npos);
+  EXPECT_TRUE(buffer.str().find("bounds     : -5 < c < 5") !=
+              std::string::npos);
+}
+
 #ifdef USE_PARAVIEW
 
 // Github Actions does not support OpenGL 3.3.
