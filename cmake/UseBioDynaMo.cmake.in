@@ -271,6 +271,27 @@ else()
     include(CppStyleGuideChecks)
 endif()
 
+# If not set, sgemm_ is not found on macos
+if(APPLE)
+  set(BLA_VENDOR Apple)
+else()
+  set(BLA_VENDOR Generic)
+endif()
+
+find_package(BLAS)
+if (NOT BLAS_FOUND)
+    message(WARNING "BLAS not found.")
+else()
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${BLAS_LIBRARIES})
+endif()
+
+find_package(LAPACK)
+if (NOT LAPACK_FOUND)
+    message(WARNING "LAPACK not found.")
+else()
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${LAPACK_LIBRARIES})
+endif()
+
 # -------------------- set default build type and compiler flags ---------------
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
