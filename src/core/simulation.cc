@@ -155,7 +155,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
   os << "Number of agents\t\t: " << sim.rm_->GetNumAgents() << std::endl;
 
-  sim.rm_->ForEachDiffusionGrid([&](auto* dgrid) { dgrid->PrintInfo(os); });
+  sim.rm_->ForEachDiffusionGrid([&os](auto* dgrid) { dgrid->PrintInfo(os); });
 
   os << "Output directory\t\t: " << sim.GetOutputDir() << std::endl;
   os << "  size\t\t\t\t: "
