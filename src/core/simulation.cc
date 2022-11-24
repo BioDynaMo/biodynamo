@@ -135,18 +135,6 @@ void Simulation::Restore(Simulation&& restored) {
 }
 
 std::ostream& operator<<(std::ostream& os, Simulation& sim) {
-  std::vector<std::string> dgrid_names;
-  std::vector<size_t> dgrid_resolutions;
-  std::vector<std::array<int32_t, 3>> dgrid_dimensions;
-  std::vector<uint64_t> dgrid_voxels;
-
-  sim.rm_->ForEachDiffusionGrid([&](auto* dgrid) {
-    dgrid_names.push_back(dgrid->GetContinuumName());
-    dgrid_resolutions.push_back(dgrid->GetResolution());
-    dgrid_dimensions.push_back(dgrid->GetGridSize());
-    dgrid_voxels.push_back(dgrid->GetNumBoxes());
-  });
-
   os << std::endl;
 
   os << "***********************************************" << std::endl;
@@ -167,19 +155,7 @@ std::ostream& operator<<(std::ostream& os, Simulation& sim) {
      << sim.scheduler_->GetSimulatedSteps() << std::endl;
   os << "Number of agents\t\t: " << sim.rm_->GetNumAgents() << std::endl;
 
-  if (dgrid_names.size() != 0) {
-    os << "Diffusion grids" << std::endl;
-    for (size_t i = 0; i < dgrid_names.size(); ++i) {
-      os << "  " << dgrid_names[i] << ":" << std::endl;
-      auto& dim = dgrid_dimensions[i];
-      os << "\t"
-         << "Resolution\t\t: " << dgrid_resolutions[i] << std::endl;
-      os << "\t"
-         << "Size\t\t\t: " << dim[0] << " x " << dim[1] << " x " << dim[2]
-         << std::endl
-         << "\tVoxels\t\t\t: " << dgrid_voxels[i] << std::endl;
-    }
-  }
+  sim.rm_->ForEachDiffusionGrid([&os](auto* dgrid) { dgrid->PrintInfo(os); });
 
   os << "Output directory\t\t: " << sim.GetOutputDir() << std::endl;
   os << "  size\t\t\t\t: "
