@@ -26,7 +26,7 @@ struct SpringForce : public Behavior {
   BDM_BEHAVIOR_HEADER(SpringForce, Behavior, 1);
 
  public:
-  SpringForce(double spring_constant = 1) : spring_constant_(spring_constant) {
+  SpringForce(real_t spring_constant = 1) : spring_constant_(spring_constant) {
     AlwaysCopyToNew();
   }
 
@@ -42,13 +42,13 @@ struct SpringForce : public Behavior {
   }
 
   // Displacement calculated in the direction of ap2
-  Double3 CalculateSpringForceDisplacement(TCell* ap1,
-                                           AgentPointer<Monocyte> ap2) {
-    Double3 pos1 = ap1->GetPosition();
-    Double3 pos2 = ap2->GetPosition();
-    Double3 force = (pos1 - pos2) * (-spring_constant_);
+  Real3 CalculateSpringForceDisplacement(TCell* ap1,
+                                         AgentPointer<Monocyte> ap2) {
+    Real3 pos1 = ap1->GetPosition();
+    Real3 pos2 = ap2->GetPosition();
+    Real3 force = (pos1 - pos2) * (-spring_constant_);
     auto dt = Simulation::GetActive()->GetParam()->simulation_time_step;
-    Double3 displacement = force * dt * dt;
+    Real3 displacement = force * dt * dt;
     return displacement;
   }
 
@@ -64,7 +64,7 @@ struct SpringForce : public Behavior {
   }
 
  private:
-  double spring_constant_;
+  real_t spring_constant_;
 };
 
 }  // namespace bdm

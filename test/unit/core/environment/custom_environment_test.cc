@@ -66,11 +66,11 @@ class MyEnvironment : public Environment {
       }
     }
   }
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Agent& query, double squared_radius) override{};
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Agent& query, real_t squared_radius) override{};
 
-  void ForEachNeighbor(Functor<void, Agent*, double>& lambda,
-                       const Double3& query_position, double squared_radius,
+  void ForEachNeighbor(Functor<void, Agent*, real_t>& lambda,
+                       const Real3& query_position, real_t squared_radius,
                        const Agent* query_agent = nullptr) override{};
 
   int GetNumUpdates() { return num_updates_; }

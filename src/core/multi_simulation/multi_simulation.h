@@ -35,7 +35,7 @@ class MultiSimulation {
  public:
   MultiSimulation(int argc, const char** argv);
 
-  MultiSimulation(int argc, const char** argv, const TimeSeries& real);
+  MultiSimulation(int argc, const char** argv, TimeSeries* real);
 
   ~MultiSimulation();
 

@@ -43,15 +43,15 @@ namespace bdm {
 class EulerGrid : public DiffusionGrid {
  public:
   EulerGrid() = default;
-  EulerGrid(size_t substance_id, std::string substance_name, double dc,
-            double mu, int resolution = 10)
+  EulerGrid(int substance_id, std::string substance_name, real_t dc, real_t mu,
+            int resolution = 10)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                       resolution) {}
 
-  virtual void DiffuseWithClosedEdge(double dt) override;
-  virtual void DiffuseWithOpenEdge(double dt) override;
-  virtual void DiffuseWithDirichlet(double dt) override;
-  virtual void DiffuseWithNeumann(double dt) override;
+  virtual void DiffuseWithClosedEdge(real_t dt) override;
+  virtual void DiffuseWithOpenEdge(real_t dt) override;
+  virtual void DiffuseWithDirichlet(real_t dt) override;
+  virtual void DiffuseWithNeumann(real_t dt) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(EulerGrid, 1);

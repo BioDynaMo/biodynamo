@@ -45,13 +45,13 @@ namespace detail {
 struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
   bool is_non_spherical_object = false;
 
-  double* cell_movements = nullptr;
-  double* cell_positions = nullptr;
-  double* cell_diameters = nullptr;
-  double* cell_adherence = nullptr;
-  double* cell_tractor_force = nullptr;
+  real_t* cell_movements = nullptr;
+  real_t* cell_positions = nullptr;
+  real_t* cell_diameters = nullptr;
+  real_t* cell_adherence = nullptr;
+  real_t* cell_tractor_force = nullptr;
   uint32_t* cell_boxid = nullptr;
-  double* mass = nullptr;
+  real_t* mass = nullptr;
   uint32_t* successors = nullptr;
 
   std::vector<AgentHandle::ElementIdx_t> offset;
@@ -197,10 +197,10 @@ void InitializeGPUData::operator()(Agent* agent, AgentHandle ah) {
 
 // -----------------------------------------------------------------------------
 struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
-  double* cell_movements = nullptr;
+  real_t* cell_movements = nullptr;
   std::vector<AgentHandle::ElementIdx_t> offset;
 
-  UpdateCPUResults(double* cm,
+  UpdateCPUResults(real_t* cm,
                    const std::vector<AgentHandle::ElementIdx_t>& offs);
   virtual ~UpdateCPUResults();
 
@@ -209,7 +209,7 @@ struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
 
 // -----------------------------------------------------------------------------
 UpdateCPUResults::UpdateCPUResults(
-    double* cm, const std::vector<AgentHandle::ElementIdx_t>& offs) {
+    real_t* cm, const std::vector<AgentHandle::ElementIdx_t>& offs) {
   cell_movements = cm;
   offset = offs;
 }
@@ -223,8 +223,8 @@ void UpdateCPUResults::operator()(Agent* agent, AgentHandle ah) {
   auto* cell = bdm_static_cast<Cell*>(agent);
   auto idx = offset[ah.GetNumaNode()] + ah.GetElementIdx();
   idx *= 3;
-  Double3 new_pos = {cell_movements[idx], cell_movements[idx + 1],
-                     cell_movements[idx + 2]};
+  Real3 new_pos = {cell_movements[idx], cell_movements[idx + 1],
+                   cell_movements[idx + 2]};
   cell->UpdatePosition(new_pos);
   if (param->bound_space) {
     ApplyBoundingBox(agent, param->bound_space, param->min_bound,
@@ -317,7 +317,7 @@ void MechanicalForcesOpCuda::operator()() {
     }
   }
 
-  double squared_radius =
+  real_t squared_radius =
       grid->GetLargestAgentSize() * grid->GetLargestAgentSize();
 
   // Timing timer("MechanicalForcesOpCuda::Kernel");

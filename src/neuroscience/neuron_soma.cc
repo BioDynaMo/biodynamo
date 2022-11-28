@@ -30,7 +30,7 @@ NeuronSoma::NeuronSoma() = default;
 
 NeuronSoma::~NeuronSoma() = default;
 
-NeuronSoma::NeuronSoma(const Double3& position) : Base(position) {}
+NeuronSoma::NeuronSoma(const Real3& position) : Base(position) {}
 
 void NeuronSoma::Initialize(const NewAgentEvent& event) {
   Base::Initialize(event);
@@ -53,11 +53,11 @@ void NeuronSoma::Update(const NewAgentEvent& event) {
     const auto& ne_event = static_cast<const NewNeuriteExtensionEvent&>(event);
     auto* neurite = bdm_static_cast<NeuriteElement*>(event.new_agents[0]);
 
-    double theta = ne_event.theta;
-    double phi = ne_event.phi;
-    double x_coord = std::sin(theta) * std::cos(phi);
-    double y_coord = std::sin(theta) * std::sin(phi);
-    double z_coord = std::cos(theta);
+    real_t theta = ne_event.theta;
+    real_t phi = ne_event.phi;
+    real_t x_coord = std::sin(theta) * std::cos(phi);
+    real_t y_coord = std::sin(theta) * std::sin(phi);
+    real_t z_coord = std::cos(theta);
 
     daughters_.push_back(neurite->GetAgentPtr<NeuriteElement>());
     daughters_coord_[neurite->GetUid()] = {x_coord, y_coord, z_coord};
@@ -74,7 +74,7 @@ void NeuronSoma::CriticalRegion(std::vector<AgentPointer<>>* aptrs) {
   }
 }
 
-NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
+NeuriteElement* NeuronSoma::ExtendNewNeurite(const Real3& direction,
                                              NeuriteElement* prototype) {
   auto dir = direction + GetPosition();
   auto angles = Base::TransformCoordinatesGlobalToPolar(dir);
@@ -83,8 +83,8 @@ NeuriteElement* NeuronSoma::ExtendNewNeurite(const Double3& direction,
                           prototype);
 }
 
-NeuriteElement* NeuronSoma::ExtendNewNeurite(double diameter, double phi,
-                                             double theta,
+NeuriteElement* NeuronSoma::ExtendNewNeurite(real_t diameter, real_t phi,
+                                             real_t theta,
                                              NeuriteElement* prototype) {
   if (!prototype) {
     static NeuriteElement kDefaultNeurite;
@@ -102,17 +102,17 @@ void NeuronSoma::RemoveDaughter(const AgentPointer<NeuriteElement>& daughter) {
   daughters_.erase(it);
 }
 
-Double3 NeuronSoma::OriginOf(const AgentUid& daughter_uid) const {
-  Double3 xyz = daughters_coord_.at(daughter_uid);
+Real3 NeuronSoma::OriginOf(const AgentUid& daughter_uid) const {
+  Real3 xyz = daughters_coord_.at(daughter_uid);
 
-  double radius = GetDiameter() * .5;
+  real_t radius = GetDiameter() * .5;
   xyz = xyz * radius;
 
-  Double3 axis_0 = {Base::kXAxis[0], Base::kYAxis[0], Base::kZAxis[0]};
-  Double3 axis_1 = {Base::kXAxis[1], Base::kYAxis[1], Base::kZAxis[1]};
-  Double3 axis_2 = {Base::kXAxis[2], Base::kYAxis[2], Base::kZAxis[2]};
+  Real3 axis_0 = {Base::kXAxis[0], Base::kYAxis[0], Base::kZAxis[0]};
+  Real3 axis_1 = {Base::kXAxis[1], Base::kYAxis[1], Base::kZAxis[1]};
+  Real3 axis_2 = {Base::kXAxis[2], Base::kYAxis[2], Base::kZAxis[2]};
 
-  Double3 result = {xyz * axis_0, xyz * axis_1, xyz * axis_2};
+  Real3 result = {xyz * axis_0, xyz * axis_1, xyz * axis_2};
   return GetPosition() + result;
 }
 
@@ -140,7 +140,7 @@ const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters()
 
 // Helper function for PrintSWC to print the elements of a vector seperated by
 // a space.
-inline void PrintVector(std::ostream& out, const Double3& pos) {
+inline void PrintVector(std::ostream& out, const Real3& pos) {
   out << " " << pos[0] << " " << pos[1] << " " << pos[2] << " ";
 }
 

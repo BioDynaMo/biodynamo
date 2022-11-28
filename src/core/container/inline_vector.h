@@ -46,7 +46,7 @@ namespace bdm {
 /// This container is optimized for minimal overhead. Therefore, it can only
 /// store 65535 elements.
 template <typename T, uint16_t N>
-class InlineVector {
+class InlineVector final {
  public:
   template <typename TT, typename TIV>
   struct Iterator {
@@ -175,7 +175,7 @@ class InlineVector {
     other.heap_data_ = nullptr;
   }
 
-  virtual ~InlineVector() {
+  ~InlineVector() {
     if (heap_data_ != nullptr) {
       heap_capacity_ = 0;
       delete[] heap_data_;
@@ -360,7 +360,7 @@ class InlineVector {
     return size_ - N;
   }
 
-  BDM_CLASS_DEF(InlineVector, 1);  // NOLINT
+  BDM_CLASS_DEF_NV(InlineVector, 2);  // NOLINT
 };
 
 // The following custom streamer should be visible to rootcling for dictionary
@@ -371,7 +371,7 @@ template <typename T, uint16_t N>
 inline void InlineVector<T, N>::Streamer(TBuffer& R__b) {
   if (R__b.IsReading()) {
     VectorTypeWrapper<T> vw;
-    R__b.ReadClassBuffer(TClassTable::GetDict(typeid(vw))(), &vw);
+    R__b.ReadClassBuffer(VectorTypeWrapper<T>::Class(), &vw);
     for (auto ve : vw.vector_) {
       this->push_back(ve);
     }
@@ -381,7 +381,7 @@ inline void InlineVector<T, N>::Streamer(TBuffer& R__b) {
     for (uint16_t i = 0; i < size_; i++) {
       vw.vector_[i] = (*this)[i];
     }
-    R__b.WriteClassBuffer(TClassTable::GetDict(typeid(vw))(), &vw);
+    R__b.WriteClassBuffer(VectorTypeWrapper<T>::Class(), &vw);
   }
 }
 

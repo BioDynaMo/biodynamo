@@ -61,7 +61,7 @@ curl https://biodynamo.org/install | bash
 
 *  Ubuntu 18.04, 20.04
 *  CentOS 7
-*  macOS 10.15 and macOS 11.1
+*  MacOS 11.7 and 12.6 (Intel and ARM)
 
 Currently, we do **not** support Windows or Windows subsystem for Linux.
 

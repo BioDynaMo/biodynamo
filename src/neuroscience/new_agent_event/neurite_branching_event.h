@@ -31,8 +31,8 @@ namespace neuroscience {
 struct NeuriteBranchingEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
-  NeuriteBranchingEvent(double distal_portion, double length, double diameter,
-                        const Double3 direction)
+  NeuriteBranchingEvent(real_t distal_portion, real_t length, real_t diameter,
+                        const Real3 direction)
       : distal_portion(distal_portion),
         length(length),
         diameter(diameter),
@@ -44,15 +44,15 @@ struct NeuriteBranchingEvent : public NewAgentEvent {
 
   /// the fraction of the total old length devoted to the
   /// distal half (should be between 0 and 1).
-  double distal_portion;
+  real_t distal_portion;
   /// length of the new side branch
-  double length;
+  real_t length;
   /// diameter of the new side branch
-  double diameter;
+  real_t diameter;
   /// direction of the new side branch.
   /// will be automatically corrected if not at least 45 degrees from the
   /// cylinder's axis.
-  Double3 direction;
+  Real3 direction;
 };
 
 }  // namespace neuroscience

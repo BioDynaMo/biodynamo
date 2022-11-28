@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <vector>
 #include "core/param/param_group.h"
+#include "core/real_t.h"
 #include "core/util/root.h"
 #include "cpptoml/cpptoml.h"
 
@@ -37,7 +38,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_default_actual_length = 1.0
-  double neurite_default_actual_length = 1.0;
+  real_t neurite_default_actual_length = 1.0;
 
   /// Default density value of a neurite.\n
   /// Default value: `1.0`\n
@@ -45,7 +46,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_default_density = 1.0
-  double neurite_default_density = 1.0;
+  real_t neurite_default_density = 1.0;
 
   /// Default diameter value of a neurite.\n
   /// Default value: `1.0`\n
@@ -53,7 +54,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_default_diameter = 1.0
-  double neurite_default_diameter = 1.0;
+  real_t neurite_default_diameter = 1.0;
 
   /// Default spring constant value of a neurite.\n
   /// Default value: `10`\n
@@ -61,7 +62,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_default_spring_constant = 10
-  double neurite_default_spring_constant = 10;
+  real_t neurite_default_spring_constant = 10;
 
   /// Default adherence value of a neurite.\n
   /// Default value: `0.1`\n
@@ -69,7 +70,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_default_adherence = 0.1
-  double neurite_default_adherence = 0.1;
+  real_t neurite_default_adherence = 0.1;
 
   /// Default tension value of a neurite.\n
   /// Default value: `0.0`\n
@@ -77,7 +78,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_default_tension = 0.0
-  double neurite_default_tension = 0.0;
+  real_t neurite_default_tension = 0.0;
 
   /// Minimum allowed length of a neurite element.\n
   /// Default value: `2.0`\n
@@ -85,7 +86,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_min_length = 2.0
-  double neurite_min_length = 2.0;
+  real_t neurite_min_length = 2.0;
 
   /// Maximum allowed length of a neurite element.\n
   /// Default value: `15`\n
@@ -93,7 +94,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_max_length = 15
-  double neurite_max_length = 15;
+  real_t neurite_max_length = 15;
 
   /// Minumum bifurcation length of a neurite element.\n
   /// If the length is below this threshold, bifurcation is not permitted.\n
@@ -102,7 +103,7 @@ struct Param : public ParamGroup {
   ///
   ///     [neuroscience]
   ///     neurite_minimial_bifurcation_length = 0
-  double neurite_minimial_bifurcation_length = 0;
+  real_t neurite_minimial_bifurcation_length = 0;
 
  protected:
   /// Assign values from config file to variables

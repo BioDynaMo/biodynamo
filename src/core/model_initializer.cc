@@ -23,9 +23,9 @@ namespace bdm {
 
 void ModelInitializer::DefineSubstance(size_t substance_id,
                                        const std::string& substance_name,
-                                       double diffusion_coeff,
-                                       double decay_constant, int resolution,
-                                       std::vector<double> binding_coefficients,
+                                       real_t diffusion_coeff,
+                                       real_t decay_constant, int resolution,
+                                       std::vector<real_t> binding_coefficients,
                                        std::vector<size_t> binding_substances) {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
@@ -65,7 +65,7 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
                           decay_constant, resolution);
   }
 
-  rm->AddDiffusionGrid(dgrid);
+  rm->AddContinuum(dgrid);
 }
 
 }  // namespace bdm

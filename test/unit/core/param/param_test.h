@@ -22,7 +22,7 @@ namespace bdm {
 struct TestParamGroup : public ParamGroup {
   BDM_PARAM_GROUP_HEADER(TestParamGroup, 1);
 
-  double test_param1 = 3.14;
+  real_t test_param1 = 3.14;
   uint64_t test_param2 = 42;
   int test_param3 = -1;
 };
@@ -30,4 +30,3 @@ struct TestParamGroup : public ParamGroup {
 }  // namespace bdm
 
 #endif  // UNIT_CORE_PARAM_PARAM_TEST_H_
-#include <memory>

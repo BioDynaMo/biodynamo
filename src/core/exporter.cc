@@ -167,6 +167,7 @@ void ParaviewExporter::ExportIteration(std::string filename,
   auto num_cells = rm->GetNumAgents();
   size_t index = 0;
   std::ofstream vtu(filename + "-" + std::to_string(iteration) + ".vtu");
+  auto float_size = sizeof(real_t) * 8;
 
   vtu << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" "
          "byte_order=\"LittleEndian\">"
@@ -175,7 +176,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "      <Piece  NumberOfPoints=\"" << num_cells << "\" NumberOfCells=\""
       << num_cells << "\">" << std::endl;
   vtu << "         <Points>" << std::endl;
-  vtu << "            <DataArray type=\"Float64\" NumberOfComponents=\"3\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" NumberOfComponents=\"3\" "
          "format=\"ascii\">"
       << std::endl;
   rm->ForEachAgent([&](Agent* agent) {
@@ -186,7 +188,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   vtu << "            </DataArray>" << std::endl;
   vtu << "         </Points>" << std::endl;
   vtu << "         <PointData>" << std::endl;
-  vtu << "            <DataArray type=\"Float64\" Name=\"Cell_ID\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Cell_ID\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
   index = 0;
@@ -195,7 +198,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
   }
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float64\" Name=\"Adherence\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Adherence\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
@@ -208,7 +212,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float64\" Name=\"Diameter\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Diameter\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
   rm->ForEachAgent([&](Agent* agent) {
@@ -218,7 +223,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float64\" Name=\"Mass\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Mass\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
@@ -231,7 +237,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float64\" Name=\"Volume\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"Volume\" "
          "NumberOfComponents=\"1\" format=\"ascii\">"
       << std::endl;
 
@@ -244,7 +251,8 @@ void ParaviewExporter::ExportIteration(std::string filename,
 
   vtu << std::endl;
   vtu << "            </DataArray>" << std::endl;
-  vtu << "            <DataArray type=\"Float64\" Name=\"TractionForce\" "
+  vtu << "            <DataArray type=\"Float" << float_size
+      << "\" Name=\"TractionForce\" "
          "NumberOfComponents=\"3\" format=\"ascii\">"
       << std::endl;
 

@@ -149,7 +149,7 @@ void AllocatedBlock::GetNextPageBatch(uint64_t size_n_pages, char** start,
 
 // -----------------------------------------------------------------------------
 NumaPoolAllocator::NumaPoolAllocator(uint64_t size, int nid,
-                                     uint64_t size_n_pages, double growth_rate,
+                                     uint64_t size_n_pages, real_t growth_rate,
                                      uint64_t max_mem_per_thread_factor)
     : size_n_pages_(size_n_pages),
       growth_rate_(growth_rate),
@@ -295,7 +295,7 @@ uint64_t NumaPoolAllocator::RoundUpTo(uint64_t number, uint64_t multiple) {
 
 // -----------------------------------------------------------------------------
 PoolAllocator::PoolAllocator(std::size_t size, uint64_t size_n_pages,
-                             double growth_rate,
+                             real_t growth_rate,
                              uint64_t max_mem_per_thread_factor)
     : size_(size), tinfo_(ThreadInfo::GetInstance()) {
   for (int nid = 0; nid < tinfo_->GetNumaNodes(); ++nid) {
@@ -329,7 +329,7 @@ void* PoolAllocator::New(std::size_t size) {
 }  // namespace memory_manager_detail
 
 // -----------------------------------------------------------------------------
-MemoryManager::MemoryManager(uint64_t aligned_pages_shift, double growth_rate,
+MemoryManager::MemoryManager(uint64_t aligned_pages_shift, real_t growth_rate,
                              uint64_t max_mem_per_thread_factor)
     : growth_rate_(growth_rate),
       max_mem_per_thread_factor_(max_mem_per_thread_factor),

@@ -27,7 +27,7 @@ namespace neuroscience {
 struct NewNeuriteExtensionEvent : public NewAgentEvent {
   static const NewAgentEventUid kUid;
 
-  NewNeuriteExtensionEvent(double diameter, double phi, double theta)
+  NewNeuriteExtensionEvent(real_t diameter, real_t phi, real_t theta)
       : diameter(diameter), phi(phi), theta(theta) {}
 
   virtual ~NewNeuriteExtensionEvent() = default;
@@ -35,11 +35,11 @@ struct NewNeuriteExtensionEvent : public NewAgentEvent {
   NewAgentEventUid GetUid() const override { return kUid; }
 
   /// diameter the diameter of the new neurite
-  double diameter;
+  real_t diameter;
   /// phi azimuthal angle (spherical coordinates)
-  double phi;
+  real_t phi;
   /// theta polar angle (spherical coordinates)
-  double theta;
+  real_t theta;
 };
 
 }  // namespace neuroscience

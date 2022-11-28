@@ -31,7 +31,7 @@ namespace mechanical_forces_op_gpu_test_internal {
 // from the CPU version. Once the CPU version supports the same execution
 // context, we can include it for direct comparison of results.
 
-static constexpr double kEps = 10 * abs_error<double>::value;
+static constexpr real_t kEps = 10 * abs_error<real_t>::value;
 
 class MechanicalForcesOpCpuVerify {
  public:
@@ -42,7 +42,7 @@ class MechanicalForcesOpCpuVerify {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
 
-    AgentVector<Double3> displacements;
+    AgentVector<Real3> displacements;
 
     CalculateDisplacement cd(&displacements);
     rm->ForEachAgentParallel(1000, cd);
@@ -51,9 +51,9 @@ class MechanicalForcesOpCpuVerify {
   }
 
   struct CalculateDisplacement : public Functor<void, Agent*, AgentHandle> {
-    AgentVector<Double3>* displacements_;
+    AgentVector<Real3>* displacements_;
 
-    CalculateDisplacement(AgentVector<Double3>* displacements) {
+    CalculateDisplacement(AgentVector<Real3>* displacements) {
       displacements_ = displacements;
     }
 
@@ -72,9 +72,9 @@ class MechanicalForcesOpCpuVerify {
   };
 
   struct UpdateCells : public Functor<void, Agent*, AgentHandle> {
-    AgentVector<Double3>* displacements_;
+    AgentVector<Real3>* displacements_;
 
-    UpdateCells(AgentVector<Double3>* displacements) {
+    UpdateCells(AgentVector<Real3>* displacements) {
       displacements_ = displacements;
     }
 
@@ -159,12 +159,12 @@ void RunTest(OpComputeTarget mode) {
   auto vcell0 = static_cast<Cell*>(rm1->GetAgent(uid_ref[1] + 0));
   auto vcell1 = static_cast<Cell*>(rm1->GetAgent(uid_ref[1] + 1));
 
-  EXPECT_ARR_NEAR_GPU(vcell0->GetPosition(), cell0->GetPosition());
-  EXPECT_ARR_NEAR_GPU(vcell1->GetPosition(), cell1->GetPosition());
+  EXPECT_ARR_NEAR3(vcell0->GetPosition(), cell0->GetPosition());
+  EXPECT_ARR_NEAR3(vcell1->GetPosition(), cell1->GetPosition());
 
   // check if tractor_force has been reset to zero
-  EXPECT_ARR_NEAR_GPU(cell0->GetTractorForce(), {0, 0, 0});
-  EXPECT_ARR_NEAR_GPU(cell1->GetTractorForce(), {0, 0, 0});
+  EXPECT_ARR_NEAR3(cell0->GetTractorForce(), {0, 0, 0});
+  EXPECT_ARR_NEAR3(cell1->GetTractorForce(), {0, 0, 0});
 
   // remaining fields should remain unchanged
   // cell 0
@@ -213,7 +213,7 @@ void RunTest2(OpComputeTarget mode) {
     auto* env = sim->GetEnvironment();
     uid_ref[i] = AgentUid(sim->GetAgentUidGenerator()->GetHighestIndex());
 
-    double space = 20;
+    real_t space = 20;
     for (size_t i = 0; i < 3; i++) {
       for (size_t j = 0; j < 3; j++) {
         for (size_t k = 0; k < 3; k++) {
@@ -246,33 +246,33 @@ void RunTest2(OpComputeTarget mode) {
   auto rm1 = sims[Case::kVerify]->GetResourceManager();
 
   // clang-format off
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 0)->GetPosition(), rm0->GetAgent(uid_ref[0] + 0)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 1)->GetPosition(), rm0->GetAgent(uid_ref[0] + 1)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 2)->GetPosition(), rm0->GetAgent(uid_ref[0] + 2)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 3)->GetPosition(), rm0->GetAgent(uid_ref[0] + 3)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 4)->GetPosition(), rm0->GetAgent(uid_ref[0] + 4)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 5)->GetPosition(), rm0->GetAgent(uid_ref[0] + 5)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 6)->GetPosition(), rm0->GetAgent(uid_ref[0] + 6)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 7)->GetPosition(), rm0->GetAgent(uid_ref[0] + 7)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 8)->GetPosition(), rm0->GetAgent(uid_ref[0] + 8)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 9)->GetPosition(), rm0->GetAgent(uid_ref[0] + 9)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 10)->GetPosition(), rm0->GetAgent(uid_ref[0] + 10)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 11)->GetPosition(), rm0->GetAgent(uid_ref[0] + 11)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 12)->GetPosition(), rm0->GetAgent(uid_ref[0] + 12)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 13)->GetPosition(), rm0->GetAgent(uid_ref[0] + 13)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 14)->GetPosition(), rm0->GetAgent(uid_ref[0] + 14)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 15)->GetPosition(), rm0->GetAgent(uid_ref[0] + 15)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 16)->GetPosition(), rm0->GetAgent(uid_ref[0] + 16)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 17)->GetPosition(), rm0->GetAgent(uid_ref[0] + 17)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 18)->GetPosition(), rm0->GetAgent(uid_ref[0] + 18)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 19)->GetPosition(), rm0->GetAgent(uid_ref[0] + 19)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 20)->GetPosition(), rm0->GetAgent(uid_ref[0] + 20)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 21)->GetPosition(), rm0->GetAgent(uid_ref[0] + 21)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 22)->GetPosition(), rm0->GetAgent(uid_ref[0] + 22)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 23)->GetPosition(), rm0->GetAgent(uid_ref[0] + 23)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 24)->GetPosition(), rm0->GetAgent(uid_ref[0] + 24)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 25)->GetPosition(), rm0->GetAgent(uid_ref[0] + 25)->GetPosition());
-  EXPECT_ARR_NEAR_GPU(rm1->GetAgent(uid_ref[1] + 26)->GetPosition(), rm0->GetAgent(uid_ref[0] + 26)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 0)->GetPosition(), rm0->GetAgent(uid_ref[0] + 0)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 1)->GetPosition(), rm0->GetAgent(uid_ref[0] + 1)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 2)->GetPosition(), rm0->GetAgent(uid_ref[0] + 2)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 3)->GetPosition(), rm0->GetAgent(uid_ref[0] + 3)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 4)->GetPosition(), rm0->GetAgent(uid_ref[0] + 4)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 5)->GetPosition(), rm0->GetAgent(uid_ref[0] + 5)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 6)->GetPosition(), rm0->GetAgent(uid_ref[0] + 6)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 7)->GetPosition(), rm0->GetAgent(uid_ref[0] + 7)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 8)->GetPosition(), rm0->GetAgent(uid_ref[0] + 8)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 9)->GetPosition(), rm0->GetAgent(uid_ref[0] + 9)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 10)->GetPosition(), rm0->GetAgent(uid_ref[0] + 10)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 11)->GetPosition(), rm0->GetAgent(uid_ref[0] + 11)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 12)->GetPosition(), rm0->GetAgent(uid_ref[0] + 12)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 13)->GetPosition(), rm0->GetAgent(uid_ref[0] + 13)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 14)->GetPosition(), rm0->GetAgent(uid_ref[0] + 14)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 15)->GetPosition(), rm0->GetAgent(uid_ref[0] + 15)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 16)->GetPosition(), rm0->GetAgent(uid_ref[0] + 16)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 17)->GetPosition(), rm0->GetAgent(uid_ref[0] + 17)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 18)->GetPosition(), rm0->GetAgent(uid_ref[0] + 18)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 19)->GetPosition(), rm0->GetAgent(uid_ref[0] + 19)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 20)->GetPosition(), rm0->GetAgent(uid_ref[0] + 20)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 21)->GetPosition(), rm0->GetAgent(uid_ref[0] + 21)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 22)->GetPosition(), rm0->GetAgent(uid_ref[0] + 22)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 23)->GetPosition(), rm0->GetAgent(uid_ref[0] + 23)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 24)->GetPosition(), rm0->GetAgent(uid_ref[0] + 24)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 25)->GetPosition(), rm0->GetAgent(uid_ref[0] + 25)->GetPosition());
+  EXPECT_ARR_NEAR3(rm1->GetAgent(uid_ref[1] + 26)->GetPosition(), rm0->GetAgent(uid_ref[0] + 26)->GetPosition());
   // clang-format on
 }
 

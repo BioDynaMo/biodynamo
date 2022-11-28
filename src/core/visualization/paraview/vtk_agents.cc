@@ -79,7 +79,7 @@ VtkAgents::VtkAgents(const char* type_name,
 
         for (auto* tdm : tdata_members) {
           // example:
-          // { CreateVtkDataArray<Cell, Double3> f; f(tid, "position_", 123,
+          // { CreateVtkDataArray<Cell, Real3> f; f(tid, "position_", 123,
           // agent_grid); }
           sstr << "{ CreateVtkDataArray<" << tdm->GetClass()->GetName() << ", "
                << tdm->GetTypeName() << ">f; f("

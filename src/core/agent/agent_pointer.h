@@ -58,6 +58,10 @@ template <typename TAgent = Agent>
 class AgentPointer {
  public:
   explicit AgentPointer(const AgentUid& uid) {
+    if (uid == AgentUid()) {
+      *this = nullptr;
+      return;
+    }
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
       d_.uid = uid;
     } else {
@@ -67,7 +71,7 @@ class AgentPointer {
   }
   explicit AgentPointer(TAgent* agent) {
     if (!agent) {
-      return;
+      *this = nullptr;
     }
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
       d_.uid = agent->GetUid();
@@ -75,6 +79,9 @@ class AgentPointer {
       d_.agent = agent;
     }
   }
+
+  /// Allow `AgentPointer<> ap = nullptr` definitions
+  AgentPointer(std::nullptr_t) { *this = nullptr; }
 
   /// constructs an AgentPointer object representing a nullptr
   AgentPointer() { *this = nullptr; }
@@ -171,6 +178,9 @@ class AgentPointer {
   TAgent* operator->() {
     assert(*this != nullptr);
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      if (d_.uid == AgentUid()) {
+        return nullptr;
+      }
       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
       return Cast<Agent, TAgent>(ctxt->GetAgent(d_.uid));
     } else {
@@ -181,6 +191,9 @@ class AgentPointer {
   const TAgent* operator->() const {
     assert(*this != nullptr);
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
+      if (d_.uid == AgentUid()) {
+        return nullptr;
+      }
       auto* ctxt = Simulation::GetActive()->GetExecutionContext();
       return Cast<const Agent, const TAgent>(ctxt->GetConstAgent(d_.uid));
     } else {

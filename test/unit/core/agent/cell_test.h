@@ -51,19 +51,19 @@ class TestCell : public Cell {
   }
 
   void TestTransformCoordinatesGlobalToPolar() {
-    Double3 coord = {1, 2, 3};
+    Real3 coord = {1, 2, 3};
     Base::SetPosition({9, 8, 7});
     auto result = Base::TransformCoordinatesGlobalToPolar(coord);
 
-    EXPECT_NEAR(10.770329614269007, result[0], abs_error<double>::value);
-    EXPECT_NEAR(1.9513027039072615, result[1], abs_error<double>::value);
-    EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<double>::value);
+    EXPECT_NEAR(10.770329614269007, result[0], abs_error<real_t>::value);
+    EXPECT_NEAR(1.9513027039072615, result[1], abs_error<real_t>::value);
+    EXPECT_NEAR(-2.4980915447965089, result[2], abs_error<real_t>::value);
   }
 
   bool capture_input_parameters_ = false;
-  double captured_volume_ratio = 0.0;
-  double captured_phi_ = 0.0;
-  double captured_theta_ = 0.0;
+  real_t captured_volume_ratio = 0.0;
+  real_t captured_phi_ = 0.0;
+  real_t captured_theta_ = 0.0;
 
   FRIEND_TEST(CellTest, DivideVolumeRatioPhiTheta);
 };
@@ -98,7 +98,7 @@ inline void RunIOTest() {
   GetPersistentObject(ROOTFILE, "cell", restored_cell);
 
   // validate
-  const double kEpsilon = abs_error<double>::value;
+  const real_t kEpsilon = abs_error<real_t>::value;
   EXPECT_NEAR(5, restored_cell->GetPosition()[0], kEpsilon);
   EXPECT_NEAR(6, restored_cell->GetPosition()[1], kEpsilon);
   EXPECT_NEAR(7, restored_cell->GetPosition()[2], kEpsilon);

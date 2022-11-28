@@ -23,8 +23,8 @@ TimeSeries GetAnalyticalResults(const Param* param) {
   auto* sparam = param->Get<SimParam>();
 
   // analytical solution
-  double beta = sparam->beta;
-  double gamma = sparam->gamma;
+  real_t beta = sparam->beta;
+  real_t gamma = sparam->gamma;
   TimeSeries analytical;
   CalculateAnalyticalSolution(
       &analytical, beta, gamma, sparam->initial_population_susceptible,
@@ -47,7 +47,7 @@ void ExperimentSimAndAnalytical(int argc, const char** argv, const Param* param,
                 !sparam->no_legend, sparam->result_plot);
   });
 
-  double mse = Experiment(sim_wrapper, repeat, param, &analytical, &plot);
+  real_t mse = Experiment(sim_wrapper, repeat, param, &analytical, &plot);
   std::cout << " MSE " << mse << std::endl;
 }
 
@@ -71,7 +71,7 @@ int main(int argc, const char** argv) {
   } else {  // Run the multi-simulation fitting routine
     // Generate the analytical data
     auto analytical = GetAnalyticalResults(param);
-    MultiSimulation pe(argc, argv, analytical);
+    MultiSimulation pe(argc, argv, &analytical);
     std::cout << "Simulation completed successfully!" << std::endl;
     return pe.Execute(Simulate);
   }

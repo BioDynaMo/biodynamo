@@ -15,6 +15,7 @@
 
 #include "core/algorithm.h"
 #include <gtest/gtest.h>
+#include <unordered_map>
 #include <vector>
 
 namespace bdm {
@@ -105,6 +106,31 @@ TEST(BinarySearch, Duplicates) {
   EXPECT_EQ(6u, BinarySearch(2u, v, 0, v.size() - 1));
   EXPECT_EQ(8u, BinarySearch(3u, v, 0, v.size() - 1));
   EXPECT_EQ(9u, BinarySearch(4u, v, 0, v.size() - 1));
+}
+
+// -----------------------------------------------------------------------------
+TEST(BinarySearch, DuplicatesLarge) {
+  std::vector<uint64_t> v = {
+      0,  1,  1,  2,  2,  2,  2,  2,  3,  4,  4,  4,  4,  4,  4,  4,  5,
+      5,  5,  5,  6,  7,  7,  8,  8,  8,  8,  8,  8,  8,  8,  8,  9,  9,
+      9,  9,  9,  9,  10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 12,
+      12, 12, 12, 12, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 16, 16, 16,
+      16, 19, 19, 19, 19, 19, 19, 20, 20, 20, 21, 21, 21, 21, 22, 23, 23,
+      24, 25, 25, 25, 25, 25, 25, 25, 25, 26, 27, 27, 28, 29, 30, 31, 31,
+      31, 31, 31, 33, 34, 34, 34, 34, 34, 35, 35, 35, 36, 36, 36, 36, 36,
+      37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 38, 39, 39, 39, 39, 39, 40,
+      40, 40, 40, 40, 41, 41, 41, 41, 42};
+
+  // store right-most occurrence in map
+  std::unordered_map<uint64_t, uint64_t> map;
+  for (uint64_t i = 0; i < v.size(); ++i) {
+    map[v[i]] = i;
+  }
+
+  // check if right-most occurrence is found
+  for (auto& el : map) {
+    EXPECT_EQ(el.second, BinarySearch(el.first, v, 0, v.size() - 1));
+  }
 }
 
 }  // namespace bdm

@@ -15,16 +15,17 @@
 
 #include "core/functor.h"
 #include <gtest/gtest.h>
+#include "core/real_t.h"
 
 namespace bdm {
 
 // -----------------------------------------------------------------------------
 TEST(Lambda2Functor, Default) {
-  auto f = L2F([](int i, double d) { return i * d; });
+  auto f = L2F([](int i, real_t d) { return i * d; });
   auto result = f(3, 2.0);
   EXPECT_NEAR(6, result, 1e-5);
   bool is_base =
-      std::is_base_of<Functor<double, int, double>, decltype(f)>::value;
+      std::is_base_of<Functor<real_t, int, real_t>, decltype(f)>::value;
   EXPECT_TRUE(is_base);
 }
 

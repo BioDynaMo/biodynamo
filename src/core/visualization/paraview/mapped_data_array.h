@@ -46,7 +46,7 @@ struct GetDataMemberForVis {
   GetDataMemberForVis() { temp_values_.resize(256); }
 
   void Update() {
-    // We assume that number of threads won't double within one iteration
+    // We assume that number of threads won't real_t within one iteration
     temp_values_.resize(
         2 * std::max<unsigned long long>(
                 ThreadInfo::GetInstance()->GetMaxUniversalThreadId(), 256ULL));
@@ -431,7 +431,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
         uint64_t cnt = 0;
         for (uint64_t i = idx;
              i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-          tuple[cnt++] = static_cast<double>(data_[i]);
+          tuple[cnt++] = static_cast<real_t>(data_[i]);
         }
         return;
       }
@@ -440,7 +440,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
       auto* temporary_data = get_dm_((*agents_)[start_ + tuple_id]);
       for (uint64_t i = 0; i < static_cast<uint64_t>(this->NumberOfComponents);
            ++i) {
-        tuple[i] = static_cast<double>(temporary_data[i]);
+        tuple[i] = static_cast<real_t>(temporary_data[i]);
         if (mode_ == Param::MappedDataArrayMode::kCache) {
           data_[idx + i] = temporary_data[i];
           is_matching_[idx + i] = match_value_;
@@ -452,7 +452,7 @@ void MappedDataArray<TScalar, TClass, TDataMember>::GetTuple(vtkIdType tuple_id,
       uint64_t cnt = 0;
       for (uint64_t i = idx;
            i < idx + static_cast<uint64_t>(this->NumberOfComponents); ++i) {
-        tuple[cnt++] = static_cast<double>(data_[i]);
+        tuple[cnt++] = static_cast<real_t>(data_[i]);
       }
   }
 }

@@ -19,7 +19,7 @@
 #include <utility>
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/operation/bound_space_op.h"
-#include "core/operation/diffusion_op.h"
+#include "core/operation/continuum_op.h"
 #include "core/operation/mechanical_forces_op.h"
 #include "core/operation/op_timer.h"
 #include "core/operation/operation_registry.h"
@@ -46,10 +46,10 @@ Scheduler::Scheduler() {
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
       "mechanical forces", "discretization", "propagate staticness agentop",
-      "diffusion"};
+      "continuum"};
 
-  std::vector<std::string> pre_scheduled_ops_names = {
-      "set up iteration", "update environment", "propagate staticness"};
+  std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
+                                                      "propagate staticness"};
   // We cannot put sort and balance in the list of scheduled_standalone_ops_,
   // because numa-aware data structures would be invalidated:
   // ```
@@ -61,8 +61,8 @@ Scheduler::Scheduler() {
   // agents that are not yet in the environment (which load balancing
   // relies on)
   std::vector<std::string> post_scheduled_ops_names = {
-      "load balancing", "tear down iteration", "visualize",
-      "update time series"};
+      "load balancing", "tear down iteration", "update environment",
+      "visualize", "update time series"};
 
   protected_op_names_ = {"update staticness",
                          "discretization",
@@ -135,7 +135,6 @@ void Scheduler::Simulate(uint64_t steps) {
   Initialize(steps);
   for (unsigned step = 0; step < steps; step++) {
     Execute();
-
     total_steps_++;
     UpdateSimulatedTime();
     Backup();
@@ -146,7 +145,6 @@ void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
   Initialize();
   while (!exit_condition()) {
     Execute();
-
     total_steps_++;
     UpdateSimulatedTime();
   }
@@ -159,7 +157,7 @@ void Scheduler::FinalizeInitialization() {
 
 uint64_t Scheduler::GetSimulatedSteps() const { return total_steps_; }
 
-double Scheduler::GetSimulatedTime() const { return simulated_time_; }
+real_t Scheduler::GetSimulatedTime() const { return simulated_time_; }
 
 TimingAggregator* Scheduler::GetOpTimes() { return &op_times_; }
 
@@ -398,7 +396,24 @@ void Scheduler::PrintInfo(std::ostream& out) {
     out << std::setw(60) << post_op->name_ << std::setw(20)
         << post_op->frequency_ << "\n";
   }
-
+  // unschedule ops
+  if (!unschedule_ops_.empty()) {
+    out << "\nUnschedule operations:\n";
+    for (auto* unschedule_op : unschedule_ops_) {
+      out << std::setw(60) << unschedule_op->name_ << std::setw(20)
+          << unschedule_op->frequency_ << "\n";
+    }
+  }
+  // schedule ops
+  if (!schedule_ops_.empty()) {
+    out << "\nSchedule operations:\n";
+    out << "(0) kSchedule, (1) kPreSchedule, (2) kPostSchedule\n";
+    for (auto schedule_op : schedule_ops_) {
+      out << "(" << schedule_op.first << ")" << std::setw(57)
+          << schedule_op.second->name_ << std::setw(20)
+          << schedule_op.second->frequency_ << "\n";
+    }
+  }
   out << "\n" << std::string(80, '-') << "\n";
 }
 
@@ -472,11 +487,14 @@ void Scheduler::Initialize(uint64_t steps) {
   // an operation would not mark the environment as OutOfSync and hence the
   // forced update at this place.
   env->ForcedUpdate();
-  rm->ForEachDiffusionGrid([&](DiffusionGrid* dgrid) {
+  rm->ForEachContinuum([](Continuum* cm) {
     // Create data structures, whose size depend on the env dimensions
-    dgrid->Initialize();
-    // Initialize data structures with user-defined values
-    dgrid->RunInitializers();
+    cm->Initialize();
+    auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+    if (dgrid != nullptr) {
+      // Initialize data structures with user-defined values
+      dgrid->RunInitializers();
+    }
   });
 
   ScheduleOps();

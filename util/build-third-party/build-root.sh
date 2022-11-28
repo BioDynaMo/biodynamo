@@ -101,7 +101,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
    if [ $OSXARCH == "arm64" ]; then
       cmake -G Ninja \
          -Dmacos_native=YES \
-         -Dbuiltin_fftw3=OFF \
+         -Dbuiltin_fftw3=ON \
          -Dbuiltin_freetype=ON \
          -Dbuiltin_ftgl=ON \
          -Dbuiltin_glew=ON \
@@ -110,7 +110,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
          -Dbuiltin_lzma=ON \
          -Dbuiltin_openssl=ON \
          -Dbuiltin_pcre=ON \
-         -Dbuiltin_tbb=OFF \
+         -Dbuiltin_tbb=ON \
          -Dbuiltin_unuran=ON \
          -Dbuiltin_xxhash=ON \
          -Dbuiltin_zlib=ON \
@@ -145,7 +145,7 @@ if [[ $(uname -s) == "Darwin" ]]; then
          $ROOTSRC
    fi
 else
-  # -Droot7=OFF only because centos7 fails on one contruct.
+  # -Droot7=OFF only because centos7 fails on one construct.
   cmake -G Ninja \
     -Dbuiltin_fftw3=ON \
     -Dbuiltin_freetype=ON \

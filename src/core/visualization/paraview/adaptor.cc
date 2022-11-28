@@ -108,7 +108,7 @@ void ParaviewAdaptor::Visualize() {
     return;
   }
 
-  double time = param->simulation_time_step * total_steps;
+  real_t time = param->simulation_time_step * total_steps;
   impl_->data_description_->SetTimeData(time, total_steps);
 
   CreateVtkObjects();
@@ -224,7 +224,7 @@ void ParaviewAdaptor::BuildDiffusionGridVTKStructures() {
   auto* rm = Simulation::GetActive()->GetResourceManager();
 
   rm->ForEachDiffusionGrid([&](DiffusionGrid* grid) {
-    auto it = impl_->vtk_dgrids_.find(grid->GetSubstanceName());
+    auto it = impl_->vtk_dgrids_.find(grid->GetContinuumName());
     if (it != impl_->vtk_dgrids_.end()) {
       it->second->Update(grid);
     }

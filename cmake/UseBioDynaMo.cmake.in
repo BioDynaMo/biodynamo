@@ -45,6 +45,7 @@ SET(vtune_default @vtune@)
 SET(tcmalloc_default @tcmalloc@)
 SET(jemalloc_default @jemalloc@)
 SET(test_default @test@)
+SET(real_t @real_t@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
@@ -107,6 +108,13 @@ endif()
 
 set(BDM_OUT_OF_SOURCE true)
 
+if(real_t)
+  message(STATUS "BioDynaMo real_t set to: ${real_t}")
+  add_definitions("-DBDM_REALT=${real_t}")
+else()
+  message(STATUS "Using default BioDynaMo real_t (double)")
+endif()
+
 if(DEFINED ENV{BDMSYS})
     set(BDMSYS $ENV{BDMSYS})
     add_definitions(-DBDMSYS=\"$ENV{BDMSYS}\")
@@ -153,6 +161,19 @@ else(MPI_FOUND)
   MESSAGE(FATAL_ERROR "We did not find any OpenMPI installation. Please run ./prerequisites.sh again before
   calling cmake. The OpenMPI library is required in order to successfully use BioDynaMo." )
 endif(MPI_FOUND)
+
+if(APPLE)
+  find_program(BREW_BIN brew)
+  execute_process(COMMAND ${BREW_BIN} --prefix
+                      OUTPUT_VARIABLE BREW_PREFIX
+                      OUTPUT_STRIP_TRAILING_WHITESPACE)
+  # After migrating to libomp 15.0.3, libomp does no longer symlink into 
+  # $(brew --prefix)/opt/lib/libomp.dylib. Instead, it is located in 
+  # $(brew --prefix)/opt/libomp/.. . This fix should work accross all platforms.
+  # find_package(OpenMP) can be guieded with OpenMP_<lang>_INCLUDE_DIR.
+  set(OpenMP_C_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
+  set(OpenMP_CXX_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
+endif(APPLE)
 
 find_package(OpenMP REQUIRED)
 
@@ -248,6 +269,27 @@ else()
     # to enable relocation of the scripts.
     set(BUILD_SUPPORT_DIR "${BDMSYS}/share/util")
     include(CppStyleGuideChecks)
+endif()
+
+# If not set, sgemm_ is not found on macos
+if(APPLE)
+  set(BLA_VENDOR Apple)
+else()
+  set(BLA_VENDOR Generic)
+endif()
+
+find_package(BLAS)
+if (NOT BLAS_FOUND)
+    message(WARNING "BLAS not found.")
+else()
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${BLAS_LIBRARIES})
+endif()
+
+find_package(LAPACK)
+if (NOT LAPACK_FOUND)
+    message(WARNING "LAPACK not found.")
+else()
+  set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${LAPACK_LIBRARIES})
 endif()
 
 # -------------------- set default build type and compiler flags ---------------

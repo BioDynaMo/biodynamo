@@ -22,7 +22,7 @@ void CudaAllocPinned(T** d, uint64_t elements) {
   GpuErrchk(cudaMallocHost((void**)d, elements * sizeof(T)));
 }
 
-template void CudaAllocPinned<double>(double**, uint64_t);
+template void CudaAllocPinned<real_t>(real_t**, uint64_t);
 template void CudaAllocPinned<float>(float**, uint64_t);
 template void CudaAllocPinned<uint64_t>(uint64_t**, uint64_t);
 template void CudaAllocPinned<int64_t>(int64_t**, uint64_t);

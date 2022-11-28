@@ -24,7 +24,7 @@ endforeach()
 # Project name and current version. We do not specify any language for
 # this project. Therefore, we will be able to check manually which compiler
 # is detected on the system.
-project(BioDynaMo LANGUAGES VERSION "1.03.0")
+project(BioDynaMo LANGUAGES VERSION "1.05.0")
 
 #---Set the locale to default C to prevent issued due to localization of commands---------------
 # This is necessary as we for example call `clang -v` and parse its output. But on a localized
@@ -58,7 +58,24 @@ else()
     SET(DETECTED_OS_VERS ${OS})
     check_detected_os(${DETECTED_OS})
 endif()
+message(STATUS "Detected OS: ${DETECTED_OS_VERS}")
 
+if(APPLE)
+  find_program(BREW_BIN brew)
+  if(BREW_BIN)
+    execute_process(COMMAND ${BREW_BIN} --prefix
+                    OUTPUT_VARIABLE BREW_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${BREW_BIN} --prefix llvm
+                    OUTPUT_VARIABLE LLVM_BREW_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND ${BREW_BIN} --prefix libomp
+                    OUTPUT_VARIABLE LIBOMP_BREW_PREFIX
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  endif()
+  # Necessary to find the OpenMP library
+  set(ENV{LDFLAGS} "$ENV{LDFLAGS} -L${LIBOMP_BREW_PREFIX}/lib")
+endif(APPLE)
 
 # Find a suitable compiler
 include(CheckCompiler)
@@ -115,18 +132,9 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
+option(real_t    "Define data type for real numbers. Currently supported: float, double" double)
 
 if(APPLE)
-  find_program(BREW_BIN brew)
-  if(BREW_BIN)
-    execute_process(COMMAND ${BREW_BIN} --prefix llvm
-                    OUTPUT_VARIABLE LLVM_BREW_PREFIX
-                    OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND ${BREW_BIN} --prefix
-                        OUTPUT_VARIABLE BREW_PREFIX
-                        OUTPUT_STRIP_TRAILING_WHITESPACE)
-  endif()
-  
   # ParaView on Apple devices
   set(CMAKE_BDM_PVVERSION "5.10")
   
@@ -148,6 +156,16 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set(CMAKE_VISIBILITY_INLINES_HIDDEN "ON")
+
+if(real_t)
+  message(STATUS "Setting real_t to: ${real_t}")
+  add_definitions("-DBDM_REALT=${real_t}")
+  add_definitions("-DBDM_CL_REALT=cl_${real_t}")
+  set(BDM_CONFIG_REALT "${real_t}")
+else()
+  message(STATUS "Using default real_t (double)")
+  set(BDM_CONFIG_REALT "float")
+endif()
 
 # -------------------- find packages ------------------------------------------
 if (tcmalloc)
@@ -179,9 +197,12 @@ endif()
 
 
 if(NOPYENV)
-   find_package(Python 3.9.1...<3.10 COMPONENTS Interpreter Development)
+   # On macOS
+   # need to give hint which binary to find, however ideally it should be taken from the range spec 
+   set(Python3_EXECUTABLE "${BREW_PREFIX}/bin/python3.9")
+   find_package(Python3 3.9.1...<3.10 COMPONENTS Interpreter Development)
    set(pythonvers ${Python_VERSION})
-   if (NOT Python_FOUND)
+   if (NOT Python3_FOUND)
       message(FATAL_ERROR "We did not find the Python 3.9 interpreter. "
          "Please run ./prerequisites.sh (or \"brew install python@3.9\") "
          "again before calling cmake. The Python 3.9 interpreter "
@@ -231,6 +252,16 @@ if(paraview)
       SET(paraview OFF)
   endif()
 endif()
+
+if(APPLE)
+  # After migrating to libomp 15.0.3, libomp is no longer symlinked into 
+  # $(brew --prefix)/lib/libomp.dylib. Instead, it is located in 
+  # $(brew --prefix libomp)/lib . This fix should work accross all platforms.
+  # find_package(OpenMP) can be guided with OpenMP_<lang>_INCLUDE_DIR.
+  set(CMAKE_CPP_FLAGS "${CMAKE_CPP_FLAGS} -I${LIBOMP_BREW_PREFIX}/include")
+  set(OpenMP_C_INCLUDE_DIR "${LIBOMP_BREW_PREFIX}/include")
+  set(OpenMP_CXX_INCLUDE_DIR "${LIBOMP_BREW_PREFIX}/include")
+endif(APPLE)
 
 # Check if we have a compatible openmp compiler
 find_package(OpenMP)
@@ -560,7 +591,11 @@ if(paraview)
 
   # We link against python3 libraries, so that the paraview libraries can
   # resolve missing python symbols when creating binaries
-  set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
+  if(APPLE)
+    set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python3_LIBRARIES}")
+  else()
+    set(REQUIRED_PARAVIEW_LIBRARIES "${ParaView_LIBRARIES};${Python_LIBRARIES}")
+  endif()
   build_shared_library(VisualizationAdaptor
                     SELECTION selection-libVisualizationAdaptor.xml
                     SOURCES ${PV_SOURCES}
@@ -759,12 +794,17 @@ EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --arch COMMAND tr -d '\n' OUTP
 EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --platform COMMAND tr -d '\n' OUTPUT_VARIABLE platform)
 EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --version COMMAND tr -d '\n' OUTPUT_VARIABLE rootvers)
 EXECUTE_PROCESS(COMMAND ${ROOT_CONFIG_EXECUTABLE} --ncpu COMMAND tr -d '\n' OUTPUT_VARIABLE ncpu)
+get_property(cxxdefinesraw DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
+
 set(altcxx ${CMAKE_CXX_COMPILER})
 set(altld ${CMAKE_CXX_COMPILER})
 set(cxxflags ${CMAKE_CXX_FLAGS})
 set(cxxstd ${CMAKE_CXX_STANDARD})
 set(cxxflagsdebug ${CMAKE_CXX_FLAGS_DEBUG})
 set(cxxflagsrelease ${CMAKE_CXX_FLAGS_RELEASE})
+foreach(definition ${cxxdefinesraw})
+  set(cxxdefines "${cxxdefines} -D${definition}")
+endforeach()
 set(ldflags ${CMAKE_EXE_LINKER_FLAGS})
 set(soflags ${CMAKE_SHARED_LINKER_FLAGS})
 set(socreatecxxflags ${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS})

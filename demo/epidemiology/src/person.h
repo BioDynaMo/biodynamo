@@ -20,7 +20,7 @@ class Person : public SphericalAgent {
 
  public:
   Person() {}
-  explicit Person(const Double3& position) : Base(position) {}
+  explicit Person(const Real3& position) : Base(position) {}
   virtual ~Person() {}
 
   /// This data member stores the current state of the person.

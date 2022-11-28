@@ -152,6 +152,20 @@ function source_thisbdm
         end
     end
 
+
+    # If we run on macOS, we add the following exports for libomp support
+    if test (uname) = 'Darwin'
+        set BREWPREFIX (brew --prefix); or return 1
+        if test -n "$CPPFLAGS"
+          _drop_from_var CPPFLAGS "-I$BREWPREFIX/opt/libomp/include"
+        end
+        if test -n "$LDFLAGS"
+          _drop_from_var LDFLAGS "-L$BREWPREFIX/opt/libomp/lib"
+        end
+        set -gx CPPFLAGS "-I$BREWPREFIX/opt/libomp/include $CPPFLAGS"
+        set -gx LDFLAGS "-L$BREWPREFIX/opt/libomp/lib $LDFLAGS"
+    end
+
     # paraview versions might be different between OSes
     set -l bdm_pv_version '5.9'
     if test (uname) = 'Darwin'

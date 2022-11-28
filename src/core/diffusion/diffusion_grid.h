@@ -23,6 +23,7 @@
 
 #include "core/container/math_array.h"
 #include "core/container/parallel_resize_vector.h"
+#include "core/diffusion/continuum_interface.h"
 #include "core/util/log.h"
 #include "core/util/root.h"
 #include "core/util/spinlock.h"
@@ -32,34 +33,39 @@ namespace bdm {
 /// Available boundary conditions
 enum BoundaryConditionType { kDirichlet, kNeumann, kOpenBoundaries };
 
-class DiffusionGrid {
+enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
+
+class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
   explicit DiffusionGrid(TRootIOCtor* p) {}
-  DiffusionGrid(size_t substance_id, std::string substance_name, double dc,
-                double mu, int resolution = 10)
-      : substance_(substance_id),
-        substance_name_(std::move(substance_name)),
-        dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
+  DiffusionGrid(int substance_id, const std::string& substance_name, real_t dc,
+                real_t mu, int resolution = 10)
+      : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
-        resolution_(resolution) {}
+        resolution_(resolution) {
+    // Compatibility with new abstract interface
+    SetContinuumId(substance_id);
+    SetContinuumName(substance_name);
+  }
 
-  virtual ~DiffusionGrid() = default;
+  ~DiffusionGrid() override = default;
 
-  virtual void Initialize();
+  void Initialize() override;
 
   /// Updates the grid dimensions, based on the given threshold values. The
   /// diffusion grid dimensions need always be larger than the neighbor grid
   /// dimensions, so that each simulation object can obtain its local
   /// concentration / gradient
-  virtual void Update();
+  void Update() override;
 
-  void Diffuse(double dt);
+  void Step(real_t dt) override { Diffuse(dt); }
+  void Diffuse(real_t dt);
 
-  virtual void DiffuseWithClosedEdge(double dt) = 0;
-  virtual void DiffuseWithOpenEdge(double dt) = 0;
-  virtual void DiffuseWithDirichlet(double dt) = 0;
-  virtual void DiffuseWithNeumann(double dt) = 0;
+  virtual void DiffuseWithClosedEdge(real_t dt) = 0;
+  virtual void DiffuseWithOpenEdge(real_t dt) = 0;
+  virtual void DiffuseWithDirichlet(real_t dt) = 0;
+  virtual void DiffuseWithNeumann(real_t dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -74,12 +80,28 @@ class DiffusionGrid {
   /// Initialize the diffusion grid according to the initialization functions
   void RunInitializers();
 
-  /// Increase the concentration at specified box with specified amount
-  void ChangeConcentrationBy(const Double3& position, double amount);
-  void ChangeConcentrationBy(size_t idx, double amount);
+  /// Increase the concentration at specified position with specified amount.
+  /// Interaction mode defines how the new concentration is calculated.
+  /// If the interaction mode is kAdditive, the new concentration is the sum of
+  /// the old concentration and the amount.
+  /// If the interaction mode is kExponential, the new concentration is the
+  /// product of the old concentration and the amount.
+  /// If the interaction mode is kLogistic, the new concentration is the
+  /// logistic function of the old concentration and the amount, e.g. additive
+  /// but scaled with (upper_threshold_ - u) or (u - lower_threshold_) if amount
+  /// is positive or negative, respectively. Should be used with thresholds 1.0
+  /// and 0.0.
+  void ChangeConcentrationBy(const Real3& position, real_t amount,
+                             InteractionMode mode = InteractionMode::kAdditive);
+  void ChangeConcentrationBy(size_t idx, real_t amount,
+                             InteractionMode mode = InteractionMode::kAdditive);
 
   /// Get the concentration at specified position
-  double GetConcentration(const Double3& position) const;
+  real_t GetValue(const Real3& position) const override;
+  [[deprecated("Use GetValue instead")]] real_t GetConcentration(
+      const Real3& position) const {
+    return GetValue(position);
+  };
   double GetConcentration(const size_t idx) const;
 
   // NOTE: virtual because of test
@@ -89,36 +111,46 @@ class DiffusionGrid {
   /// gradient is zero and `normalize = true`, this method returns a zero
   /// vector. Note that the gradient is computed via a central difference scheme
   /// on the underlying spatial discretization.
-  virtual void GetGradient(const Double3& position, Double3* gradient,
+
+  Real3 GetGradient(const Real3& position) const override {
+    Real3 gradient;
+    GetGradient(position, &gradient, false);
+    return gradient;
+  };
+
+  virtual void GetGradient(const Real3& position, Real3* gradient,
                            bool normalize = true) const;
 
-  std::array<uint32_t, 3> GetBoxCoordinates(const Double3& position) const;
+  std::array<uint32_t, 3> GetBoxCoordinates(const Real3& position) const;
 
   size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const;
 
   /// Calculates the box index of the substance at specified position
-  size_t GetBoxIndex(const Double3& position) const;
+  size_t GetBoxIndex(const Real3& position) const;
 
-  void SetDecayConstant(double mu) { mu_ = mu; }
+  void SetDecayConstant(real_t mu) {
+    // Check is done in ParametersCheck within the Diffuse(dt) method
+    mu_ = mu;
+  }
 
   /// Return the last timestep `dt` that was used to run `Diffuse(dt)`
-  double GetLastTimestep() { return last_dt_; }
+  real_t GetLastTimestep() { return last_dt_; }
 
   // Sets an upper threshold for allowed values in the diffusion grid.
-  void SetUpperThreshold(double t) { upper_threshold_ = t; }
+  void SetUpperThreshold(real_t t) { upper_threshold_ = t; }
 
   // Returns the upper threshold for allowed values in the diffusion grid.
-  double GetUpperThreshold() const { return upper_threshold_; }
+  real_t GetUpperThreshold() const { return upper_threshold_; }
 
   // Sets a lower threshold for allowed values in the diffusion grid.
-  void SetLowerThreshold(double t) { lower_threshold_ = t; }
+  void SetLowerThreshold(real_t t) { lower_threshold_ = t; }
 
   // Returns the lower threshold for allowed values in the diffusion grid.
-  double GetLowerThreshold() const { return lower_threshold_; }
+  real_t GetLowerThreshold() const { return lower_threshold_; }
 
-  const double* GetAllConcentrations() const { return c1_.data(); }
+  const real_t* GetAllConcentrations() const { return c1_.data(); }
 
-  const double* GetAllGradients() const { return gradients_.data()->data(); }
+  const real_t* GetAllGradients() const { return gradients_.data()->data(); }
 
   std::array<size_t, 3> GetNumBoxesArray() const {
     std::array<size_t, 3> ret;
@@ -130,13 +162,19 @@ class DiffusionGrid {
 
   size_t GetNumBoxes() const { return total_num_boxes_; }
 
-  double GetBoxLength() const { return box_length_; }
+  real_t GetBoxLength() const { return box_length_; }
 
-  size_t GetSubstanceId() const { return substance_; }
+  [[deprecated("Use GetContinuumId() instead.")]] size_t GetSubstanceId()
+      const {
+    return GetContinuumId();
+  }
 
-  const std::string& GetSubstanceName() const { return substance_name_; }
+  [[deprecated("Use GetContinuumName() instead.")]] const std::string&
+  GetSubstanceName() const {
+    return GetContinuumName();
+  }
 
-  double GetDecayConstant() const { return mu_; }
+  real_t GetDecayConstant() const { return mu_; }
 
   const int32_t* GetDimensionsPtr() const { return grid_dimensions_.data(); }
 
@@ -159,11 +197,11 @@ class DiffusionGrid {
     return ret;
   }
 
-  const std::array<double, 7>& GetDiffusionCoefficients() const { return dc_; }
+  const std::array<real_t, 7>& GetDiffusionCoefficients() const { return dc_; }
 
   size_t GetResolution() const { return resolution_; }
 
-  double GetBoxVolume() const { return box_volume_; }
+  real_t GetBoxVolume() const { return box_volume_; }
 
   template <typename F>
   void AddInitializer(F function) {
@@ -186,13 +224,24 @@ class DiffusionGrid {
     bc_type_ = bc_type;
   }
 
+  /// Print information about the Diffusion Grid
+  void PrintInfo(std::ostream& out = std::cout);
+
+  /// Print the information after initialization
+  void PrintInfoWithInitialization() {
+    print_info_with_initialization_ = true;
+  };
+
+  /// Returns if the gird has been initialized
+  bool IsInitialized() const { return initialized_; }
+
  private:
   friend class RungeKuttaGrid;
   friend class EulerGrid;
   friend class EulerDepletionGrid;
   friend class TestGrid;  // class used for testing (e.g. initialization)
 
-  void ParametersCheck(double dt);
+  void ParametersCheck(real_t dt);
 
   /// Copies the concentration and gradients values to the new
   /// (larger) grid. In the 2D case it looks like the following:
@@ -206,35 +255,31 @@ class DiffusionGrid {
   /// If the dimensions would be increased from 2x2 to 3x3, it will still
   /// be increased to 4x4 in order for GetBoxIndex to function correctly
   ///
-  void CopyOldData(const ParallelResizeVector<double>& old_c1,
-                   const ParallelResizeVector<Double3>& old_gradients,
+  void CopyOldData(const ParallelResizeVector<real_t>& old_c1,
+                   const ParallelResizeVector<Real3>& old_gradients,
                    size_t old_resolution);
 
-  /// The id of the substance of this grid
-  size_t substance_ = 0;
-  /// The name of the substance of this grid
-  std::string substance_name_ = "";
   /// The side length of each box
-  double box_length_ = 0;
+  real_t box_length_ = 0;
   /// the volume of each box
-  double box_volume_ = 0;
+  real_t box_volume_ = 0;
   /// Lock for each voxel used to prevent race conditions between
   /// multiple threads
   mutable ParallelResizeVector<Spinlock> locks_ = {};  //!
   /// The array of concentration values
-  ParallelResizeVector<double> c1_ = {};
+  ParallelResizeVector<real_t> c1_ = {};
   /// An extra concentration data buffer for faster value updating
-  ParallelResizeVector<double> c2_ = {};
+  ParallelResizeVector<real_t> c2_ = {};
   /// The array of gradients (x, y, z)
-  ParallelResizeVector<Double3> gradients_ = {};
+  ParallelResizeVector<Real3> gradients_ = {};
   /// The maximum concentration value that a box can have
-  double upper_threshold_ = 1e15;
+  real_t upper_threshold_ = 1e15;
   /// The minimum concentration value that a box can have
-  double lower_threshold_ = -1e15;
+  real_t lower_threshold_ = -1e15;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
-  std::array<double, 7> dc_ = {{0}};
+  std::array<real_t, 7> dc_ = {{0}};
   /// The decay constant
-  double mu_ = 0;
+  real_t mu_ = 0;
   /// The grid dimensions of the diffusion grid (cubic shaped)
   std::array<int32_t, 2> grid_dimensions_ = {{0}};
   /// The number of boxes at each axis [x, y, z] (same along each axis)
@@ -245,12 +290,12 @@ class DiffusionGrid {
   /// axis)
   size_t resolution_ = 0;
   /// The last timestep `dt` used for the diffusion grid update `Diffuse(dt)`
-  double last_dt_ = 0.0;
+  real_t last_dt_ = 0.0;
   /// If false, grid dimensions are even; if true, they are odd
   bool parity_ = false;
   /// A list of functions that initialize this diffusion grid
   /// ROOT currently doesn't support IO of std::function
-  std::vector<std::function<double(double, double, double)>> initializers_ =
+  std::vector<std::function<real_t(real_t, real_t, real_t)>> initializers_ =
       {};  //!
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
@@ -258,8 +303,13 @@ class DiffusionGrid {
   BoundaryConditionType bc_type_ = kDirichlet;
   /// Function that updates boundary conditions
   std::function<double(size_t, size_t, size_t, size_t)> boundary_conditions_;
+  /// Flag to indicate if the grid is initialized
+  bool initialized_ = false;
+  /// Flag to indicate if we want to print information about the grid after
+  /// initialization
+  bool print_info_with_initialization_ = false;
 
-  BDM_CLASS_DEF(DiffusionGrid, 1);
+  BDM_CLASS_DEF_OVERRIDE(DiffusionGrid, 1);
 };
 
 }  // namespace bdm

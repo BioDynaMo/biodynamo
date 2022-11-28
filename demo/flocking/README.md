@@ -96,3 +96,10 @@ The original implementation of the demo can be found in this
 (GitHub repository)[https://github.com/mhoghrab/biodynamo-flocking-simulation].
 It contains further extensions to the project such as obstacle avoidance and 
 perturbations via a random field.
+
+## Update (March 2022)
+
+To be better in agreement with observations in biology, we added some 
+sinusoidal disturbances to some of the flocking parameters and the final 
+velocity to update the position. Furthermore, we added some random random 
+perturbation at each time step.

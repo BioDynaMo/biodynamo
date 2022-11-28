@@ -58,7 +58,7 @@ class TFileRaii {
   TFile* file_;
 };
 
-/// ROOT cannot write a single integral type (int, double, ...). Therefore,
+/// ROOT cannot write a single integral type (int, real_t, ...). Therefore,
 /// this wrapper is needed
 template <typename T>
 class IntegralTypeWrapper {

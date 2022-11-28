@@ -101,7 +101,7 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 
 ```bash
 pyenv shell 3.9.1
-python -m pip install nbformat jupyter metakernel jupyterlab
+python -m pip install markupsafe==2.0.1 jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
   doxygen graphviz libxml2-dev libgsl-dev
@@ -189,7 +189,7 @@ PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
 
 ```bash
 pyenv shell 3.9.1
-python -m pip install nbformat jupyter metakernel jupyterlab
+python -m pip install markupsafe==2.0.1 nbformat jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6
 # SBML integration
 sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 [SCL-core]
@@ -249,5 +249,5 @@ brew install libomp open-mpi python@3.9 wget cmake ninja bash tbb qt@5
 
 ```bash
 brew install doxygen graphviz kcov gsl
-python3 -m pip install nbformat jupyter metakernel jupyterlab 
+python3 -m pip install markupsafe==2.0.1 nbformat jupyter metakernel jupyterlab jinja2==3.0
 ```

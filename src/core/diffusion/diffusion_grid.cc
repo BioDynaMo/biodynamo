@@ -23,7 +23,7 @@ namespace bdm {
 void DiffusionGrid::Initialize() {
   if (resolution_ == 0) {
     Log::Fatal("DiffusionGrid::Initialize",
-               "Resolution cannot be zero. (substance '", substance_name_,
+               "Resolution cannot be zero. (substance '", GetContinuumName(),
                "')");
   }
 
@@ -37,13 +37,13 @@ void DiffusionGrid::Initialize() {
   auto adjusted_res =
       resolution_ == 1 ? 2 : resolution_;  // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
-                static_cast<double>(adjusted_res);
+                static_cast<real_t>(adjusted_res);
   // TODO(ahmad): parametrize the minimum box_length
   if (box_length_ <= 1e-15) {
     Log::Fatal("DiffusionGrid::Initialize",
                "The box length was found to be (close to) zero. Please check "
                "the parameters for substance '",
-               substance_name_, "'");
+               GetContinuumName(), "'");
   }
 
   box_volume_ = box_length_ * box_length_ * box_length_;
@@ -55,9 +55,15 @@ void DiffusionGrid::Initialize() {
   c1_.resize(total_num_boxes_);
   c2_.resize(total_num_boxes_);
   gradients_.resize(total_num_boxes_);
+
+  // Print Info
+  initialized_ = true;
+  if (print_info_with_initialization_) {
+    PrintInfo();
+  }
 }
 
-void DiffusionGrid::Diffuse(double dt) {
+void DiffusionGrid::Diffuse(real_t dt) {
   // check if diffusion coefficient and decay constant are 0
   // i.e. if we don't need to calculate diffusion update
   if (IsFixedSubstance()) {
@@ -142,8 +148,8 @@ void DiffusionGrid::Update() {
 }
 
 void DiffusionGrid::CopyOldData(
-    const ParallelResizeVector<double>& old_c1,
-    const ParallelResizeVector<Double3>& old_gradients, size_t old_resolution) {
+    const ParallelResizeVector<real_t>& old_c1,
+    const ParallelResizeVector<Real3>& old_gradients, size_t old_resolution) {
   // Allocate more memory for the grid data arrays
   locks_.resize(total_num_boxes_);
   c1_.resize(total_num_boxes_);
@@ -195,14 +201,14 @@ void DiffusionGrid::RunInitializers() {
   // Apply all functions that initialize this diffusion grid
   for (size_t f = 0; f < initializers_.size(); f++) {
     for (uint32_t x = 0; x < nx; x++) {
-      double real_x = grid_dimensions_[0] + x * box_length_;
+      real_t real_x = grid_dimensions_[0] + x * box_length_;
       for (uint32_t y = 0; y < ny; y++) {
-        double real_y = grid_dimensions_[0] + y * box_length_;
+        real_t real_y = grid_dimensions_[0] + y * box_length_;
         for (uint32_t z = 0; z < nz; z++) {
-          double real_z = grid_dimensions_[0] + z * box_length_;
+          real_t real_z = grid_dimensions_[0] + z * box_length_;
           std::array<uint32_t, 3> box_coord = {x, y, z};
           size_t idx = GetBoxIndex(box_coord);
-          double value = initializers_[f](real_x, real_y, real_z);
+          real_t value = initializers_[f](real_x, real_y, real_z);
           ChangeConcentrationBy(idx, value);
         }
       }
@@ -224,7 +230,7 @@ void DiffusionGrid::CalculateGradient() {
     return;
   }
 
-  double gd = 1 / (box_length_ * 2);
+  real_t gd = 1 / (box_length_ * 2);
 
   auto nx = resolution_;
   auto ny = resolution_;
@@ -282,14 +288,15 @@ void DiffusionGrid::CalculateGradient() {
   }
 }
 
-void DiffusionGrid::ChangeConcentrationBy(const Double3& position,
-                                          double amount) {
+void DiffusionGrid::ChangeConcentrationBy(const Real3& position, real_t amount,
+                                          InteractionMode mode) {
   auto idx = GetBoxIndex(position);
-  ChangeConcentrationBy(idx, amount);
+  ChangeConcentrationBy(idx, amount, mode);
 }
 
 /// Increase the concentration at specified box with specified amount
-void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
+void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
+                                          InteractionMode mode) {
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::ChangeConcentrationBy",
                "You tried to change the concentration outside the bounds of "
@@ -298,8 +305,24 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
   }
   std::lock_guard<Spinlock> guard(locks_[idx]);
   assert(idx < locks_.size());
-  c1_[idx] += amount;
-  // Use std::clamp() when moving to C++17
+  switch (mode) {
+    case InteractionMode::kAdditive:
+      c1_[idx] += amount;
+      break;
+    case InteractionMode::kExponential:
+      c1_[idx] *= amount;
+      break;
+    case InteractionMode::kLogistic:
+      c1_[idx] += ((amount > 0) ? upper_threshold_ - c1_[idx]
+                                : c1_[idx] - lower_threshold_) *
+                  amount;
+      break;
+    default:
+      Log::Fatal("DiffusionGrid::ChangeConcentrationBy",
+                 "Unknown interaction mode!");
+  }
+
+  // Enforce upper and lower bounds. (use std::clamp() when moving to C++17)
   if (c1_[idx] > upper_threshold_) {
     c1_[idx] = upper_threshold_;
   } else if (c1_[idx] < lower_threshold_) {
@@ -310,7 +333,7 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, double amount) {
 }
 
 /// Get the concentration at specified position
-double DiffusionGrid::GetConcentration(const Double3& position) const {
+real_t DiffusionGrid::GetValue(const Real3& position) const {
   auto idx = GetBoxIndex(position);
   return GetConcentration(idx);
 }
@@ -328,7 +351,7 @@ double DiffusionGrid::GetConcentration(const size_t idx) const {
   return c1_[idx];
 }
 
-void DiffusionGrid::GetGradient(const Double3& position, Double3* gradient,
+void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient,
                                 bool normalize) const {
   auto idx = GetBoxIndex(position);
   if (idx >= total_num_boxes_) {
@@ -347,7 +370,7 @@ void DiffusionGrid::GetGradient(const Double3& position, Double3* gradient,
 }
 
 std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
-    const Double3& position) const {
+    const Real3& position) const {
   std::array<uint32_t, 3> box_coord;
 
   for (size_t i = 0; i < 3; i++) {
@@ -375,19 +398,61 @@ size_t DiffusionGrid::GetBoxIndex(
 }
 
 /// Calculates the box index of the substance at specified position
-size_t DiffusionGrid::GetBoxIndex(const Double3& position) const {
+size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
   auto box_coord = GetBoxCoordinates(position);
   return GetBoxIndex(box_coord);
 }
 
-void DiffusionGrid::ParametersCheck(double dt) {
-  if (((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) {
+void DiffusionGrid::PrintInfo(std::ostream& out) {
+  auto continuum_name = GetContinuumName();
+  if (!IsInitialized()) {
+    // If the grid is not yet initialized, many of the variables have no vaild
+    // values. We print a warning and print the info after the grid is
+    // initialized.
+    out << "DiffusionGrid" << continuum_name
+        << "is not yet initialized. Will print info after initialization."
+        << std::endl;
+    print_info_with_initialization_ = true;
+    return;
+  }
+
+  // Get all the info
+  auto box_length = GetBoxLength();
+  auto diffusion_coefficient = 1 - GetDiffusionCoefficients()[0];
+  auto decay = GetDecayConstant();
+  auto max_dt =
+      (box_length * box_length) / (decay + 12.0 * diffusion_coefficient) * 2.0;
+  auto domain = GetDimensions();
+  auto umin = GetLowerThreshold();
+  auto umax = GetUpperThreshold();
+  auto resolution = GetResolution();
+  auto num_boxes = GetNumBoxes();
+
+  // Print the info
+  out << "DiffusionGrid: " << continuum_name << "\n";
+  out << "    D          = " << diffusion_coefficient << "\n";
+  out << "    decay      = " << decay << "\n";
+  out << "    dx         = " << box_length << "\n";
+  out << "    max(dt)    <= " << max_dt << "\n";
+  out << "    bounds     : " << umin << " < c < " << umax << "\n";
+  out << "    domain     : "
+      << "[" << domain[0] << ", " << domain[1] << "] x [" << domain[2] << ", "
+      << domain[3] << "] x [" << domain[4] << ", " << domain[5] << "]\n";
+  out << "    resolution : " << resolution << " x " << resolution << " x "
+      << resolution << "\n";
+  out << "    num boxes  : " << num_boxes << "\n";
+};
+
+void DiffusionGrid::ParametersCheck(real_t dt) {
+  if ((((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) ||
+      ((mu_ * dt) > 1.0)) {
     Log::Fatal(
         "DiffusionGrid",
         "The specified parameters of the diffusion grid with substance [",
-        substance_name_,
+        GetContinuumName(),
         "] will result in unphysical behavior (diffusion coefficient = ",
         (1 - dc_[0]), ", resolution = ", resolution_,
+        ", decay constant * dt = ", mu_ * dt,
         "). Please refer to the user guide for more information.");
   }
 }

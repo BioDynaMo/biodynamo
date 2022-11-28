@@ -27,7 +27,7 @@ class MyCell : public Cell {
 
  public:
   MyCell() {}
-  explicit MyCell(const Double3& position, int cell_type)
+  explicit MyCell(const Real3& position, int cell_type)
       : Base(position), cell_type_(cell_type) {}
   virtual ~MyCell() {}
 

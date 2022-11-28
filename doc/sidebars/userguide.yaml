@@ -43,6 +43,8 @@
         link: /docs/userguide/add_page/
       - title: Multi simulation runtime
         link: /docs/userguide/multi_simulation
+      - title: Floating-point precision
+        link: /docs/userguide/fp-precision
   - group: Troubleshooting
     items:
       - title: OpenGL
@@ -53,6 +55,8 @@
         link: /docs/userguide/release_notes_v1.0/
       - title: BioDynaMo v1.02
         link: /docs/userguide/release_notes_v1.02/
+      - title: BioDynaMo v1.04
+        link: /docs/userguide/release_notes_v1.04/
   - group: Changelog
     items:
       - title: Log

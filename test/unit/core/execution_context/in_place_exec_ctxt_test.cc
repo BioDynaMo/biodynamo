@@ -19,6 +19,7 @@
 #include "core/execution_context/in_place_exec_ctxt.h"
 #include "core/model_initializer.h"
 #include "core/operation/operation_registry.h"
+#include "core/randomized_rm.h"  // for bdm::Ubrng
 #include "unit/test_util/test_agent.h"
 #include "unit/test_util/test_util.h"
 
@@ -55,32 +56,59 @@ TEST(InPlaceExecutionContext, RemoveAgent) {
   EXPECT_FALSE(rm->ContainsAgent(uid_2));
 }
 
-TEST(InPlaceExecutionContext, RemoveAgentMultithreading) {
-  Simulation sim(TEST_NAME);
+void RunRemoveAgentMultithreadingTest(const char* name, uint64_t num_removed) {
+  Simulation sim(name);
   auto* rm = sim.GetResourceManager();
   auto* ctxt = sim.GetExecutionContext();
 
+  // Create agents in all numa domains
+#pragma omp parallel for
   for (uint64_t i = 0; i < 1000; i++) {
-    rm->AddAgent(new Cell());
+    sim.GetExecutionContext()->AddAgent(new Cell());
   }
 
+  ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
   EXPECT_EQ(1000u, rm->GetNumAgents());
 
+  // created shuffled list of uids
+  std::vector<AgentUid> uids(1000);
+  for (uint64_t i = 0; i < 1000; i++) {
+    uids[i] = AgentUid(i);
+  }
+  auto* random = sim.GetRandom();
+  std::shuffle(uids.begin(), uids.end(), Ubrng(random));
+
 #pragma omp parallel for
-  for (uint64_t i = 0; i < 1000; i += 2) {
-    sim.GetExecutionContext()->RemoveAgent(AgentUid(i));
+  for (uint64_t i = 0; i < num_removed; ++i) {
+    sim.GetExecutionContext()->RemoveAgent(uids[i]);
   }
 
   ctxt->TearDownIterationAll(sim.GetAllExecCtxts());
 
-  EXPECT_EQ(500u, rm->GetNumAgents());
+  EXPECT_EQ(1000u - num_removed, rm->GetNumAgents());
 
-  for (uint64_t i = 1; i < 100; i += 2) {
-    EXPECT_TRUE(rm->ContainsAgent(AgentUid(i)));
+  // Removed agents should be removed from ResourceManager
+  for (uint64_t i = 0; i < num_removed; i += 2) {
+    EXPECT_FALSE(rm->ContainsAgent(uids[i]));
   }
+  // Remaining ones should be still there
+  for (uint64_t i = num_removed; i < 1000u; i += 2) {
+    EXPECT_TRUE(rm->ContainsAgent(uids[i]));
+  }
+}
 
-  rm->ForEachAgent(
-      [](Agent* agent, AgentHandle) { EXPECT_TRUE(agent->GetUid() % 2 == 1); });
+TEST(InPlaceExecutionContext, RemoveAgentMultithreading) {
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 0);
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 1);
+  auto* tinfo = ThreadInfo::GetInstance();
+  RunRemoveAgentMultithreadingTest(TEST_NAME, tinfo->GetMaxThreads());
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 100);
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 250);
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 500);
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 750);
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 998);
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 999);
+  RunRemoveAgentMultithreadingTest(TEST_NAME, 1000);
 }
 
 // Remove object that has been created in the same iteration. Thus it has not
@@ -220,11 +248,11 @@ TEST(InPlaceExecutionContext, Execute) {
   delete op2;
 }
 
-struct NeighborFunctor : public Functor<void, Agent*, double> {
+struct NeighborFunctor : public Functor<void, Agent*, real_t> {
   NeighborFunctor(uint64_t& nb_counter) : nb_counter_(nb_counter) {}
   virtual ~NeighborFunctor() = default;
 
-  void operator()(Agent* neighbor, double squared_distance) override {
+  void operator()(Agent* neighbor, real_t squared_distance) override {
     auto* non_const_nb = const_cast<Agent*>(neighbor);
     auto d1 = non_const_nb->GetDiameter();
     non_const_nb->SetDiameter(d1 + 1);
@@ -291,7 +319,7 @@ void RunInPlaceExecutionContextExecuteThreadSafety(
   auto* rm = sim.GetResourceManager();
 
   // create cells
-  auto construct = [](const Double3& position) {
+  auto construct = [](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(10);
     return cell;
@@ -389,8 +417,8 @@ TEST(InPlaceExecutionContext, DefaultSearchRadius) {
   EXPECT_EQ(43 * 43, env->GetLargestAgentSizeSquared());
 }
 
-struct TestNeighborFunctor : public Functor<void, Agent*, double> {
-  void operator()(Agent* neighbor, double squared_distance) override {}
+struct TestNeighborFunctor : public Functor<void, Agent*, real_t> {
+  void operator()(Agent* neighbor, real_t squared_distance) override {}
 };
 
 TEST(InPlaceExecutionContext, NeighborCacheValidity) {
@@ -447,7 +475,7 @@ TEST(InPlaceExecutionContext, ForEachNeighbor) {
   auto* rm = sim.GetResourceManager();
 
   // create cells
-  auto construct = [](const Double3& position) {
+  auto construct = [](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(20);
     return cell;
@@ -461,7 +489,7 @@ TEST(InPlaceExecutionContext, ForEachNeighbor) {
 
   auto agent0 = rm->GetAgent(AgentHandle(0, 0));
 
-  auto for_each = L2F([&](Agent* agent, double squared_distance) {
+  auto for_each = L2F([&](Agent* agent, real_t squared_distance) {
     EXPECT_NE(0, squared_distance);
   });
 

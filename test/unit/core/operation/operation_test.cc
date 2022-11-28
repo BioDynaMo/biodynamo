@@ -58,7 +58,7 @@ TEST(OperationTest, SetupTearDown) {
 }
 
 struct CheckDiameter : public Functor<void, Agent*, int*> {
-  explicit CheckDiameter(double d) : diameter_(d) {}
+  explicit CheckDiameter(real_t d) : diameter_(d) {}
 
   void operator()(Agent* agent, int* tl_result) {
     if (agent->GetDiameter() > diameter_) {
@@ -66,11 +66,11 @@ struct CheckDiameter : public Functor<void, Agent*, int*> {
     }
   }
 
-  double diameter_;
+  real_t diameter_;
 };
 
-struct CheckXPosition : public Functor<void, Agent*, double*> {
-  void operator()(Agent* agent, double* tl_result) {
+struct CheckXPosition : public Functor<void, Agent*, real_t*> {
+  void operator()(Agent* agent, real_t* tl_result) {
     (*tl_result) += agent->GetPosition()[0];
   }
 };
@@ -96,7 +96,7 @@ TEST(OperationTest, ReductionOp) {
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 
-  auto construct = [&](const Double3& position) {
+  auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
     cell->SetDiameter(1 + position[0] / 10);
     return cell;
@@ -111,8 +111,8 @@ TEST(OperationTest, ReductionOp) {
 
   // Check average X position of all agents
   auto* op_d = NewOperation("ReductionOpDouble");
-  auto* op_d_impl = op_d->GetImplementation<ReductionOp<double>>();
-  op_d_impl->Initialize(new CheckXPosition(), new SumReduction<double>());
+  auto* op_d_impl = op_d->GetImplementation<ReductionOp<real_t>>();
+  op_d_impl->Initialize(new CheckXPosition(), new SumReduction<real_t>());
   scheduler->ScheduleOp(op_d);
 
   simulation.Simulate(1);
@@ -133,7 +133,7 @@ TEST(OperationTest, ReductionOpMultiThreading) {
   Simulation simulation("", set_param);
   auto* scheduler = simulation.GetScheduler();
 
-  auto construct = [&](const Double3& position) {
+  auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
     return cell;
   };

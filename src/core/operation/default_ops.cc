@@ -14,7 +14,7 @@
 
 #include "core/analysis/time_series.h"
 #include "core/operation/bound_space_op.h"
-#include "core/operation/diffusion_op.h"
+#include "core/operation/continuum_op.h"
 #include "core/operation/dividing_cell_op.h"
 #include "core/operation/load_balancing_op.h"
 #include "core/operation/mechanical_forces_op.h"
@@ -27,7 +27,7 @@ namespace bdm {
 
 BDM_REGISTER_OP(BoundSpace, "bound space", kCpu);
 
-BDM_REGISTER_OP(DiffusionOp, "diffusion", kCpu);
+BDM_REGISTER_OP(ContinuumOp, "continuum", kCpu);
 
 // By default run load balancing only in the first iteration.
 BDM_REGISTER_OP_WITH_FREQ(LoadBalancingOp, "load balancing", kCpu,
@@ -85,6 +85,7 @@ struct SetUpIterationOp : public StandaloneOperationImpl {
     auto* sim = Simulation::GetActive();
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
     all_exec_ctxts[0]->SetupIterationAll(all_exec_ctxts);
+    sim->GetEnvironment()->Update();
   }
 };
 
@@ -97,8 +98,6 @@ struct TearDownIterationOp : public StandaloneOperationImpl {
     auto* sim = Simulation::GetActive();
     const auto& all_exec_ctxts = sim->GetAllExecCtxts();
     all_exec_ctxts[0]->TearDownIterationAll(all_exec_ctxts);
-    auto* env = sim->GetEnvironment();
-    env->ForcedUpdate();
   }
 };
 
@@ -119,8 +118,7 @@ struct UpdateEnvironmentOp : public StandaloneOperationImpl {
 
   void operator()() override {
     auto* sim = Simulation::GetActive();
-    auto* env = sim->GetEnvironment();
-    env->Update();
+    sim->GetEnvironment()->ForcedUpdate();
   }
 };
 

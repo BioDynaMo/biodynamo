@@ -33,6 +33,7 @@
 #include "core/agent/agent_uid.h"
 #include "core/agent/agent_uid_generator.h"
 #include "core/container/agent_uid_map.h"
+#include "core/diffusion/continuum_interface.h"
 #include "core/diffusion/diffusion_grid.h"
 #include "core/functor.h"
 #include "core/operation/operation.h"
@@ -45,7 +46,7 @@
 
 namespace bdm {
 
-/// ResourceManager stores agents and diffusion grids and provides
+/// ResourceManager stores agents and continuum models and provides
 /// methods to add, remove, and access them. Agents are uniquely identified
 /// by their AgentUid, and AgentHandle. An AgentHandle might change during the
 /// simulation.
@@ -62,7 +63,7 @@ class ResourceManager {
       Log::Fatal(
           "Restored ResourceManager has different number of NUMA nodes.");
     }
-    for (auto& el : diffusion_grids_) {
+    for (auto& el : continuum_models_) {
       delete el.second;
     }
     for (auto& numa_agents : agents_) {
@@ -72,7 +73,7 @@ class ResourceManager {
     }
     agents_ = std::move(other.agents_);
     agents_lb_.resize(agents_.size());
-    diffusion_grids_ = std::move(other.diffusion_grids_);
+    continuum_models_ = std::move(other.continuum_models_);
 
     RebuildAgentUidMap();
     // restore type_index_
@@ -115,66 +116,135 @@ class ResourceManager {
 
   void SwapAgents(std::vector<std::vector<Agent*>>* agents);
 
-  void AddDiffusionGrid(DiffusionGrid* dgrid) {
-    uint64_t substance_id = dgrid->GetSubstanceId();
-    auto search = diffusion_grids_.find(substance_id);
-    if (search != diffusion_grids_.end()) {
-      Log::Fatal("ResourceManager::AddDiffusionGrid",
-                 "You tried to add a diffusion grid with an already existing "
+  [[deprecated("Use AddContinuum() instead")]] void AddDiffusionGrid(
+      DiffusionGrid* dgrid) {
+    AddContinuum(dgrid);
+  }
+
+  void AddContinuum(Continuum* cm) {
+    auto tmp = cm->GetContinuumId();
+    if (tmp < 0) {
+      Log::Fatal("ResourceManager::AddContinuum",
+                 "You tried to add a continuum model that was not properly "
+                 "initialized. "
+                 "Continuum id is negative but should be positive. "
+                 "Continuum id is " +
+                     std::to_string(tmp));
+    }
+    auto continuum_id = static_cast<uint64_t>(tmp);
+    auto search = continuum_models_.find(continuum_id);
+    if (search != continuum_models_.end()) {
+      Log::Fatal("ResourceManager::AddContinuum",
+                 "You tried to add a continuum model with an already existing "
                  "substance id. Please choose a different substance id.");
     } else {
-      diffusion_grids_[substance_id] = dgrid;
+      continuum_models_[continuum_id] = cm;
     }
     MarkEnvironmentOutOfSync();
   }
 
-  void RemoveDiffusionGrid(size_t substance_id) {
-    auto search = diffusion_grids_.find(substance_id);
-    if (search != diffusion_grids_.end()) {
+  [[deprecated("Use RemoveContinuum() instead")]] void RemoveDiffusionGrid(
+      size_t substance_id) {
+    RemoveContinuum(substance_id);
+  }
+
+  void RemoveContinuum(size_t continuum_id) {
+    auto search = continuum_models_.find(continuum_id);
+    if (search != continuum_models_.end()) {
       delete search->second;
-      diffusion_grids_.erase(search);
+      continuum_models_.erase(search);
     } else {
-      Log::Error("ResourceManager::RemoveDiffusionGrid",
-                 "You tried to remove a diffusion grid that does not exist.");
+      Log::Error("ResourceManager::RemoveContinuum",
+                 "You tried to remove a continuum model that does not exist.");
     }
   }
 
-  /// Return the diffusion grid which holds the substance of specified id
+  /// Return the diffusion grid which holds the substance of specified id. Calls
+  /// back to GetContinuum() to get the continuum model and used a
+  /// dynamic_cast to check if the implementation is a DiffusionGrid.
   DiffusionGrid* GetDiffusionGrid(size_t substance_id) const {
-    if (substance_id >= diffusion_grids_.size()) {
+    auto* cm = GetContinuum(substance_id);
+    auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+    if (!dgrid) {
       Log::Error("ResourceManager::GetDiffusionGrid",
-                 "You tried to request diffusion grid '", substance_id,
+                 "You tried to get a diffusion grid but the substance id "
+                 "does not correspond to a diffusion grid.");
+    }
+    return dgrid;
+  }
+
+  /// Return the continuum model which holds the substance of specified id.
+  Continuum* GetContinuum(size_t continuum_id) const {
+    auto search = continuum_models_.find(continuum_id);
+    if (search != continuum_models_.end()) {
+      return search->second;
+    } else {
+      Log::Error("ResourceManager::GetContinuum",
+                 "You tried to request continuum model '", continuum_id,
                  "', but it does not exist! Make sure that it's the correct id "
-                 "and that the diffusion grid is registered.");
+                 "and that the continuum model is registered.");
       return nullptr;
     }
-    return diffusion_grids_.at(substance_id);
   }
 
-  /// Return the diffusion grid which holds the substance of specified name
-  /// Caution: using this function in a tight loop will result in a slow
-  /// simulation. Use `GetDiffusionGrid(size_t)` in those cases.
+  /// Return the diffusion grid which holds the substance of specified name.
+  /// Calls back to GetContinuum(std::string) and checks with dynamic_cast
+  /// if substance_name corresponds to a DiffusionGrid implementation. Caution:
+  /// using this function in a tight loop will result in a slow simulation. Use
+  /// `GetDiffusionGrid(size_t)` in those cases.
   DiffusionGrid* GetDiffusionGrid(const std::string& substance_name) const {
-    for (auto& el : diffusion_grids_) {
-      auto& dgrid = el.second;
-      if (dgrid->GetSubstanceName() == substance_name) {
-        return dgrid;
+    auto* cm = GetContinuum(substance_name);
+    auto* dgrid = dynamic_cast<DiffusionGrid*>(cm);
+    if (!dgrid) {
+      Log::Error("ResourceManager::GetDiffusionGrid",
+                 "You tried to get a diffusion grid but the substance name "
+                 "does not correspond to a diffusion grid.");
+    }
+    return dgrid;
+  }
+
+  /// Return the continuum model which holds the substance of specified name
+  /// Caution: using this function in a tight loop will result in a slow
+  /// simulation. Use `GetContinuum(size_t)` in those cases.
+  Continuum* GetContinuum(const std::string& continuum_name) const {
+    for (auto& el : continuum_models_) {
+      auto& cm = el.second;
+      if (cm->GetContinuumName() == continuum_name) {
+        return cm;
       }
     }
-    Log::Error("ResourceManager::GetDiffusionGrid",
-               "You tried to request a diffusion grid named '", substance_name,
+    Log::Error("ResourceManager::GetContinuum",
+               "You tried to request a continuum model named '", continuum_name,
                "', but it does not exist! Make sure that it's spelled "
-               "correctly and that the diffusion grid is registered.");
+               "correctly and that the continuum model is registered.");
     return nullptr;
   }
 
   /// Execute the given functor for all diffusion grids
+  /// /code{.cpp}
   ///     rm->ForEachDiffusionGrid([](DiffusionGrid* dgrid) {
   ///       ...
   ///     });
+  /// /endcode
   template <typename TFunctor>
   void ForEachDiffusionGrid(TFunctor&& f) const {
-    for (auto& el : diffusion_grids_) {
+    for (auto& el : continuum_models_) {
+      auto* dgrid = dynamic_cast<DiffusionGrid*>(el.second);
+      if (dgrid) {
+        f(dgrid);
+      }
+    }
+  }
+
+  /// Execute the given functor for all continuum models
+  /// /code{.cpp}
+  ///     rm->ForEachContinuum([](Continuum* cm) {
+  ///       ...
+  ///     });
+  /// /endcode
+  template <typename TFunctor>
+  void ForEachContinuum(TFunctor&& f) const {
+    for (auto& el : continuum_models_) {
       f(el.second);
     }
   }
@@ -200,9 +270,11 @@ class ResourceManager {
   /// @param filter if specified, `function` will only be called for agents
   ///               for which `filter(agent)` evaluates to true.
   ///
+  /// /code{.cpp}
   ///     rm->ForEachAgent([](Agent* a) {
   ///                              std::cout << a->GetUid() << std::endl;
   ///                          });
+  /// /endcode
   virtual void ForEachAgent(const std::function<void(Agent*)>& function,
                             Functor<bool, Agent*>* filter = nullptr) {
     for (auto& numa_agents : agents_) {
@@ -426,8 +498,6 @@ class ResourceManager {
   std::vector<std::vector<Agent*>> agents_;
   /// Container used during load balancing
   std::vector<std::vector<Agent*>> agents_lb_;  //!
-  /// Maps a diffusion grid ID to the pointer to the diffusion grid
-  std::unordered_map<uint64_t, DiffusionGrid*> diffusion_grids_;
 
   ThreadInfo* thread_info_ = ThreadInfo::GetInstance();  //!
 
@@ -443,6 +513,11 @@ class ResourceManager {
 
   friend class SimulationBackup;
   friend std::ostream& operator<<(std::ostream& os, const ResourceManager& rm);
+
+ private:
+  /// Maps a continuum ID to the pointer to the continuum models
+  std::unordered_map<uint64_t, Continuum*> continuum_models_;
+
   BDM_CLASS_DEF_NV(ResourceManager, 2);
 };
 

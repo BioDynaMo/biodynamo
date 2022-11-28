@@ -33,12 +33,12 @@ struct PhysicalBond : public Behavior {
   // Simple implementation of connecting `cell_a` to `cell_b`. We displace
   // `cell_a` with a distance such that the edges of the spheres stay connected
   void Connect(TCell* cell_a, AgentPointer<Monocyte> cell_b) {
-    Double3 distance = cell_b->GetPosition() - cell_a->GetPosition();
-    Double3 distance_copy = distance;
+    Real3 distance = cell_b->GetPosition() - cell_a->GetPosition();
+    Real3 distance_copy = distance;
     distance_copy.Normalize();
     auto radius_a = cell_a->GetDiameter() / 2;
     auto radius_b = cell_b->GetDiameter() / 2;
-    Double3 displacement = distance - (distance_copy * (radius_a + radius_b));
+    Real3 displacement = distance - (distance_copy * (radius_a + radius_b));
     cell_a->UpdatePosition(displacement);
     // if (Simulation::GetActive()->GetScheduler()->GetSimulatedSteps() == 1) {
     //   Log::Error("PhysicalBond", "Displacement: ", displacement);

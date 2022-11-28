@@ -160,6 +160,9 @@ function(generate_rootlogon)
   # if USE_DICT is set for libbiodynamo.so, we also need to set it for rootcling
   # when we want to use the interpreter or notebooks. Otherwise there would break
   # the one-definition rule
+  if(real_t)
+    set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define BDM_REALT ${real_t}\")\;")
+  endif()
   if (dict)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"#define USE_DICT\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"R__ADD_INCLUDE_PATH($BDMSYS/include)\")\;")
@@ -176,8 +179,7 @@ function(generate_rootlogon)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"ERROR: Loading BioDynaMo into ROOT failed!\\\" << endl\;\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"       BioDynaMo was not built with dict=ON\\\" << endl\;\")\;")
   endif()
-
-
+  
   set(CONTENT "${CONTENT}\n}\n")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)

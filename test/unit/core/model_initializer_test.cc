@@ -26,7 +26,7 @@ namespace model_initializer_test_internal {
 // check that the ResourceManager contains one agent with matching
 // each position.
 void Verify(Simulation* sim, uint64_t num_agents,
-            const std::vector<Double3>& positions) {
+            const std::vector<Real3>& positions) {
   sim->GetExecutionContext()->SetupIterationAll(sim->GetAllExecCtxts());
   auto* rm = sim->GetResourceManager();
 
@@ -48,7 +48,7 @@ void Verify(Simulation* sim, uint64_t num_agents,
 TEST(ModelInitializerTest, Grid3DCube) {
   Simulation simulation(TEST_NAME);
 
-  ModelInitializer::Grid3D(2, 12, [](const Double3& pos) {
+  ModelInitializer::Grid3D(2, 12, [](const Real3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });
@@ -70,7 +70,7 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 
   std::array<size_t, 3> grid_dimensions = {2, 3, 4};
 
-  ModelInitializer::Grid3D(grid_dimensions, 12, [](const Double3& pos) {
+  ModelInitializer::Grid3D(grid_dimensions, 12, [](const Real3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });
@@ -89,12 +89,12 @@ TEST(ModelInitializerTest, Grid3DCuboid) {
 TEST(ModelInitializerTest, CreateAgents) {
   Simulation simulation(TEST_NAME);
 
-  std::vector<Double3> positions;
+  std::vector<Real3> positions;
   positions.push_back({1, 2, 3});
   positions.push_back({101, 202, 303});
   positions.push_back({-12, -32, 4});
 
-  ModelInitializer::CreateAgents(positions, [](const Double3& pos) {
+  ModelInitializer::CreateAgents(positions, [](const Real3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });
@@ -106,7 +106,7 @@ TEST(ModelInitializerTest, CreateAgentsRandom) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
 
-  ModelInitializer::CreateAgentsRandom(-100, 100, 10, [](const Double3& pos) {
+  ModelInitializer::CreateAgentsRandom(-100, 100, 10, [](const Real3& pos) {
     Cell* cell = new Cell(pos);
     return cell;
   });
@@ -137,12 +137,12 @@ TEST(ModelInitializerTest, CreateAgentsRandom) {
 TEST(ModelInitializerTest, CreateAgentsInSphereRndm) {
   Simulation simulation(TEST_NAME);
   auto* rm = simulation.GetResourceManager();
-  Double3 center{1.0, 2.0, 3.0};
-  double radius{10.0};
+  Real3 center{1.0, 2.0, 3.0};
+  real_t radius{10.0};
   uint64_t no_agents{100};
 
   ModelInitializer::CreateAgentsInSphereRndm(center, radius, no_agents,
-                                             [](const Double3& pos) {
+                                             [](const Real3& pos) {
                                                Cell* cell = new Cell(pos);
                                                return cell;
                                              });

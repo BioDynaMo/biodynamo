@@ -69,19 +69,22 @@ void UniformGridEnvironment::LoadBalanceInfoUG::InitializeVectors() {
 
 // -----------------------------------------------------------------------------
 struct AgentHandleIterator : public Iterator<AgentHandle> {
+  UniformGridEnvironment* grid_;
   uint64_t start, end, box_index, discard;
   const ParallelResizeVector<UniformGridEnvironment::Box*>& sorted_boxes;
   UniformGridEnvironment::Box::Iterator box_it;
   uint64_t tid;
 
-  AgentHandleIterator(uint64_t start, uint64_t end, uint64_t box_index,
-                      uint64_t discard, decltype(sorted_boxes) sorted_boxes)
-      : start(start),
+  AgentHandleIterator(UniformGridEnvironment* grid, uint64_t start,
+                      uint64_t end, uint64_t box_index, uint64_t discard,
+                      decltype(sorted_boxes) sorted_boxes)
+      : grid_(grid),
+        start(start),
         end(end),
         box_index(box_index),
         discard(discard),
         sorted_boxes(sorted_boxes),
-        box_it(sorted_boxes[box_index]->begin()) {
+        box_it(sorted_boxes[box_index]->begin(grid)) {
     // discard elements
     tid = ThreadInfo::GetInstance()->GetMyThreadId();
     for (uint64_t i = 0; i < discard; ++i) {
@@ -95,7 +98,7 @@ struct AgentHandleIterator : public Iterator<AgentHandle> {
   AgentHandle Next() override {
     while (box_it.IsAtEnd()) {
       box_index++;
-      box_it = sorted_boxes[box_index]->begin();
+      box_it = sorted_boxes[box_index]->begin(grid_);
     }
     auto ret = *box_it;
     start++;
@@ -113,21 +116,41 @@ void UniformGridEnvironment::UpdateImplementation() {
     Clear();
     timestamp_++;
 
-    auto inf = Math::kInfinity;
-    std::array<double, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
-    CalcSimDimensionsAndLargestAgent(&tmp_dim);
-    RoundOffGridDimensions(tmp_dim);
+    auto* param = Simulation::GetActive()->GetParam();
+    if (determine_sim_size_) {
+      auto inf = Math::kInfinity;
+      std::array<real_t, 6> tmp_dim = {{inf, -inf, inf, -inf, inf, -inf}};
+      CalcSimDimensionsAndLargestAgent(&tmp_dim);
+      RoundOffGridDimensions(tmp_dim);
+    } else {
+      grid_dimensions_[0] = static_cast<int>(floor(param->min_bound));
+      grid_dimensions_[2] = static_cast<int>(floor(param->min_bound));
+      grid_dimensions_[4] = static_cast<int>(floor(param->min_bound));
+      grid_dimensions_[1] = static_cast<int>(ceil(param->max_bound));
+      grid_dimensions_[3] = static_cast<int>(ceil(param->max_bound));
+      grid_dimensions_[5] = static_cast<int>(ceil(param->max_bound));
+    }
 
     // If the box_length_ is not set manually, we set it to the largest agent
     // size
-    if (!is_custom_box_length_) {
+    if (!is_custom_box_length_ && determine_sim_size_) {
       auto los = ceil(GetLargestAgentSize());
       assert(los > 0 &&
              "The largest object size was found to be 0. Please check if your "
              "cells are correctly initialized.");
       box_length_ = los;
+    } else if (!is_custom_box_length_ && !determine_sim_size_) {
+      Log::Fatal("UniformGridEnvironment",
+                 "No box length specified although determine_sim_size_ is "
+                 "set to false. Call the member function "
+                 "SetBoxLength(box_length), or SetDetermineSimSize(false).");
     }
     box_length_squared_ = box_length_ * box_length_;
+
+    if (!determine_sim_size_) {
+      this->largest_object_size_ = box_length_;
+      this->largest_object_size_squared_ = box_length_squared_;
+    }
 
     for (int i = 0; i < 3; i++) {
       int dimension_length =
@@ -176,7 +199,6 @@ void UniformGridEnvironment::UpdateImplementation() {
     successors_.reserve();
 
     // Assign agents to boxes
-    auto* param = Simulation::GetActive()->GetParam();
     AssignToBoxesFunctor functor(this);
     rm->ForEachAgentParallel(param->scheduling_batch_size, functor);
     if (param->bound_space) {
@@ -230,7 +252,7 @@ void UniformGridEnvironment::LoadBalanceInfoUG::CallHandleIteratorConsumer(
   auto index =
       BinarySearch(start, cummulated_agents_, 0, grid_->total_num_boxes_ - 1) +
       1;
-  AgentHandleIterator it(start, end, index,
+  AgentHandleIterator it(grid_, start, end, index,
                          start - cummulated_agents_[index - 1], sorted_boxes_);
   f(&it);
 }
@@ -279,6 +301,45 @@ NeighborMutex* GridNeighborMutexBuilder::GetMutex(uint64_t box_idx) {
       new GridNeighborMutex(box_indices, this);
   mutex->SetMutexIndices(box_indices);
   return mutex;
+}
+
+// -----------------------------------------------------------------------------
+void UniformGridEnvironment::ForEachNeighbor(Functor<void, Agent*>& functor,
+                                             const Agent& query,
+                                             void* criteria) {
+  auto idx = query.GetBoxIdx();
+
+  FixedSizeVector<const Box*, 27> neighbor_boxes;
+  GetMooreBoxes(&neighbor_boxes, idx);
+
+  auto* rm = Simulation::GetActive()->GetResourceManager();
+
+  NeighborIterator ni(this, neighbor_boxes, timestamp_);
+  const unsigned batch_size = 64;
+  uint64_t size = 0;
+  Agent* agents[batch_size] __attribute__((aligned(64)));
+
+  auto process_batch = [&]() {
+    for (uint64_t i = 0; i < size; ++i) {
+      functor(agents[i]);
+    }
+    size = 0;
+  };
+
+  while (!ni.IsAtEnd()) {
+    auto ah = *ni;
+    // increment iterator already here to hide memory latency
+    ++ni;
+    auto* agent = rm->GetAgent(ah);
+    if (agent != &query) {
+      agents[size] = agent;
+      size++;
+      if (size == batch_size) {
+        process_batch();
+      }
+    }
+  }
+  process_batch();
 }
 
 }  // namespace bdm

@@ -69,7 +69,7 @@ pyenv shell $PYVERS
 
 # Install optional packages
 if [ $1 == "all" ]; then
-  PIP_PACKAGES="nbformat jupyter metakernel jupyterlab"
+  PIP_PACKAGES="markupsafe==2.0.1 nbformat jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6"
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
   python -m pip install $PIP_PACKAGES
   # SBML integration
