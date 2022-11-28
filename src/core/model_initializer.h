@@ -395,7 +395,7 @@ struct ModelInitializer {
                               real_t diffusion_coeff, real_t decay_constant,
                               int resolution = 10,
                               std::vector<real_t> binding_coefficients = {},
-                              std::vector<size_t> binding_substances = {});
+                              std::vector<int> binding_substances = {});
 
   template <typename F>
   static void InitializeSubstance(size_t substance_id, F function) {

@@ -26,7 +26,7 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
                                        real_t diffusion_coeff,
                                        real_t decay_constant, int resolution,
                                        std::vector<real_t> binding_coefficients,
-                                       std::vector<size_t> binding_substances) {
+                                       std::vector<int> binding_substances) {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();

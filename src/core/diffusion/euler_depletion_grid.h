@@ -34,29 +34,27 @@ c1_[c + 1] + c1_[s] - 2 * c1_[c] + c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t])
 class EulerDepletionGrid : public EulerGrid {
  public:
   EulerDepletionGrid() = default;
-  EulerDepletionGrid(size_t substance_id, std::string substance_name, double dc,
-                     double mu, int resolution = 10,
+  EulerDepletionGrid(int substance_id, std::string substance_name, real_t dc,
+                     real_t mu, int resolution = 10,
                      std::vector<double> binding_coefficients = {},
-                     std::vector<size_t> binding_substances = {})
+                     std::vector<int> binding_substances = {})
       : EulerGrid(substance_id, std::move(substance_name), dc, mu, resolution),
         binding_coefficients_(std::move(binding_coefficients)),
         binding_substances_(std::move(binding_substances)) {}
 
-  void DiffuseWithClosedEdge(double dt) override;
-  void DiffuseWithOpenEdge(double dt) override;
-  void DiffuseWithDirichlet(double dt) override;
-  void DiffuseWithNeumann(double dt) override;
+  void DiffuseWithClosedEdge(real_t dt) override;
+  void DiffuseWithOpenEdge(real_t dt) override;
+  void DiffuseWithDirichlet(real_t dt) override;
+  void DiffuseWithNeumann(real_t dt) override;
 
   // To avoid missing substances or coefficients, name of the sub and binding
   // coefficient must be set at the same time
-  void SetBindingSubstance(size_t bnd_sub, double bnd_coeff) {
+  void SetBindingSubstance(int bnd_sub, double bnd_coeff) {
     binding_substances_.push_back(bnd_sub);
     binding_coefficients_.push_back(bnd_coeff);
   }
 
-  std::vector<size_t> GetBindingSubstances() const {
-    return binding_substances_;
-  }
+  std::vector<int> GetBindingSubstances() const { return binding_substances_; }
   std::vector<double> GetBindingCoefficients() const {
     return binding_coefficients_;
   }
@@ -65,7 +63,7 @@ class EulerDepletionGrid : public EulerGrid {
   void ApplyDepletion(double dt);
 
   std::vector<double> binding_coefficients_ = {};
-  std::vector<size_t> binding_substances_ = {};
+  std::vector<int> binding_substances_ = {};
 
   BDM_CLASS_DEF_OVERRIDE(EulerDepletionGrid, 1);
 };

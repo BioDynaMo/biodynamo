@@ -758,18 +758,18 @@ TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
       new EulerDepletionGrid(2, "ECM", diff_coef, decay_depleted, res);
   dgrid_depletes1->Initialize();
   dgrid_depletes1->SetUpperThreshold(1e15);
-  rm->AddDiffusionGrid(dgrid_depletes1);
+  rm->AddContinuum(dgrid_depletes1);
   dgrid_depletes2->Initialize();
   dgrid_depletes2->SetUpperThreshold(1e15);
-  rm->AddDiffusionGrid(dgrid_depletes2);
+  rm->AddContinuum(dgrid_depletes2);
   dgrid_depleted->Initialize();
   dgrid_depleted->SetUpperThreshold(1e15);
-  rm->AddDiffusionGrid(dgrid_depleted);
+  rm->AddContinuum(dgrid_depleted);
 
   // Add depleting substance with its binding coefficient
   std::vector<double> bnd_coeff{0.01, 0.01};
-  std::vector<size_t> bnd_subs{dgrid_depletes1->GetSubstanceId(),
-                               dgrid_depletes2->GetSubstanceId()};
+  std::vector<int> bnd_subs{dgrid_depletes1->GetContinuumId(),
+                            dgrid_depletes2->GetContinuumId()};
   dgrid_depleted->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
   dgrid_depleted->SetBindingSubstance(bnd_subs[1], bnd_coeff[1]);
 
@@ -848,7 +848,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
 
   dgrid->SetBoundaryCondition(SetMyBoundaries());
   dgrid->SetUpperThreshold(1e15);
-  rm->AddDiffusionGrid(dgrid);
+  rm->AddContinuum(dgrid);
 
   // Simulate diffusion / exponential decay for `tot` timesteps
   int tot = 100000;  // ToDo This should probably be lower for final version
@@ -901,7 +901,7 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
     dgrid->SetBoundaryConditionType(kNeumann);
     dgrid->SetBoundaryCondition(SetMyBoundaries());
     dgrid->SetUpperThreshold(1e15);
-    rm->AddDiffusionGrid(dgrid);
+    rm->AddContinuum(dgrid);
 
     // Simulate diffusion / exponential decay for `tot` timesteps
     int tot = 10000;
@@ -914,7 +914,7 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
       expected_solution += conc[i];
     }
     EXPECT_LT(std::abs(init - expected_solution) / init, 0.0001);
-    rm->RemoveDiffusionGrid(0);
+    rm->RemoveContinuum(0);
   }
 }
 
@@ -950,7 +950,7 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
   dgrid->SetBoundaryConditionType(kNeumann);
   dgrid->SetBoundaryCondition(SetMyBoundaries());
   dgrid->SetUpperThreshold(1e15);
-  rm->AddDiffusionGrid(dgrid);
+  rm->AddContinuum(dgrid);
 
   // ----------------------------------------------------------
   // 1. Test if DG was initialized correctly (zero initialized)
@@ -992,7 +992,7 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
     intermediate_concentration_backup = intermediate_concentration_1;
   }
 
-  rm->RemoveDiffusionGrid(0);
+  rm->RemoveContinuum(0);
 }
 
 TEST(DiffusionTest, DynamicTimeStepping) {
