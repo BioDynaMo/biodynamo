@@ -170,13 +170,13 @@ void EulerGrid::DiffuseWithOpenEdge(real_t dt) {
   c1_.swap(c2_);
 }
 
-void EulerGrid::DiffuseWithDirichlet(double dt) {
+void EulerGrid::DiffuseWithDirichlet(real_t dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
-  const double ibl2 = 1 / (box_length_ * box_length_);
-  const double d = 1 - dc_[0];
+  const real_t ibl2 = 1 / (box_length_ * box_length_);
+  const real_t d = 1 - dc_[0];
 
 #define YBF 16
 #pragma omp parallel for collapse(2)
@@ -216,13 +216,13 @@ void EulerGrid::DiffuseWithDirichlet(double dt) {
   c1_.swap(c2_);
 }
 
-void EulerGrid::DiffuseWithNeumann(double dt) {
+void EulerGrid::DiffuseWithNeumann(real_t dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
-  const double ibl2 = 1 / (box_length_ * box_length_);
-  const double d = 1 - dc_[0];
+  const real_t ibl2 = 1 / (box_length_ * box_length_);
+  const real_t d = 1 - dc_[0];
 
 #define YBF 16
 #pragma omp parallel for collapse(2)
@@ -243,7 +243,7 @@ void EulerGrid::DiffuseWithNeumann(double dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
-          double i_comp = 0, j_comp = 0, k_comp = 0;
+          real_t i_comp = 0, j_comp = 0, k_comp = 0;
 
           if (x == 0) {
             i_comp = -box_length_ * boundary_conditions_(x, y, z, nx - 1) -

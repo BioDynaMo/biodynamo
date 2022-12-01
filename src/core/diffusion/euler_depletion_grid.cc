@@ -18,7 +18,7 @@
 
 namespace bdm {
 
-void EulerDepletionGrid::ApplyDepletion(double dt) {
+void EulerDepletionGrid::ApplyDepletion(real_t dt) {
   auto* sim = Simulation::GetActive();
   const auto* rm = sim->GetResourceManager();
 
@@ -47,28 +47,28 @@ void EulerDepletionGrid::ApplyDepletion(double dt) {
   std::swap(c1_, c2_);
 }
 
-void EulerDepletionGrid::DiffuseWithClosedEdge(double dt) {
+void EulerDepletionGrid::DiffuseWithClosedEdge(real_t dt) {
   // Update concentration without depletion (c1 is modified)
   EulerGrid::DiffuseWithClosedEdge(dt);
 
   ApplyDepletion(dt);
 }
 
-void EulerDepletionGrid::DiffuseWithOpenEdge(double dt) {
+void EulerDepletionGrid::DiffuseWithOpenEdge(real_t dt) {
   // Update concentration without depletion (c1 is modified)
   EulerGrid::DiffuseWithOpenEdge(dt);
 
   ApplyDepletion(dt);
 }
 
-void EulerDepletionGrid::DiffuseWithDirichlet(double dt) {
+void EulerDepletionGrid::DiffuseWithDirichlet(real_t dt) {
   // Update concentration without depletion (c1 is modified)
   EulerGrid::DiffuseWithDirichlet(dt);
 
   ApplyDepletion(dt);
 }
 
-void EulerDepletionGrid::DiffuseWithNeumann(double dt) {
+void EulerDepletionGrid::DiffuseWithNeumann(real_t dt) {
   // Update concentration without depletion (c1 is modified)
   EulerGrid::DiffuseWithNeumann(dt);
 

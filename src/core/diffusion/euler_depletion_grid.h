@@ -36,7 +36,7 @@ class EulerDepletionGrid : public EulerGrid {
   EulerDepletionGrid() = default;
   EulerDepletionGrid(int substance_id, std::string substance_name, real_t dc,
                      real_t mu, int resolution = 10,
-                     std::vector<double> binding_coefficients = {},
+                     std::vector<real_t> binding_coefficients = {},
                      std::vector<int> binding_substances = {})
       : EulerGrid(substance_id, std::move(substance_name), dc, mu, resolution),
         binding_coefficients_(std::move(binding_coefficients)),
@@ -49,20 +49,20 @@ class EulerDepletionGrid : public EulerGrid {
 
   // To avoid missing substances or coefficients, name of the sub and binding
   // coefficient must be set at the same time
-  void SetBindingSubstance(int bnd_sub, double bnd_coeff) {
+  void SetBindingSubstance(int bnd_sub, real_t bnd_coeff) {
     binding_substances_.push_back(bnd_sub);
     binding_coefficients_.push_back(bnd_coeff);
   }
 
   std::vector<int> GetBindingSubstances() const { return binding_substances_; }
-  std::vector<double> GetBindingCoefficients() const {
+  std::vector<real_t> GetBindingCoefficients() const {
     return binding_coefficients_;
   }
 
  private:
-  void ApplyDepletion(double dt);
+  void ApplyDepletion(real_t dt);
 
-  std::vector<double> binding_coefficients_ = {};
+  std::vector<real_t> binding_coefficients_ = {};
   std::vector<int> binding_substances_ = {};
 
   BDM_CLASS_DEF_OVERRIDE(EulerDepletionGrid, 1);
