@@ -843,7 +843,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
 
   struct SetMyBoundaries {
     SetMyBoundaries() {}
-    double operator()(size_t x, size_t y, size_t z, size_t n) { return 1.0; }
+    real_t operator()(size_t x, size_t y, size_t z, size_t n) { return 1.0; }
   };
 
   dgrid->SetBoundaryCondition(SetMyBoundaries());
@@ -859,7 +859,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   // After a sufficient amount of iterations with dirichlet boundary conditions
   // equal to 1.0, the concentration should be 1.0 everywhere.
   auto conc = dgrid->GetAllConcentrations();
-  double average_concentration = 0.0;
+  real_t average_concentration = 0.0;
   for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
     average_concentration += conc[i];
   }
