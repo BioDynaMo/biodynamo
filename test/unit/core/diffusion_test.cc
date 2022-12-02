@@ -776,11 +776,11 @@ TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
   // instantaneous point source
   double init_depleted = 1e2;
   double init_depletes = 1;
-  Double3 source = {{0, 0, 0}};
+  Real3 source = {{0, 0, 0}};
   dgrid_depletes1->ChangeConcentrationBy(source, init_depletes);
   dgrid_depletes2->ChangeConcentrationBy(source, init_depletes);
   dgrid_depleted->ChangeConcentrationBy(source, init_depleted);
-  Double3 marker = {50.0, 50.0, 50.0};
+  Real3 marker = {50.0, 50.0, 50.0};
 
   // Simulate diffusion / exponential decay for `tot` timesteps
   int tot = 100;
@@ -883,7 +883,7 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
   double diff_coef = 10.0;
   int res = 20;
   double init = 1e5;
-  std::vector<Double3> sources;
+  std::vector<Real3> sources;
   sources.push_back({0, 0, 0});
   sources.push_back({50, 50, 50});
   sources.push_back({-50, -50, -50});
