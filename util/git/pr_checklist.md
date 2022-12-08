@@ -39,6 +39,7 @@ First time contributor? Make sure to review our contributing guidelines:
         (must be checked by reviewer)
   - [ ] Address all (or at least the vast majority) of the code smells flagged
         by `SonarCloud`
+  - [ ] New code should not break backward compatibility
 
 - [ ] **New dependencies**
   - [ ] New dependencies should ideally be optional, e.g. can be turned off with
