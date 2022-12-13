@@ -423,6 +423,11 @@ if(sbml)
   endif()
 endif()
 
+# Load libgit2 if it is enabled
+if (libgit2)
+    include(external/Libgit2)
+endif()
+
 if (vtune)
     find_package(VTune)
     if(${VTune_FOUND})
