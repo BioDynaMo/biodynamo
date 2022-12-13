@@ -123,6 +123,7 @@ jobs:
           -Dnotebooks=ON \
           -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
+          -Dlibgit2=ON \
           -Dreal_t=${{ env.REALT }} \
           -B build
         cmake --build build --parallel --config Release --target notebooks  -- -j1
