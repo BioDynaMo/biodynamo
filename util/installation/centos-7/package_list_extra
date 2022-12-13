@@ -14,3 +14,4 @@ gsl-devel
 atlas-devel
 blas-devel
 lapack-devel
+libgit2-devel
