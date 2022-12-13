@@ -18,7 +18,7 @@ jobs:
         yum -y update
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
-          devtoolset-8-gcc* numactl-devel openmpi3-devel freeglut-devel libgit2-devel \
+          devtoolset-8-gcc* numactl-devel openmpi3-devel freeglut-devel \
           scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
           sqlite-devel openssl-devel xz xz-devel libffi-devel findutils lapack-devel blas-devel

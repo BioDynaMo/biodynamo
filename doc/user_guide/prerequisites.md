@@ -153,7 +153,6 @@ sudo apt-get install -y kcov
  * **atlas-devel**: Automatically Tuned Linear Algebra Software -- development package
  * **blas-devel**: The Basic Linear Algebra Subprograms library -- development package
  * **lapack-devel**: Numerical linear algebra package libraries -- development package
- * **libgit2-devel**: C library for git
 
 ### Installation
 
@@ -205,7 +204,7 @@ sudo yum update -y
 sudo yum install -y doxygen graphviz valgrind freeglut-devel libxml2-devel
 sudo yum install -y llvm-toolset-7 llvm-toolset-7-clang-tools-extra \
    llvm-toolset-7-llvm-devel llvm-toolset-7-llvm-static \
-   gdl-devel atlas-devel blas-devel lapack-devel libgit2-devel
+   gdl-devel atlas-devel blas-devel lapack-devel
 ```
 
 ## macOS
