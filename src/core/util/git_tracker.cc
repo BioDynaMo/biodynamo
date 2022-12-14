@@ -122,6 +122,7 @@ void GitTracker::PrintGitInfo(const std::string& repository_path,
   // Cleanup
   git_object_free(head_commit);
   git_reference_free(head);
+  git_reference_free(target);
   git_repository_free(repo);
   git_libgit2_shutdown();
 }
