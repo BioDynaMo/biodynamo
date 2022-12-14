@@ -56,13 +56,13 @@ void GitTracker::SaveGitDetails() {
 }
 
 void GitTracker::SaveGitInfo(const std::string& file,
-                             const std::string& repository_path) {
+                             const std::string& repository_path) const {
   std::ofstream out(file);
   PrintGitInfo(repository_path, out);
 }
 
 void GitTracker::PrintGitInfo(const std::string& repository_path,
-                              std::ostream& out) {
+                              std::ostream& out) const {
   // Absolute path to repository
   std::string abs_repo_path = GetAbsolutePath(repository_path);
 
@@ -128,7 +128,7 @@ void GitTracker::PrintGitInfo(const std::string& repository_path,
 }
 
 void GitTracker::SaveGitDiff(const std::string& file,
-                             const std::string& repository_path) {
+                             const std::string& repository_path) const {
   // Absolute path to repository
   std::string abs_repo_path = GetAbsolutePath(repository_path);
 
@@ -149,11 +149,14 @@ void GitTracker::SaveGitDiff(const std::string& file,
   // Open C style file
   FILE* fp = fopen(file.c_str(), "w");
 
-  // Print all the deltas to std::cout
+  // Print all the deltas to the file. If fopen fails, the diff will be printed
+  // to stdout
   git_diff_print(diff, GIT_DIFF_FORMAT_PATCH, diff_output, fp);
 
-  // Close C style file
-  fclose(fp);
+  // Close C style file if the pointer is not null
+  if (fp) {
+    fclose(fp);
+  }
 
   // Cleanup
   git_diff_free(diff);
@@ -161,7 +164,7 @@ void GitTracker::SaveGitDiff(const std::string& file,
   git_libgit2_shutdown();
 }
 
-std::string GitTracker::GetAbsolutePath(const std::string& path) {
+std::string GitTracker::GetAbsolutePath(const std::string& path) const {
   // Get absolute path via filesystem
   return fs::absolute(path).string();
 };

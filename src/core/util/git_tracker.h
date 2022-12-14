@@ -26,7 +26,7 @@ namespace bdm {
 class GitTracker {
  public:
   GitTracker() { ConstructFolderNames(); };
-  GitTracker(const std::string& simulation_output) : GitTracker() {
+  explicit GitTracker(const std::string& simulation_output) : GitTracker() {
     simulation_output_ = GetAbsolutePath(simulation_output);
   }
   ~GitTracker() = default;
@@ -39,18 +39,20 @@ class GitTracker {
   /// @brief  Saves the git info of the given repository to the given file
   /// @param file absolute path to the info file
   /// @param repository_path absolute path to the repository
-  void SaveGitInfo(const std::string& file, const std::string& repository_path);
+  void SaveGitInfo(const std::string& file,
+                   const std::string& repository_path) const;
 
   /// @brief Print the git info of the given repository to the given stream
   /// @param repository_path path to the repository
   /// @param out stream to which the git info is printed
   void PrintGitInfo(const std::string& repository_path,
-                    std::ostream& out = std::cout);
+                    std::ostream& out = std::cout) const;
 
   /// @brief  Saves the git diff of the given repository to the given file
   /// @param file absolute path to the diff file
   /// @param repository_path absolute path to the repository
-  void SaveGitDiff(const std::string& file, const std::string& repository_path);
+  void SaveGitDiff(const std::string& file,
+                   const std::string& repository_path) const;
 
   /// Sets the path to the BioDynaMo installation
   void SetBdmInstallation(const std::string& path) {
@@ -68,7 +70,7 @@ class GitTracker {
 
  private:
   /// Returns the absolute path of the given path (via experimantal/filesystem).
-  std::string GetAbsolutePath(const std::string& path);
+  std::string GetAbsolutePath(const std::string& path) const;
 
   /// Constructs the folder names for the bdm_installation_ and the cwd_.
   void ConstructFolderNames();
