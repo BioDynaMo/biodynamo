@@ -162,10 +162,6 @@ void GitTracker::SaveGitDiff(const std::string& file,
 }
 
 std::string GitTracker::GetAbsolutePath(const std::string& path) {
-  // char* absolute_path = realpath(path.c_str(), nullptr);
-  // std::string abs_path(absolute_path);
-  // free(absolute_path);
-  // return abs_path;
   // Get absolute path via filesystem
   return fs::absolute(path).string();
 };
