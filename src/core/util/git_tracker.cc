@@ -12,6 +12,8 @@
 //
 // -----------------------------------------------------------------------------
 
+#ifdef USE_LIBGIT2
+
 #include "git_tracker.h"
 #include <experimental/filesystem>
 #include "core/util/log.h"
@@ -209,3 +211,5 @@ int diff_output(const git_diff_delta* d, const git_diff_hunk* h,
 
   return 0;
 }
+
+#endif  // USE_LIBGIT2
