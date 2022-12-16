@@ -209,6 +209,17 @@ void GpuHelper::FindGpuDevicesOpenCL() {
     }
 
     int selected_gpu = param->preferred_gpu;
+    // If not specifically selected, we select the first GPU with double support
+    if (selected_gpu < 0) {
+      auto itr = std::find(ocl_state->impl_->fp64_support_.begin(),
+                           ocl_state->impl_->fp64_support_.end(), true);
+      if (itr == vct.end()) {
+        selected_gpu = 0;
+      } else {
+        selected_gpu =
+            std::distance(ocl_state->impl_->fp64_support_..begin(), itr);
+      }
+    }
     Log::Info("", "Selected GPU [", selected_gpu,
               "]: ", (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
 
