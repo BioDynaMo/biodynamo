@@ -1,4 +1,5 @@
 build/
+build-*/
 
 !demo/makefile_project/Makefile
 demo/makefile_project/bdm_generated_code.cc

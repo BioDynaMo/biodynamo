@@ -33,7 +33,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        brew install libomp open-mpi python@3.9 wget cmake ninja qt@5
+        brew install libomp open-mpi python@3.9 wget cmake ninja qt@5 libgit2
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v2
@@ -53,6 +53,7 @@ jobs:
           -Dopencl=OFF \
           -Dparaview=ON \
           -Dbenchmark=ON \
+          -Dlibgit2=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release

@@ -139,6 +139,7 @@ jobs:
           -Dnotebooks=OFF \
           -Dparaview=ON \
           -Dbenchmark=ON \
+          -Dlibgit2=ON \
           -Dsbml=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -Dreal_t=${{ env.REALT }} \

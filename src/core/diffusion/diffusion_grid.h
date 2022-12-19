@@ -207,6 +207,17 @@ class DiffusionGrid : public ScalarField {
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
+  /// Print information about the Diffusion Grid
+  void PrintInfo(std::ostream& out = std::cout);
+
+  /// Print the information after initialization
+  void PrintInfoWithInitialization() {
+    print_info_with_initialization_ = true;
+  };
+
+  /// Returns if the gird has been initialized
+  bool IsInitialized() const { return initialized_; }
+
  private:
   friend class RungeKuttaGrid;
   friend class EulerGrid;
@@ -270,6 +281,11 @@ class DiffusionGrid : public ScalarField {
       {};  //!
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
+  /// Flag to indicate if the grid is initialized
+  bool initialized_ = false;
+  /// Flag to indicate if we want to print information about the grid after
+  /// initialization
+  bool print_info_with_initialization_ = false;
 
   BDM_CLASS_DEF_OVERRIDE(DiffusionGrid, 1);
 };

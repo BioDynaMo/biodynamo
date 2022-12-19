@@ -63,6 +63,12 @@ void DiffusionGrid::Initialize() {
   c1_.resize(total_num_boxes_);
   c2_.resize(total_num_boxes_);
   gradients_.resize(total_num_boxes_);
+
+  // Print Info
+  initialized_ = true;
+  if (print_info_with_initialization_) {
+    PrintInfo();
+  }
 }
 
 void DiffusionGrid::Diffuse(real_t dt) {
@@ -384,16 +390,80 @@ size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
   return GetBoxIndex(box_coord);
 }
 
+void DiffusionGrid::PrintInfo(std::ostream& out) {
+  auto continuum_name = GetContinuumName();
+  if (!IsInitialized()) {
+    // If the grid is not yet initialized, many of the variables have no vaild
+    // values. We print a warning and print the info after the grid is
+    // initialized.
+    out << "DiffusionGrid" << continuum_name
+        << "is not yet initialized. Will print info after initialization."
+        << std::endl;
+    print_info_with_initialization_ = true;
+    return;
+  }
+
+  // Get all the info
+  auto box_length = GetBoxLength();
+  auto diffusion_coefficient = 1 - GetDiffusionCoefficients()[0];
+  auto decay = GetDecayConstant();
+  auto max_dt =
+      (box_length * box_length) / (decay + 12.0 * diffusion_coefficient) * 2.0;
+  auto domain = GetDimensions();
+  auto umin = GetLowerThreshold();
+  auto umax = GetUpperThreshold();
+  auto resolution = GetResolution();
+  auto num_boxes = GetNumBoxes();
+
+  // Print the info
+  out << "DiffusionGrid: " << continuum_name << "\n";
+  out << "    D          = " << diffusion_coefficient << "\n";
+  out << "    decay      = " << decay << "\n";
+  out << "    dx         = " << box_length << "\n";
+  out << "    max(dt)    <= " << max_dt << "\n";
+  out << "    bounds     : " << umin << " < c < " << umax << "\n";
+  out << "    domain     : "
+      << "[" << domain[0] << ", " << domain[1] << "] x [" << domain[2] << ", "
+      << domain[3] << "] x [" << domain[4] << ", " << domain[5] << "]\n";
+  out << "    resolution : " << resolution << " x " << resolution << " x "
+      << resolution << "\n";
+  out << "    num boxes  : " << num_boxes << "\n";
+};
+
 void DiffusionGrid::ParametersCheck(real_t dt) {
-  if ((((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) ||
-      ((mu_ * dt) > 1.0)) {
+  // We evaluate a stability condition derived via a von Neumann stability
+  // analysis (https://en.wikipedia.org/wiki/Von_Neumann_stability_analysis,
+  // accessed 2022-10-27) of the diffusion equation. In comparison to the
+  // Wikipedia article, we use a 3D diffusion equation and also consider the
+  // decay. We end up with the following result:
+  const bool stability =
+      ((mu_ + 12.0 * (1 - dc_[0]) / (box_length_ * box_length_)) * dt <= 2.0);
+  if (!stability) {
     Log::Fatal(
-        "DiffusionGrid",
+        "DiffusionGrid", "Stability condition violated. ",
         "The specified parameters of the diffusion grid with substance [",
         GetContinuumName(),
         "] will result in unphysical behavior (diffusion coefficient = ",
         (1 - dc_[0]), ", resolution = ", resolution_,
-        ", decay constant * dt = ", mu_ * dt,
+        ", decay constant = ", mu_, ", dt = ", dt,
+        "). Please refer to the user guide for more information.");
+  }
+
+  // We also check if the decay constant is too large. This is not a stability
+  // condition, but it may result in unphysical behavior, e.g. negative values
+  // for the concentration. We obtain the condition by assuming that all
+  // concentration values of the previous time step are positive and demanding
+  // the same for the next time step. We arrive at the following condition:
+  const bool decay_safety =
+      (1 - (mu_ + 6 * (1 - dc_[0]) / (box_length_ * box_length_) * dt) >= 0);
+  if (!decay_safety) {
+    Log::Fatal(
+        "DiffusionGrid", "Decay may overstep into negative regime. ",
+        "The specified parameters of the diffusion grid with substance [",
+        GetContinuumName(),
+        "] may result in unphysical behavior (diffusion coefficient = ",
+        (1 - dc_[0]), ", resolution = ", resolution_,
+        ", decay constant = ", mu_, ", dt = ", dt,
         "). Please refer to the user guide for more information.");
   }
 }
