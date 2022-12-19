@@ -92,6 +92,7 @@ jobs:
           -Dopencl=OFF \
           -Dparaview=ON \
           -Dbenchmark=ON \
+          -Dlibgit2=ON \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --parallel --config Release
