@@ -181,12 +181,8 @@ void GitTracker::ConstructFolderNames() {
   bdm_installation_ = std::getenv("BDMSYS");
   // Determine the absolute path to the BioDynaMo installation
   bdm_installation_ = GetAbsolutePath(bdm_installation_);
-  // Trim the build directory from the BDMSYS environment variable if the string
-  // ends with build
-  if (bdm_installation_.substr(bdm_installation_.size() - 5, 5) == "build") {
-    bdm_installation_ =
-        bdm_installation_.substr(0, bdm_installation_.size() - 6);
-  }
+  // Trim the build directory from the BDMSYS environment variable
+  bdm_installation_ = fs::path(bdm_installation_).parent_path().string();
 };
 }  // namespace bdm
 
