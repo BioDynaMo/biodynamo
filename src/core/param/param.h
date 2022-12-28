@@ -565,6 +565,15 @@ struct Param {
   ///     statistics = false
   bool statistics = false;
 
+  /// Automatically track changes in the simulation and BioDynaMo repository.
+  /// If set to true, BioDynaMo scans the simulation directory and the BioDynaMo
+  /// repository for changes and saves the information of the git repositories
+  /// in the output directory.\n
+  /// Default Value: `true`\n
+#ifdef USE_LIBGIT2
+  bool track_git_changes = true;
+#endif  // USE_LIBGIT2
+
   /// Output debugging info related to running on NUMA architecture.\n
   /// \see `ThreadInfo`, `ResourceManager::DebugNuma`
   /// Default Value: `false`\n

@@ -431,15 +431,39 @@ void DiffusionGrid::PrintInfo(std::ostream& out) {
 };
 
 void DiffusionGrid::ParametersCheck(real_t dt) {
-  if ((((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) ||
-      ((mu_ * dt) > 1.0)) {
+  // We evaluate a stability condition derived via a von Neumann stability
+  // analysis (https://en.wikipedia.org/wiki/Von_Neumann_stability_analysis,
+  // accessed 2022-10-27) of the diffusion equation. In comparison to the
+  // Wikipedia article, we use a 3D diffusion equation and also consider the
+  // decay. We end up with the following result:
+  const bool stability =
+      ((mu_ + 12.0 * (1 - dc_[0]) / (box_length_ * box_length_)) * dt <= 2.0);
+  if (!stability) {
     Log::Fatal(
-        "DiffusionGrid",
+        "DiffusionGrid", "Stability condition violated. ",
         "The specified parameters of the diffusion grid with substance [",
         GetContinuumName(),
         "] will result in unphysical behavior (diffusion coefficient = ",
         (1 - dc_[0]), ", resolution = ", resolution_,
-        ", decay constant * dt = ", mu_ * dt,
+        ", decay constant = ", mu_, ", dt = ", dt,
+        "). Please refer to the user guide for more information.");
+  }
+
+  // We also check if the decay constant is too large. This is not a stability
+  // condition, but it may result in unphysical behavior, e.g. negative values
+  // for the concentration. We obtain the condition by assuming that all
+  // concentration values of the previous time step are positive and demanding
+  // the same for the next time step. We arrive at the following condition:
+  const bool decay_safety =
+      (1 - (mu_ + 6 * (1 - dc_[0]) / (box_length_ * box_length_) * dt) >= 0);
+  if (!decay_safety) {
+    Log::Fatal(
+        "DiffusionGrid", "Decay may overstep into negative regime. ",
+        "The specified parameters of the diffusion grid with substance [",
+        GetContinuumName(),
+        "] may result in unphysical behavior (diffusion coefficient = ",
+        (1 - dc_[0]), ", resolution = ", resolution_,
+        ", decay constant = ", mu_, ", dt = ", dt,
         "). Please refer to the user guide for more information.");
   }
 }

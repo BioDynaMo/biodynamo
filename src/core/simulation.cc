@@ -49,6 +49,9 @@
 #include "core/util/timing.h"
 #include "core/visualization/root/adaptor.h"
 #include "memory_usage.h"
+#ifdef USE_LIBGIT2
+#include "core/util/git_tracker.h"
+#endif  // USE_LIBGIT2
 
 #include <TEnv.h>
 #include <TROOT.h>
@@ -198,6 +201,12 @@ Simulation::~Simulation() {
     std::ofstream ofs(Concat(output_dir_, "/metadata"));
     ofs << sstr.str() << std::endl;
   }
+#ifdef USE_LIBGIT2
+  if (param_ != nullptr && param_->track_git_changes) {
+    GitTracker git_tracker(output_dir_);
+    git_tracker.SaveGitDetails();
+  }
+#endif  // USE_LIBGIT2
 
   if (mem_mgr_) {
     mem_mgr_->SetIgnoreDelete(true);
@@ -557,11 +566,13 @@ void Simulation::InitializeOutputDir() {
       RemoveDirectoryContents(output_dir_);
     } else {
       // We throw a fatal because it will override previous results from a
-      // possibly expensive simulation. This should not happen unintentionally.
+      // possibly expensive simulation. This should not happen
+      // unintentionally.
       Log::Fatal(
           "Simulation::InitializeOutputDir", "Output dir (", output_dir_,
           ") is not empty. Previous result files would be overriden. Abort."
-          "Please set Param::remove_output_dir_contents to true to remove files"
+          "Please set Param::remove_output_dir_contents to true to remove "
+          "files"
           " automatically or clear the output directory by hand.");
     }
   }
