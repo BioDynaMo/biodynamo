@@ -41,6 +41,7 @@ struct OpenCLState::OpenCLImpl {
   std::vector<cl::Device> opencl_devices_;
   std::vector<cl::Program> opencl_programs_;
   std::vector<bool> fp64_support_;
+  int selected_gpu_ = -1;
 };
 
 OpenCLState::OpenCLState() {
@@ -62,6 +63,14 @@ std::vector<cl::Device>* OpenCLState::GetOpenCLDeviceList() {
   return &impl_->opencl_devices_;
 }
 
+void OpenCLState::SelectGpu(int gpu) {
+  impl_->selected_gpu_ = gpu;
+}
+
+std::vector<bool>* OpenCLState::GetFp64Support() {
+  return &impl_->fp64_support_;
+}
+
 /// Returns the OpenCL program (kernel) list
 std::vector<cl::Program>* OpenCLState::GetOpenCLProgramList() {
   return &impl_->opencl_programs_;
@@ -69,8 +78,7 @@ std::vector<cl::Program>* OpenCLState::GetOpenCLProgramList() {
 
 // Returns if the `Param::preferred_gpu` has support for double
 bool OpenCLState::HasSupportForDouble() {
-  int selected_gpu = Simulation::GetActive()->GetParam()->preferred_gpu;
-  return impl_->fp64_support_[selected_gpu];
+  return impl_->fp64_support_[impl_->selected_gpu_];
 }
 
 void OpenCLState::DisableSupportForDouble() {

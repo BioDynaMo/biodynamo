@@ -211,17 +211,19 @@ void GpuHelper::FindGpuDevicesOpenCL() {
     int selected_gpu = param->preferred_gpu;
     // If not specifically selected, we select the first GPU with double support
     if (selected_gpu < 0) {
-      auto itr = std::find(ocl_state->impl_->fp64_support_.begin(),
-                           ocl_state->impl_->fp64_support_.end(), true);
-      if (itr == vct.end()) {
+      auto itr = std::find(ocl_state->GetFp64Support()->begin(),
+                           ocl_state->GetFp64Support()->end(), true);
+      if (itr == ocl_state->GetFp64Support()->end()) {
         selected_gpu = 0;
       } else {
         selected_gpu =
-            std::distance(ocl_state->impl_->fp64_support_..begin(), itr);
+            std::distance(ocl_state->GetFp64Support()->begin(), itr);
       }
     }
     Log::Info("", "Selected GPU [", selected_gpu,
               "]: ", (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
+
+    ocl_state->SelectGpu(selected_gpu);
 
     // Create command queue for that GPU
     cl_int queue_err;
