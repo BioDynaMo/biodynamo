@@ -108,8 +108,62 @@ inline void cells_4paraview(ResourceManager* rm, int time =0) {
   // completed exporting to the VTU file
 }
 
-inline void diffusiongrid_4paraview(ResourceManager* rm, int time =0) {
+inline void grid_4paraview(ResourceManager* rm, int time =0) {
+  //
+  const unsigned int n_VTK_points = Grid_XYZ.size();
+  //
+  const unsigned int n_VTK_cells = 1;
 
+  // create the VTU file to store BioDynaMo simulation data
+  std::ofstream fout("output/custom_paraview/grid_4paraview."+std::to_string(time)+".vtu");
+  // write the header of the XML-structured file
+  fout << "<?xml version=\"1.0\"?>" << std::endl;
+  fout << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">" << std::endl;
+  fout << "  <UnstructuredGrid>" << std::endl;
+  fout << "    <Piece NumberOfPoints=\"" << n_VTK_points << "\" NumberOfCells=\"" << n_VTK_cells << "\">" << std::endl;
+  // output the coordinates of all grid points
+  fout << "      <Points>" << std::endl;
+  fout << "        <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">" << std::endl;
+  for (auto const& xyz : Grid_XYZ)
+      fout << ' ' << xyz[0]
+           << ' ' << xyz[1]
+           << ' ' << xyz[2];
+  fout << std::endl;
+  fout << "        </DataArray>" << std::endl;
+  fout << "      </Points>" << std::endl;
+  // start -- output BioDynaMo simulation data for all grids
+  fout << "      <PointData>" << std::endl;
+  for (auto const& m : Grid_ID2Name)
+    {
+      // access the grid for this substance
+      auto* dg = rm->GetDiffusionGrid(m.first);
+      //
+      fout << "        <DataArray type=\"Float64\" Name=\""+m.second+"\" NumberOfComponents=\"1\" format=\"ascii\">" << std::endl;
+      for (auto const& xyz : Grid_XYZ)
+        fout << ' ' << dg->GetValue(xyz);
+      fout << std::endl;
+      fout << "        </DataArray>" << std::endl;
+    }
+  fout << "        </PointData>" << std::endl;
+  // end -- output BioDynaMo simulation data for all grids
+  // start -- output all grid points as a "VTK_POLY_VERTEX" VTK cell structure
+  fout << "      <Cells>" << std::endl;
+  fout << "        <DataArray type=\"Int32\" Name=\"offsets\" NumberOfComponents=\"1\" format=\"ascii\">" << std::endl;
+  fout << ' ' << n_VTK_points << std::endl;
+  fout << "        </DataArray>" << std::endl;
+  fout << "        <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"ascii\">" << std::endl;
+  for (unsigned int p=0; p<n_VTK_points; p++) fout << ' ' << p;
+  fout << std::endl;
+  fout << "        </DataArray>" << std::endl;
+  fout << "        <DataArray type=\"Int32\" Name=\"types\" NumberOfComponents=\"1\" format=\"ascii\">" << std::endl;
+  fout << ' ' << 2 << std::endl;
+  fout << "        </DataArray>" << std::endl;
+  fout << "      </Cells>" << std::endl;
+  // end -- output all grid points as a "VTK_POLY_VERTEX" VTK cell structure
+  fout << "    </Piece>" << std::endl;
+  fout << "  </UnstructuredGrid>" << std::endl;
+  fout << "</VTKFile>" << std::endl;
+  // completed exporting to the VTU file
 }
 
 inline int Simulate(int argc, const char** argv) {
@@ -148,6 +202,20 @@ inline int Simulate(int argc, const char** argv) {
   ModelInitializer::DefineSubstance(0, Grid_ID2Name[0], 0., 0., N);
   ModelInitializer::DefineSubstance(1, Grid_ID2Name[1], 0.1, 0., N);
   ModelInitializer::CreateAgentsRandom(-10.0, +10.0, 2000, GenerateCells);
+
+  simulation.GetScheduler()->Simulate(1);
+
+  // output all agent and grid related data
+  // in VTU-formatted files for Paraview
+  cells_4paraview(rm, 1);
+  grid_4paraview(rm, 1);
+
+  simulation.GetScheduler()->Simulate(99);
+
+  // output all agent and grid related data
+  // in VTU-formatted files for Paraview
+  cells_4paraview(rm, 100);
+  grid_4paraview(rm, 100);
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
