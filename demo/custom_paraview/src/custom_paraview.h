@@ -16,15 +16,15 @@
 
 #include "biodynamo.h"
 
-static std::map<size_t, std::string> dg__ID2Name;
-static std::vector<bdm::Double3> dg__XYZ;
+static std::map<size_t, std::string> Grid_ID2Name;
+static std::vector<bdm::Double3> Grid_XYZ;
 
 namespace bdm {
 
 inline void set_global_parameters(Param* p)
 {
   // user-defined BioDynaMo parameters adopted for the simulation
-  p->simulation_time_step = 1.0;
+  p->simulation_time_step = 1.0e-6;
   p->bound_space = Param::BoundSpaceMode::kClosed;
   p->min_bound = -10.0;
   p->max_bound = +10.0;
@@ -118,30 +118,36 @@ inline int Simulate(int argc, const char** argv) {
   // access the simulation resource manager
   auto* rm = simulation.GetResourceManager();
 
-  // create 8 cells (agents) positioned at the
-  // vertices of a perfect hexagon
-  rm->AddAgent(new Cell({-1.0, -1.0, -1.0}));
-  rm->AddAgent(new Cell({+1.0, -1.0, -1.0}));
-  rm->AddAgent(new Cell({+1.0, +1.0, -1.0}));
-  rm->AddAgent(new Cell({-1.0, +1.0, -1.0}));
-  rm->AddAgent(new Cell({-1.0, -1.0, +1.0}));
-  rm->AddAgent(new Cell({+1.0, -1.0, +1.0}));
-  rm->AddAgent(new Cell({+1.0, +1.0, +1.0}));
-  rm->AddAgent(new Cell({-1.0, +1.0, +1.0}));
+  const size_t N = 101;
+  const real_t S_min = simulation.GetParam()->min_bound,
+               S_max = simulation.GetParam()->max_bound,
+               DS = (S_max-S_min) / N;
 
-  // output all agent-data in a VTU-formatted
-  // file for Paraview
-  cells_4paraview(rm);
+  auto GenerateCells = [&](const Real3& xyz) {
+    Cell* cell = new Cell(xyz);
+    cell->SetDiameter(0.333);
+    cell->SetMass(1.0);
+    cell->AddBehavior(new Secretion("GF", 1.e-3));
+    return cell;
+  };
 
-  // create 2 biochemical cues
-  dg__ID2Name[0] = "O2";
-  dg__ID2Name[1] = "GF";
-  ModelInitializer::DefineSubstance(0, dg__ID2Name[0], 0.0, 0.0);
-  ModelInitializer::DefineSubstance(1, dg__ID2Name[1], 0.0, 0.0);
+  Grid_ID2Name[0] = "O2";
+  Grid_ID2Name[1] = "GF";
 
-  // output all diffusion grid-data in a VTU-formatted
-  // file for Paraview
-  diffusiongrid_4paraview(rm);
+  for (size_t K=1; K<N; K++) {
+    const real_t Z = S_min + DS * K;
+    for (size_t J=1; J<N; J++) {
+      const real_t Y = S_min + DS * J;
+      for (size_t I=1; I<N; I++) {
+        const real_t X = S_min + DS * I;
+        Grid_XYZ.push_back( {X, Y, Z} );
+      }
+    }
+  }
+
+  ModelInitializer::DefineSubstance(0, Grid_ID2Name[0], 0., 0., N);
+  ModelInitializer::DefineSubstance(1, Grid_ID2Name[1], 0.1, 0., N);
+  ModelInitializer::CreateAgentsRandom(-10.0, +10.0, 2000, GenerateCells);
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
