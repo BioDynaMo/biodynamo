@@ -16,6 +16,7 @@
 
 #include "biodynamo.h"
 
+static std::map<size_t, std::string> dg__ID2Name;
 namespace bdm {
 
 inline void cells_4paraview(ResourceManager* rm, int time =0) {
@@ -89,6 +90,10 @@ inline void cells_4paraview(ResourceManager* rm, int time =0) {
   // completed exporting to the VTU file
 }
 
+inline void diffusiongrid_4paraview(ResourceManager* rm, int time =0) {
+
+}
+
 inline int Simulate(int argc, const char** argv) {
   Simulation simulation(argc, argv);
 
@@ -109,6 +114,16 @@ inline int Simulate(int argc, const char** argv) {
   // output all agent-data in a VTU-formatted
   // file for Paraview
   cells_4paraview(rm);
+
+  // create 2 biochemical cues
+  dg__ID2Name[0] = "O2";
+  dg__ID2Name[1] = "GF";
+  ModelInitializer::DefineSubstance(0, dg__ID2Name[0], 0.0, 0.0);
+  ModelInitializer::DefineSubstance(1, dg__ID2Name[1], 0.0, 0.0);
+
+  // output all diffusion grid-data in a VTU-formatted
+  // file for Paraview
+  diffusiongrid_4paraview(rm);
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
