@@ -17,7 +17,25 @@
 #include "biodynamo.h"
 
 static std::map<size_t, std::string> dg__ID2Name;
+static std::vector<bdm::Double3> dg__XYZ;
+
 namespace bdm {
+
+inline void set_global_parameters(Param* p)
+{
+  // user-defined BioDynaMo parameters adopted for the simulation
+  p->simulation_time_step = 1.0;
+  p->bound_space = Param::BoundSpaceMode::kClosed;
+  p->min_bound = -10.0;
+  p->max_bound = +10.0;
+  //p->detect_static_agents = true;
+  //p->calculate_gradients = false;
+  //p->diffusion_method = "euler";
+  //p->diffusion_boundary_condition = "open";
+  p->show_simulation_step = false;
+  p->export_visualization = false;
+  p->remove_output_dir_contents = false;
+}
 
 inline void cells_4paraview(ResourceManager* rm, int time =0) {
   // iterate to calculate the total number of cells (agents)
@@ -95,7 +113,7 @@ inline void diffusiongrid_4paraview(ResourceManager* rm, int time =0) {
 }
 
 inline int Simulate(int argc, const char** argv) {
-  Simulation simulation(argc, argv);
+  Simulation simulation("custom_paraview", set_global_parameters);
 
   // access the simulation resource manager
   auto* rm = simulation.GetResourceManager();
