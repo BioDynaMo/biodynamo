@@ -41,4 +41,6 @@ Real3 Cell::TransformCoordinatesGlobalToPolar(const Real3& pos) const {
           std::atan2(local_cartesian[1], local_cartesian[0])};
 }
 
+real_t Cell::GetRadius() const { return diameter_ / 2.; }
+
 }  // namespace bdm

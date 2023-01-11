@@ -169,5 +169,12 @@ TEST(CellTest, DivideVolumeRatioAxis) {
 TEST(CellTest, IO) { RunIOTest(); }
 #endif  // USE_DICT
 
+TEST(CellTest, GetRadius) {
+  Simulation simulation(TEST_NAME);
+  Cell cell;
+  cell.SetDiameter(8.);
+  EXPECT_NEAR(4., cell.GetRadius(), abs_error<real_t>::value);
+}
+
 }  // namespace cell_test_internal
 }  // namespace bdm

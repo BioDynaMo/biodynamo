@@ -181,6 +181,9 @@ class Cell : public Agent {
 
   real_t GetDiameter() const override { return diameter_; }
 
+  /// Returns the radius.
+  real_t GetRadius() const;
+
   real_t GetMass() const { return density_ * volume_; }
 
   real_t GetDensity() const { return density_; }
