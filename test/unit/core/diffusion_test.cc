@@ -509,6 +509,9 @@ TEST(DiffusionTest, IOTest) {
   dgrid->SetLowerThreshold(-42);
   dgrid->SetDecayConstant(0.01);
 
+  dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(13));
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
+
   // write to root file
   WritePersistentObject(ROOTFILE, "dgrid", *dgrid, "new");
 
@@ -541,6 +544,9 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[2]);
   EXPECT_EQ(1000u, restored_dgrid->GetNumBoxes());
   EXPECT_EQ(10u, restored_dgrid->GetResolution());
+  EXPECT_EQ(BoundaryConditionType::kDirichlet,
+            restored_dgrid->GetBoundaryConditionType());
+  EXPECT_EQ(13.0, restored_dgrid->GetBoundaryCondition()->evaluate(0, 0, 0, 0));
 
   remove(ROOTFILE);
   delete dgrid;
@@ -841,12 +847,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   dgrid->Initialize();
   dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
 
-  struct SetMyBoundaries {
-    SetMyBoundaries() {}
-    real_t operator()(size_t x, size_t y, size_t z, size_t n) { return 1.0; }
-  };
-
-  dgrid->SetBoundaryCondition(SetMyBoundaries());
+  dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(1.0));
   dgrid->SetUpperThreshold(1e15);
   rm->AddContinuum(dgrid);
 
@@ -888,18 +889,13 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
   sources.push_back({50, 50, 50});
   sources.push_back({-50, -50, -50});
 
-  struct SetMyBoundaries {
-    SetMyBoundaries() {}
-    double operator()(size_t x, size_t y, size_t z, size_t n) { return 0.0; }
-  };
-
   // Test multiple positions for the source
   for (size_t s = 0; s < sources.size(); s++) {
     auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
     dgrid->Initialize();
     dgrid->ChangeConcentrationBy(sources[s], init);
     dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
-    dgrid->SetBoundaryCondition(SetMyBoundaries());
+    dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(0.0));
     dgrid->SetUpperThreshold(1e15);
     rm->AddContinuum(dgrid);
 
@@ -938,17 +934,12 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
   double diff_coef = 1.0;   // diffusion
   int res = 20;             // some resolution
 
-  /// Normal vector typically points outwards, hence -1.0 adds concentration to
-  /// the volume. This test tests if we add concentration to the volume.
-  struct SetMyBoundaries {
-    SetMyBoundaries() {}
-    double operator()(size_t x, size_t y, size_t z, size_t n) { return -1.0; }
-  };
-
   auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
   dgrid->Initialize();
   dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
-  dgrid->SetBoundaryCondition(SetMyBoundaries());
+  /// Normal vector typically points outwards, hence -1.0 adds concentration to
+  /// the volume. This test tests if we add concentration to the volume.
+  dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(-1.0));
   dgrid->SetUpperThreshold(1e15);
   rm->AddContinuum(dgrid);
 

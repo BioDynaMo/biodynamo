@@ -12,6 +12,8 @@
     <class name="bdm::Continuum" />
     <class name="bdm::EulerGrid" />
     <class name="bdm::EulerDepletionGrid" />
+    <class name="bdm::BoundaryCondition" />
+    <class name="bdm::ConstantBoundaryCondition" />
     <class name="bdm::RungeKuttaGrid" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />

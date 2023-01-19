@@ -35,6 +35,36 @@ enum class BoundaryConditionType { kDirichlet, kNeumann, kOpenBoundaries };
 
 enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
 
+class BoundaryCondition {
+ public:
+  BoundaryCondition() = default;
+  explicit BoundaryCondition(TRootIOCtor* p) {}
+  virtual ~BoundaryCondition() = default;
+
+  virtual double evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const {
+    return 0.0;
+  }
+
+  BDM_CLASS_DEF(BoundaryCondition, 1);
+};
+
+class ConstantBoundaryCondition : public BoundaryCondition {
+ public:
+  ConstantBoundaryCondition() = default;
+  explicit ConstantBoundaryCondition(TRootIOCtor* p) : BoundaryCondition(p) {}
+  ConstantBoundaryCondition(double value) : value_(value) {}
+  ~ConstantBoundaryCondition() override = default;
+
+  double evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const override {
+    return value_;
+  }
+
+ private:
+  double value_ = 0.0;
+
+  BDM_CLASS_DEF_OVERRIDE(ConstantBoundaryCondition, 1);
+};
+
 class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
@@ -47,9 +77,10 @@ class DiffusionGrid : public ScalarField {
     // Compatibility with new abstract interface
     SetContinuumId(substance_id);
     SetContinuumName(substance_name);
+    boundary_condition_ = new BoundaryCondition();
   }
 
-  ~DiffusionGrid() override = default;
+  ~DiffusionGrid() override { delete boundary_condition_; };
 
   void Initialize() override;
 
@@ -217,16 +248,27 @@ class DiffusionGrid : public ScalarField {
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
-  /// ToDo: document this function
-  template <typename F>
-  void SetBoundaryCondition(F function) {
-    boundary_conditions_ = function;
+  /// @brief Set the boundary condition
+  /// @param bc object that implements the boundary condition, see for example
+  /// `ConstantBoundaryCondition`
+  void SetBoundaryCondition(BoundaryCondition* bc) {
+    delete boundary_condition_;
+    boundary_condition_ = bc;
+  }
+
+  /// @brief  Returns the boundary condition
+  /// @return const Pointer to the boundary condition
+  BoundaryCondition* GetBoundaryCondition() const {
+    return boundary_condition_;
   }
 
   /// Sets boundary condition type
   void SetBoundaryConditionType(BoundaryConditionType bc_type) {
     bc_type_ = bc_type;
   }
+
+  /// Returns the BoundaryConditionType, see `BoundaryConditionType`
+  BoundaryConditionType GetBoundaryConditionType() const { return bc_type_; }
 
   /// Print information about the Diffusion Grid
   void PrintInfo(std::ostream& out = std::cout);
@@ -305,9 +347,8 @@ class DiffusionGrid : public ScalarField {
   bool init_gradient_ = false;
   /// Type of boundary conditions
   BoundaryConditionType bc_type_ = BoundaryConditionType::kDirichlet;
-  /// Function that updates boundary conditions.
-  /// ToDo: document this function, e.g. what are the parameters (size_t)
-  std::function<double(size_t, size_t, size_t, size_t)> boundary_conditions_;
+  /// Object that implements the boundary conditions.
+  BoundaryCondition* boundary_condition_ = nullptr;
   /// Flag to indicate if the grid is initialized
   bool initialized_ = false;
   /// Flag to indicate if we want to print information about the grid after
