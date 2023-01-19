@@ -1,3 +1,3 @@
 # Tumor Concept
 
-https://biodynamo.github.io/user/jean_tuto/
+https://biodynamo.org/docs/userguide/tumor_concept/

@@ -66,6 +66,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **kcov**: Code coverage testing tool (only on Ubuntu 20.04)
   * **libxml2-dev**: Development files for the GNOME XML library
   * **libgsl-dev**: GNU Scientific Library (GSL) -- development package  
+  * **libgit2-dev**: C library for git 
 
 ### Installation
 
@@ -104,7 +105,7 @@ pyenv shell 3.9.1
 python -m pip install markupsafe==2.0.1 jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6
 sudo apt-get install -y valgrind \
   clang-format clang-tidy \
-  doxygen graphviz libxml2-dev libgsl-dev
+  doxygen graphviz libxml2-dev libgsl-dev libgit2-dev
 # on Ubuntu 20.04
 sudo apt-get install -y kcov
 ```
@@ -235,6 +236,7 @@ Requirements to build on macOS are:
  * **graphviz**: Graph Visualization Software used optionally by Doxygen
  * **kcov**: Code coverage testing tool
  * **gsl**: GNU Scientific Library (GSL) -- development package  
+ * **libgit2**: C library for git 
 
 ### Installation
 
@@ -248,6 +250,6 @@ brew install libomp open-mpi python@3.9 wget cmake ninja bash tbb qt@5
 #### Optional Packages
 
 ```bash
-brew install doxygen graphviz kcov gsl
+brew install doxygen graphviz kcov gsl libgit2
 python3 -m pip install markupsafe==2.0.1 nbformat jupyter metakernel jupyterlab jinja2==3.0
 ```

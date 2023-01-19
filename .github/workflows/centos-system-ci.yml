@@ -122,6 +122,7 @@ jobs:
           -Dbenchmark=ON \
           -Dsbml=OFF \
           -Dnuma=OFF \
+          -Dlibgit2=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
         cmake --build build --config Release

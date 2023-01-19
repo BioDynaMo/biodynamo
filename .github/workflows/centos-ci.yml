@@ -87,6 +87,7 @@ jobs:
         cmake -G Ninja \
           -Dparaview=ON \
           -Dbenchmark=ON \
+          -Dlibgit2=ON \
           -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -B build
