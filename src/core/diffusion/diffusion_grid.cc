@@ -38,8 +38,9 @@ void DiffusionGrid::Initialize() {
       resolution_ == 1 ? 2 : resolution_;  // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
                 static_cast<real_t>(adjusted_res);
-  // TODO(ahmad): parametrize the minimum box_length
-  if (box_length_ <= 1e-15) {
+
+  // Check if box length is not too small
+  if (box_length_ <= 1e-13) {
     Log::Fatal("DiffusionGrid::Initialize",
                "The box length was found to be (close to) zero. Please check "
                "the parameters for substance '",
