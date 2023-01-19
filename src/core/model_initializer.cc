@@ -48,8 +48,6 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
           "ModelInitializer::DefineSubstance",
           "RungeKuttaGrid does not support a decay constant. Using 0.");
     }
-    dgrid = new RungeKuttaGrid(substance_id, substance_name, diffusion_coeff,
-                               resolution);
     if (binding_substances.size() > 0) {
       Log::Warning("ModelInitializer::DefineSubstance",
                    "RungeKuttaGrid does not support depletion. Depleting "
