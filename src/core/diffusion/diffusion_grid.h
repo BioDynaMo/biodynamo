@@ -31,7 +31,7 @@
 namespace bdm {
 
 /// Available boundary conditions
-enum BoundaryConditionType { kDirichlet, kNeumann, kOpenBoundaries };
+enum class BoundaryConditionType { kDirichlet, kNeumann, kOpenBoundaries };
 
 enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
 
@@ -304,7 +304,7 @@ class DiffusionGrid : public ScalarField {
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
   /// Type of boundary conditions
-  BoundaryConditionType bc_type_ = kDirichlet;
+  BoundaryConditionType bc_type_ = BoundaryConditionType::kDirichlet;
   /// Function that updates boundary conditions.
   /// ToDo: document this function, e.g. what are the parameters (size_t)
   std::function<double(size_t, size_t, size_t, size_t)> boundary_conditions_;

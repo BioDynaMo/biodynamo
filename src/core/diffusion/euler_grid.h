@@ -48,10 +48,10 @@ class EulerGrid : public DiffusionGrid {
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                       resolution) {}
 
-  virtual void DiffuseWithClosedEdge(real_t dt) override;
-  virtual void DiffuseWithOpenEdge(real_t dt) override;
-  virtual void DiffuseWithDirichlet(real_t dt) override;
-  virtual void DiffuseWithNeumann(real_t dt) override;
+  void DiffuseWithClosedEdge(real_t dt) override;
+  void DiffuseWithOpenEdge(real_t dt) override;
+  void DiffuseWithDirichlet(real_t dt) override;
+  void DiffuseWithNeumann(real_t dt) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(EulerGrid, 1);

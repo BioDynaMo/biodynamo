@@ -390,15 +390,14 @@ struct ModelInitializer {
   /// depleting substances
   /// @param[in]  binding_substances    The depleting substances
   ///
-  static void DefineSubstance(size_t substance_id,
-                              const std::string& substance_name,
-                              real_t diffusion_coeff, real_t decay_constant,
-                              int resolution = 10,
-                              std::vector<real_t> binding_coefficients = {},
-                              std::vector<int> binding_substances = {});
+  static void DefineSubstance(
+      int substance_id, const std::string& substance_name,
+      real_t diffusion_coeff, real_t decay_constant, int resolution = 10,
+      const std::vector<real_t>& binding_coefficients = {},
+      const std::vector<int>& binding_substances = {});
 
   template <typename F>
-  static void InitializeSubstance(size_t substance_id, F function) {
+  static void InitializeSubstance(int substance_id, F function) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
@@ -406,10 +405,10 @@ struct ModelInitializer {
   }
 
   template <typename F>
-  static void AddBoundaryConditions(size_t substance_id,
+  static void AddBoundaryConditions(int substance_id,
                                     BoundaryConditionType bc_type, F function) {
     auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
+    const auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->SetBoundaryConditionType(bc_type);
     diffusion_grid->SetBoundaryCondition(function);

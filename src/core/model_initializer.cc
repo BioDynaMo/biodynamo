@@ -21,18 +21,17 @@
 
 namespace bdm {
 
-void ModelInitializer::DefineSubstance(size_t substance_id,
-                                       const std::string& substance_name,
-                                       real_t diffusion_coeff,
-                                       real_t decay_constant, int resolution,
-                                       std::vector<real_t> binding_coefficients,
-                                       std::vector<int> binding_substances) {
+void ModelInitializer::DefineSubstance(
+    int substance_id, const std::string& substance_name, real_t diffusion_coeff,
+    real_t decay_constant, int resolution,
+    const std::vector<real_t>& binding_coefficients,
+    const std::vector<int>& binding_substances) {
   auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();
   DiffusionGrid* dgrid = nullptr;
   if (param->diffusion_method == "euler") {
-    if (binding_substances.size() > 0) {
+    if (!binding_substances.empty()) {
       if (binding_coefficients.size() != binding_substances.size()) {
         Log::Fatal("ModelInitializer::DefineSubstance",
                    "The binding coefficients and substances have different",
@@ -52,7 +51,7 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
           "ModelInitializer::DefineSubstance",
           "RungeKuttaGrid does not support a decay constant. Using 0.");
     }
-    if (binding_substances.size() > 0) {
+    if (!binding_substances.empty()) {
       Log::Warning("ModelInitializer::DefineSubstance",
                    "RungeKuttaGrid does not support depletion. Depleting "
                    "substances removed.");

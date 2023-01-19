@@ -26,7 +26,7 @@ void EulerGrid::DiffuseWithClosedEdge(real_t dt) {
   const real_t ibl2 = 1 / (box_length_ * box_length_);
   const real_t d = 1 - dc_[0];
 
-#define YBF 16
+  constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
   for (size_t yy = 0; yy < ny; yy += YBF) {
     for (size_t z = 0; z < nz; z++) {
@@ -35,8 +35,12 @@ void EulerGrid::DiffuseWithClosedEdge(real_t dt) {
         ymax = ny;
       }
       for (size_t y = yy; y < ymax; y++) {
-        size_t x = 0;
-        int c, n, s, b, t;
+        size_t x{0};
+        size_t c{0};
+        size_t n{0};
+        size_t s{0};
+        size_t b{0};
+        size_t t{0};
         c = x + y * nx + z * nx * ny;
 #pragma omp simd
         for (x = 1; x < nx - 1; x++) {
@@ -95,7 +99,7 @@ void EulerGrid::DiffuseWithOpenEdge(real_t dt) {
   const real_t d = 1 - dc_[0];
   std::array<int, 4> l;
 
-#define YBF 16
+  constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
   for (size_t yy = 0; yy < ny; yy += YBF) {
     for (size_t z = 0; z < nz; z++) {
@@ -104,8 +108,12 @@ void EulerGrid::DiffuseWithOpenEdge(real_t dt) {
         ymax = ny;
       }
       for (size_t y = yy; y < ymax; y++) {
-        size_t x = 0;
-        int c, n, s, b, t;
+        size_t x{0};
+        size_t c{0};
+        size_t n{0};
+        size_t s{0};
+        size_t b{0};
+        size_t t{0};
         c = x + y * nx + z * nx * ny;
 
         l.fill(1);
@@ -178,7 +186,7 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
   const real_t ibl2 = 1 / (box_length_ * box_length_);
   const real_t d = 1 - dc_[0];
 
-#define YBF 16
+  constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
   for (size_t yy = 0; yy < ny; yy += YBF) {
     for (size_t z = 0; z < nz; z++) {
@@ -187,8 +195,12 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
         ymax = ny;
       }
       for (size_t y = yy; y < ymax; y++) {
-        size_t x = 0;
-        int c, n, s, b, t;
+        size_t x{0};
+        size_t c{0};
+        size_t n{0};
+        size_t s{0};
+        size_t b{0};
+        size_t t{0};
         c = x + y * nx + z * nx * ny;
 #pragma omp simd
         for (x = 0; x < nx; x++) {
@@ -224,7 +236,7 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
   const real_t ibl2 = 1 / (box_length_ * box_length_);
   const real_t d = 1 - dc_[0];
 
-#define YBF 16
+  constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
   for (size_t yy = 0; yy < ny; yy += YBF) {
     for (size_t z = 0; z < nz; z++) {
@@ -233,8 +245,12 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
         ymax = ny;
       }
       for (size_t y = yy; y < ymax; y++) {
-        size_t x = 0;
-        int c, n, s, b, t;
+        size_t x{0};
+        size_t c{0};
+        size_t n{0};
+        size_t s{0};
+        size_t b{0};
+        size_t t{0};
         c = x + y * nx + z * nx * ny;
 #pragma omp simd
         for (x = 0; x < nx; x++) {

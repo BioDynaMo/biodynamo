@@ -839,7 +839,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
 
   dgrid->Initialize();
-  dgrid->SetBoundaryConditionType(kDirichlet);
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
 
   struct SetMyBoundaries {
     SetMyBoundaries() {}
@@ -898,7 +898,7 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
     auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
     dgrid->Initialize();
     dgrid->ChangeConcentrationBy(sources[s], init);
-    dgrid->SetBoundaryConditionType(kNeumann);
+    dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
     dgrid->SetBoundaryCondition(SetMyBoundaries());
     dgrid->SetUpperThreshold(1e15);
     rm->AddContinuum(dgrid);
@@ -947,7 +947,7 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
 
   auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
   dgrid->Initialize();
-  dgrid->SetBoundaryConditionType(kNeumann);
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
   dgrid->SetBoundaryCondition(SetMyBoundaries());
   dgrid->SetUpperThreshold(1e15);
   rm->AddContinuum(dgrid);

@@ -384,8 +384,10 @@ std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
            "You tried to get the box coordinates outside the bounds of the "
            "diffusion grid!");
 #endif  // NDEBUG
-    // Get box coords
-    box_coord[i] = (floor(position[i]) - grid_dimensions_[0]) / box_length_;
+    // Get box coords (Note: conversion to uint32_t should be save for typical
+    // grid sizes)
+    box_coord[i] = static_cast<uint32_t>(
+        (floor(position[i]) - grid_dimensions_[0]) / box_length_);
   }
 
   return box_coord;
