@@ -164,8 +164,7 @@ class DiffusionGrid : public ScalarField {
 
   real_t GetBoxLength() const { return box_length_; }
 
-  [[deprecated("Use GetContinuumId() instead.")]] size_t GetSubstanceId()
-      const {
+  [[deprecated("Use GetContinuumId() instead.")]] int GetSubstanceId() const {
     return GetContinuumId();
   }
 
@@ -208,18 +207,19 @@ class DiffusionGrid : public ScalarField {
     initializers_.push_back(function);
   }
 
-  // return true if substance concentration and gradient don't evolve over time
+  /// Return if a substance is stationary, e.g. (mu == 0 && dc == 0)
   bool IsFixedSubstance() {
     return (mu_ == 0 && dc_[1] == 0 && dc_[2] == 0 && dc_[3] == 0 &&
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
+  /// ToDo: document this function
   template <typename F>
   void SetBoundaryCondition(F function) {
     boundary_conditions_ = function;
   }
 
-  // Sets boundary condition type
+  /// Sets boundary condition type
   void SetBoundaryConditionType(BoundaryConditionType bc_type) {
     bc_type_ = bc_type;
   }
@@ -301,7 +301,8 @@ class DiffusionGrid : public ScalarField {
   bool init_gradient_ = false;
   /// Type of boundary conditions
   BoundaryConditionType bc_type_ = kDirichlet;
-  /// Function that updates boundary conditions
+  /// Function that updates boundary conditions.
+  /// ToDo: document this function, e.g. what are the parameters (size_t)
   std::function<double(size_t, size_t, size_t, size_t)> boundary_conditions_;
   /// Flag to indicate if the grid is initialized
   bool initialized_ = false;
