@@ -33,8 +33,12 @@ void ModelInitializer::DefineSubstance(size_t substance_id,
   DiffusionGrid* dgrid = nullptr;
   if (param->diffusion_method == "euler") {
     if (binding_substances.size() > 0) {
-      assert((binding_coefficients.size() == binding_substances.size()) &&
-             "The binding coefficients and substances have different size");
+      if (binding_coefficients.size() != binding_substances.size()) {
+        Log::Fatal("ModelInitializer::DefineSubstance",
+                   "The binding coefficients and substances have different",
+                   " sizes (", binding_coefficients.size(), " vs ",
+                   binding_substances.size(), ").");
+      }
       dgrid = new EulerDepletionGrid(
           substance_id, substance_name, diffusion_coeff, decay_constant,
           resolution, binding_coefficients, binding_substances);
