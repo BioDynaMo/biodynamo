@@ -466,9 +466,8 @@ BoundaryCondition* DiffusionGrid::GetBoundaryCondition() const {
 void DiffusionGrid::SetBoundaryConditionType(BoundaryConditionType bc_type) {
   auto previous_bc = BoundaryTypeToString(bc_type_);
   auto new_bc = BoundaryTypeToString(bc_type);
-  Log::Warning("DiffusionGrid::SetBoundaryConditionType",
-               "Changing boundary condition from ", previous_bc, " to ",
-               new_bc);
+  Log::Info("DiffusionGrid::SetBoundaryConditionType",
+            "Changing boundary condition from ", previous_bc, " to ", new_bc);
   bc_type_ = bc_type;
 }
 
