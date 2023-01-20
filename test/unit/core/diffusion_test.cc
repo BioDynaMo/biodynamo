@@ -509,7 +509,8 @@ TEST(DiffusionTest, IOTest) {
   dgrid->SetLowerThreshold(-42);
   dgrid->SetDecayConstant(0.01);
 
-  dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(13));
+  dgrid->SetBoundaryCondition(
+      std::make_unique<ConstantBoundaryCondition>(13.0));
   dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
 
   // write to root file
@@ -847,7 +848,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   dgrid->Initialize();
   dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
 
-  dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(1.0));
+  dgrid->SetBoundaryCondition(std::make_unique<ConstantBoundaryCondition>(1.0));
   dgrid->SetUpperThreshold(1e15);
   rm->AddContinuum(dgrid);
 
@@ -895,7 +896,8 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
     dgrid->Initialize();
     dgrid->ChangeConcentrationBy(sources[s], init);
     dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
-    dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(0.0));
+    dgrid->SetBoundaryCondition(
+        std::make_unique<ConstantBoundaryCondition>(0.0));
     dgrid->SetUpperThreshold(1e15);
     rm->AddContinuum(dgrid);
 
@@ -939,7 +941,8 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
   dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
   /// Normal vector typically points outwards, hence -1.0 adds concentration to
   /// the volume. This test tests if we add concentration to the volume.
-  dgrid->SetBoundaryCondition(new ConstantBoundaryCondition(-1.0));
+  dgrid->SetBoundaryCondition(
+      std::make_unique<ConstantBoundaryCondition>(-1.0));
   dgrid->SetUpperThreshold(1e15);
   rm->AddContinuum(dgrid);
 

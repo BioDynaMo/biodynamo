@@ -17,6 +17,7 @@
 
 #include <array>
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,7 +39,7 @@ enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
 class BoundaryCondition {
  public:
   BoundaryCondition() = default;
-  explicit BoundaryCondition(TRootIOCtor* p) {}
+  explicit BoundaryCondition(const TRootIOCtor*) {}
   virtual ~BoundaryCondition() = default;
 
   virtual double evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const {
@@ -49,11 +50,10 @@ class BoundaryCondition {
 };
 
 class ConstantBoundaryCondition : public BoundaryCondition {
+  using BoundaryCondition::BoundaryCondition;
+
  public:
-  ConstantBoundaryCondition() = default;
-  explicit ConstantBoundaryCondition(TRootIOCtor* p) : BoundaryCondition(p) {}
-  ConstantBoundaryCondition(double value) : value_(value) {}
-  ~ConstantBoundaryCondition() override = default;
+  explicit ConstantBoundaryCondition(double value) : value_(value) {}
 
   double evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const override {
     return value_;
@@ -68,19 +68,22 @@ class ConstantBoundaryCondition : public BoundaryCondition {
 class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
-  explicit DiffusionGrid(TRootIOCtor* p) {}
+  explicit DiffusionGrid(TRootIOCtor*) {}
   DiffusionGrid(int substance_id, const std::string& substance_name, real_t dc,
                 real_t mu, int resolution = 10)
       : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
         mu_(mu),
-        resolution_(resolution) {
+        resolution_(resolution),
+        boundary_condition_(std::make_unique<BoundaryCondition>()) {
     // Compatibility with new abstract interface
     SetContinuumId(substance_id);
     SetContinuumName(substance_name);
-    boundary_condition_ = new BoundaryCondition();
   }
-
-  ~DiffusionGrid() override { delete boundary_condition_; };
+  ~DiffusionGrid() = default;
+  DiffusionGrid(const DiffusionGrid&) = delete;             // copy constructor
+  DiffusionGrid& operator=(const DiffusionGrid&) = delete;  // copy assignment
+  DiffusionGrid(DiffusionGrid&&) = delete;                  // move constructor
+  DiffusionGrid& operator=(DiffusionGrid&&) = delete;       // move assignment
 
   void Initialize() override;
 
@@ -248,18 +251,17 @@ class DiffusionGrid : public ScalarField {
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
 
-  /// @brief Set the boundary condition
+  /// @brief Set the boundary condition, takes ownership of the object.
   /// @param bc object that implements the boundary condition, see for example
   /// `ConstantBoundaryCondition`
-  void SetBoundaryCondition(BoundaryCondition* bc) {
-    delete boundary_condition_;
-    boundary_condition_ = bc;
+  void SetBoundaryCondition(std::unique_ptr<BoundaryCondition> bc) {
+    boundary_condition_ = std::move(bc);
   }
 
-  /// @brief  Returns the boundary condition
+  /// @brief  Returns the boundary condition. Does not transfer ownership.
   /// @return const Pointer to the boundary condition
   BoundaryCondition* GetBoundaryCondition() const {
-    return boundary_condition_;
+    return boundary_condition_.get();
   }
 
   /// Sets boundary condition type
@@ -348,7 +350,7 @@ class DiffusionGrid : public ScalarField {
   /// Type of boundary conditions
   BoundaryConditionType bc_type_ = BoundaryConditionType::kDirichlet;
   /// Object that implements the boundary conditions.
-  BoundaryCondition* boundary_condition_ = nullptr;
+  std::unique_ptr<BoundaryCondition> boundary_condition_ = nullptr;
   /// Flag to indicate if the grid is initialized
   bool initialized_ = false;
   /// Flag to indicate if we want to print information about the grid after
