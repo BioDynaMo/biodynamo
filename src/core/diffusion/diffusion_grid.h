@@ -68,7 +68,7 @@ class ConstantBoundaryCondition : public BoundaryCondition {
 class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
-  explicit DiffusionGrid(TRootIOCtor*) {}
+  explicit DiffusionGrid(const TRootIOCtor*) {}
   DiffusionGrid(int substance_id, const std::string& substance_name, real_t dc,
                 real_t mu, int resolution = 10)
       : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
@@ -79,7 +79,7 @@ class DiffusionGrid : public ScalarField {
     SetContinuumId(substance_id);
     SetContinuumName(substance_name);
   }
-  ~DiffusionGrid() = default;
+  ~DiffusionGrid() override = default;
   DiffusionGrid(const DiffusionGrid&) = delete;             // copy constructor
   DiffusionGrid& operator=(const DiffusionGrid&) = delete;  // copy assignment
   DiffusionGrid(DiffusionGrid&&) = delete;                  // move constructor
