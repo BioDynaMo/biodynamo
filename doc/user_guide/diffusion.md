@@ -140,6 +140,9 @@ Then click the Play button at the top of the screen to run the simulation visual
   Your browser does not support the video tag.
 </video>
 
+### ToDo (BCs)
+Add description of boundaries and how to use them.
+
 ### Diffusion parameter constraints
 The partial differential equations that describe diffusion are solved 
 numerically. This is done using a forward in time and central in space finite difference method. 

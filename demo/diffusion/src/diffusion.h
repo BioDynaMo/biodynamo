@@ -36,6 +36,8 @@ inline int Simulate(int argc, const char** argv) {
   // Define the substances that cells may secrete
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
+  // ToDo (BCs): Add boundary conditions
+
   // Create 8 cells in a 2x2x2 grid setup
   auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);

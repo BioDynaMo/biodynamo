@@ -96,13 +96,13 @@ class DiffusionGrid : public ScalarField {
   void Step(real_t dt) override { Diffuse(dt); }
   void Diffuse(real_t dt);
 
-  /// @brief  ToDo Documentation for DiffuseWithClosedEdge.
+  /// @brief  ToDo (BCs) Documentation for DiffuseWithClosedEdge.
   virtual void DiffuseWithClosedEdge(real_t dt) = 0;
-  /// @brief ToDo Documentation for DiffuseWithOpenEdge.
+  /// @brief ToDo (BCs) Documentation for DiffuseWithOpenEdge.
   virtual void DiffuseWithOpenEdge(real_t dt) = 0;
-  /// @brief  ToDo Documentation for DiffuseWithDirichlet.
+  /// @brief  ToDo (BCs) Documentation for DiffuseWithDirichlet.
   virtual void DiffuseWithDirichlet(real_t dt) = 0;
-  /// @brief  ToDo Documentation for DiffuseWithNeumann.
+  /// @brief  ToDo (BCs) Documentation for DiffuseWithNeumann.
   virtual void DiffuseWithNeumann(real_t dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
