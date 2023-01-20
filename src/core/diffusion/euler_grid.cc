@@ -55,30 +55,6 @@ void EulerGrid::DiffuseWithClosedEdge(real_t dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
-          if (z == 1) {
-            c1_[b] = c1_[c];
-          }
-
-          if (z == (nz - 2)) {
-            c1_[t] = c1_[c];
-          }
-
-          if (y == 1) {
-            c1_[n] = c1_[c];
-          }
-
-          if (y == (ny - 2)) {
-            c1_[s] = c1_[c];
-          }
-
-          if (x == 1) {
-            c1_[c - 1] = c1_[c];
-          }
-
-          if (x == (nx - 2)) {
-            c1_[c + 1] = c1_[c];
-          }
-
           c2_[c] = c1_[c] * (1 - mu_ * dt) +
                    (d * dt * ibl2) *
                        (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] + c1_[s] -
