@@ -404,14 +404,19 @@ struct ModelInitializer {
     diffusion_grid->AddInitializer(function);
   }
 
-  template <typename F>
+  /// Sets the boundary condition for the specified substance. Transfers the
+  /// ownership of the boundary condition to the diffusion grid.
+  /// @param[in]  substance_id  The substance identifier
+  /// @param[in]  bc_type       The boundary condition type
+  /// @param[in]  bc            The boundary condition
   static void AddBoundaryConditions(int substance_id,
-                                    BoundaryConditionType bc_type, F function) {
+                                    BoundaryConditionType bc_type,
+                                    std::unique_ptr<BoundaryCondition> bc) {
     auto* sim = Simulation::GetActive();
     const auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->SetBoundaryConditionType(bc_type);
-    diffusion_grid->SetBoundaryCondition(function);
+    diffusion_grid->SetBoundaryCondition(std::move(bc));
   }
 };
 

@@ -42,7 +42,7 @@ class BoundaryCondition {
   explicit BoundaryCondition(const TRootIOCtor*) {}
   virtual ~BoundaryCondition() = default;
 
-  virtual double evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const {
+  virtual real_t evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const {
     return 0.0;
   }
 
@@ -53,14 +53,14 @@ class ConstantBoundaryCondition : public BoundaryCondition {
   using BoundaryCondition::BoundaryCondition;
 
  public:
-  explicit ConstantBoundaryCondition(double value) : value_(value) {}
+  explicit ConstantBoundaryCondition(real_t value) : value_(value) {}
 
-  double evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const override {
+  real_t evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const override {
     return value_;
   }
 
  private:
-  double value_ = 0.0;
+  real_t value_ = 0.0;
 
   BDM_CLASS_DEF_OVERRIDE(ConstantBoundaryCondition, 1);
 };
