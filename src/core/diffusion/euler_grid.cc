@@ -259,7 +259,9 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
-          real_t i_comp = 0, j_comp = 0, k_comp = 0;
+          real_t i_comp{0};
+          real_t j_comp{0};
+          real_t k_comp{0};
 
           if (x == 0) {
             i_comp =
