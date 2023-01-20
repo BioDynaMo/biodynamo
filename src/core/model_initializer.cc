@@ -30,6 +30,10 @@ void ModelInitializer::DefineSubstance(
   auto* param = sim->GetParam();
   auto* rm = sim->GetResourceManager();
   DiffusionGrid* dgrid = nullptr;
+  if (decay_constant < 0.) {
+    Log::Fatal("ModelInitializer::DefineSubstance",
+               "The decay constant must be > 0 (", decay_constant, ").");
+  }
   if (param->diffusion_method == "euler") {
     if (!binding_substances.empty()) {
       if (binding_coefficients.size() != binding_substances.size()) {
@@ -38,6 +42,14 @@ void ModelInitializer::DefineSubstance(
                    " sizes (", binding_coefficients.size(), " vs ",
                    binding_substances.size(), ").");
       }
+      for (auto binding_coeff : binding_coefficients) {
+        if (binding_coeff < 0.) {
+          Log::Fatal("ModelInitializer::DefineSubstance",
+                     "The binding coefficients must be > 0 (", binding_coeff,
+                     ").");
+        }
+      }
+
       dgrid = new EulerDepletionGrid(
           substance_id, substance_name, diffusion_coeff, decay_constant,
           resolution, binding_coefficients, binding_substances);
