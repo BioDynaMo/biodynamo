@@ -20,6 +20,54 @@
 
 namespace bdm {
 
+/// Transforms a BoundaryConditionType to the corresponding string
+std::string BoundaryTypeToString(BoundaryConditionType type) {
+  switch (type) {
+    case BoundaryConditionType::kNeumann:
+      return "Neumann";
+    case BoundaryConditionType::kOpenBoundaries:
+      return "open";
+    case BoundaryConditionType::kClosedBoundaries:
+      return "closed";
+    case BoundaryConditionType::kDirichlet:
+      return "Dirichlet";
+    default:
+      return "unknown";
+  }
+}
+
+/// Transforms a string to the corresponding BoundaryConditionType
+BoundaryConditionType StringToBoundaryType(std::string type) {
+  if (type == "Neumann") {
+    return BoundaryConditionType::kNeumann;
+  } else if (type == "open") {
+    return BoundaryConditionType::kOpenBoundaries;
+  } else if (type == "closed") {
+    return BoundaryConditionType::kClosedBoundaries;
+  } else if (type == "Dirichlet") {
+    return BoundaryConditionType::kDirichlet;
+  } else {
+    Log::Fatal("StringToBoundaryType", "Unknown boundary type: ", type);
+    return BoundaryConditionType::kNeumann;
+  }
+}
+
+DiffusionGrid::DiffusionGrid(int substance_id,
+                             const std::string& substance_name, real_t dc,
+                             real_t mu, int resolution)
+    : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
+      mu_(mu),
+      resolution_(resolution),
+      boundary_condition_(std::make_unique<BoundaryCondition>()) {
+  // Compatibility with new abstract interface
+  SetContinuumId(substance_id);
+  SetContinuumName(substance_name);
+
+  // Get the default boundary type (set via parameter file)
+  auto* param = Simulation::GetActive()->GetParam();
+  bc_type_ = StringToBoundaryType(param->diffusion_boundary_condition);
+}
+
 void DiffusionGrid::Initialize() {
   if (resolution_ == 0) {
     Log::Fatal("DiffusionGrid::Initialize",
@@ -77,13 +125,13 @@ void DiffusionGrid::Diffuse(real_t dt) {
   ParametersCheck(dt);
 
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->diffusion_boundary_condition == "closed") {
+  if (bc_type_ == BoundaryConditionType::kClosedBoundaries) {
     DiffuseWithClosedEdge(dt);
-  } else if (param->diffusion_boundary_condition == "open") {
+  } else if (bc_type_ == BoundaryConditionType::kOpenBoundaries) {
     DiffuseWithOpenEdge(dt);
-  } else if (param->diffusion_boundary_condition == "Dirichlet") {
+  } else if (bc_type_ == BoundaryConditionType::kDirichlet) {
     DiffuseWithDirichlet(dt);
-  } else if (param->diffusion_boundary_condition == "Neumann") {
+  } else if (bc_type_ == BoundaryConditionType::kNeumann) {
     DiffuseWithNeumann(dt);
   } else {
     Log::Error(
@@ -444,6 +492,7 @@ void DiffusionGrid::PrintInfo(std::ostream& out) {
   out << "    resolution : " << resolution << " x " << resolution << " x "
       << resolution << "\n";
   out << "    num boxes  : " << num_boxes << "\n";
+  out << "    boundary   : " << BoundaryTypeToString(bc_type_) << "\n";
 };
 
 void DiffusionGrid::ParametersCheck(real_t dt) {

@@ -32,7 +32,12 @@
 namespace bdm {
 
 /// Available boundary conditions
-enum class BoundaryConditionType { kDirichlet, kNeumann, kOpenBoundaries };
+enum class BoundaryConditionType {
+  kDirichlet,
+  kNeumann,
+  kOpenBoundaries,
+  kClosedBoundaries
+};
 
 enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
 
@@ -70,15 +75,7 @@ class DiffusionGrid : public ScalarField {
   DiffusionGrid() = default;
   explicit DiffusionGrid(const TRootIOCtor*) {}
   DiffusionGrid(int substance_id, const std::string& substance_name, real_t dc,
-                real_t mu, int resolution = 10)
-      : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
-        mu_(mu),
-        resolution_(resolution),
-        boundary_condition_(std::make_unique<BoundaryCondition>()) {
-    // Compatibility with new abstract interface
-    SetContinuumId(substance_id);
-    SetContinuumName(substance_name);
-  }
+                real_t mu, int resolution = 10);
   ~DiffusionGrid() override = default;
   DiffusionGrid(const DiffusionGrid&) = delete;             // copy constructor
   DiffusionGrid& operator=(const DiffusionGrid&) = delete;  // copy assignment
@@ -96,9 +93,7 @@ class DiffusionGrid : public ScalarField {
   void Step(real_t dt) override { Diffuse(dt); }
   void Diffuse(real_t dt);
 
-  /// @brief  ToDo (BCs) Documentation for DiffuseWithClosedEdge.
   virtual void DiffuseWithClosedEdge(real_t dt) = 0;
-  /// @brief ToDo (BCs) Documentation for DiffuseWithOpenEdge.
   virtual void DiffuseWithOpenEdge(real_t dt) = 0;
   /// @brief  ToDo (BCs) Documentation for DiffuseWithDirichlet.
   virtual void DiffuseWithDirichlet(real_t dt) = 0;

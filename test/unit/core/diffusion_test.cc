@@ -1262,6 +1262,7 @@ TEST(DiffusionTest, PrintInfoAfterInititialization) {
   EXPECT_TRUE(buffer.str().find("domain     : [-3, 4]") != std::string::npos);
   EXPECT_TRUE(buffer.str().find("bounds     : -5 < c < 5") !=
               std::string::npos);
+  EXPECT_TRUE(buffer.str().find("boundary   : Neumann") != std::string::npos);
 }
 
 #ifdef USE_PARAVIEW

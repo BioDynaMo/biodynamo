@@ -235,13 +235,13 @@ struct Param {
   ///     max_bound = 100
   real_t max_bound = 100;
 
-  /// Define the boundary condition of the diffusion grid [open, closed]\n
-  /// Default value: `"open"`\n
-  /// TOML config file:
+  /// Define the boundary condition of the diffusion grid [open, closed,
+  /// Neumann, Dirichlet]\n
+  /// Default value: `"Neumann"`\n TOML config file:
   ///
   ///     [simulation]
-  ///     diffusion_boundary_condition = "open"
-  std::string diffusion_boundary_condition = "open";
+  ///     diffusion_boundary_condition = "Neumann"
+  std::string diffusion_boundary_condition = "Neumann";
 
   /// A string for determining diffusion type within the simulation space.
   /// current inputs include "euler" and "runge-kutta".
