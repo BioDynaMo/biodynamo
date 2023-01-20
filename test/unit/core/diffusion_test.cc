@@ -547,7 +547,7 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(10u, restored_dgrid->GetResolution());
   EXPECT_EQ(BoundaryConditionType::kDirichlet,
             restored_dgrid->GetBoundaryConditionType());
-  EXPECT_EQ(13.0, restored_dgrid->GetBoundaryCondition()->evaluate(0, 0, 0, 0));
+  EXPECT_EQ(13.0, restored_dgrid->GetBoundaryCondition()->Evaluate(0, 0, 0, 0));
 
   remove(ROOTFILE);
   delete dgrid;

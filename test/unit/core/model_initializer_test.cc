@@ -80,7 +80,7 @@ void VerifyDiffusionGrid(Simulation* sim, uint64_t substance_id,
 
   // Check the boundary values
   auto* my_boudary = dg->GetBoundaryCondition();
-  auto my_boundary_value = my_boudary->evaluate(0, 0, 0, 0);
+  auto my_boundary_value = my_boudary->Evaluate(0, 0, 0, 0);
   EXPECT_FLOAT_EQ(boundary_value, my_boundary_value);
 }
 
