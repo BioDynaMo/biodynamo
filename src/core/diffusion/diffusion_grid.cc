@@ -454,6 +454,28 @@ size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
   return GetBoxIndex(box_coord);
 }
 
+void DiffusionGrid::SetBoundaryCondition(
+    std::unique_ptr<BoundaryCondition> bc) {
+  boundary_condition_ = std::move(bc);
+}
+
+BoundaryCondition* DiffusionGrid::GetBoundaryCondition() const {
+  return boundary_condition_.get();
+}
+
+void DiffusionGrid::SetBoundaryConditionType(BoundaryConditionType bc_type) {
+  auto previous_bc = BoundaryTypeToString(bc_type_);
+  auto new_bc = BoundaryTypeToString(bc_type);
+  Log::Warning("DiffusionGrid::SetBoundaryConditionType",
+               "Changing boundary condition from ", previous_bc, " to ",
+               new_bc);
+  bc_type_ = bc_type;
+}
+
+BoundaryConditionType DiffusionGrid::GetBoundaryConditionType() const {
+  return bc_type_;
+}
+
 void DiffusionGrid::PrintInfo(std::ostream& out) {
   auto continuum_name = GetContinuumName();
   if (!IsInitialized()) {

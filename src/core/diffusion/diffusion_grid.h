@@ -253,23 +253,17 @@ class DiffusionGrid : public ScalarField {
   /// @brief Set the boundary condition, takes ownership of the object.
   /// @param bc object that implements the boundary condition, see for example
   /// `ConstantBoundaryCondition`
-  void SetBoundaryCondition(std::unique_ptr<BoundaryCondition> bc) {
-    boundary_condition_ = std::move(bc);
-  }
+  void SetBoundaryCondition(std::unique_ptr<BoundaryCondition> bc);
 
   /// @brief  Returns the boundary condition. Does not transfer ownership.
   /// @return const Pointer to the boundary condition
-  BoundaryCondition* GetBoundaryCondition() const {
-    return boundary_condition_.get();
-  }
+  BoundaryCondition* GetBoundaryCondition() const;
 
   /// Sets boundary condition type
-  void SetBoundaryConditionType(BoundaryConditionType bc_type) {
-    bc_type_ = bc_type;
-  }
+  void SetBoundaryConditionType(BoundaryConditionType bc_type);
 
   /// Returns the BoundaryConditionType, see `BoundaryConditionType`
-  BoundaryConditionType GetBoundaryConditionType() const { return bc_type_; }
+  BoundaryConditionType GetBoundaryConditionType() const;
 
   /// Print information about the Diffusion Grid
   void PrintInfo(std::ostream& out = std::cout);
