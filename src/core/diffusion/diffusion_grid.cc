@@ -21,7 +21,7 @@
 namespace bdm {
 
 /// Transforms a BoundaryConditionType to the corresponding string
-std::string BoundaryTypeToString(BoundaryConditionType type) {
+std::string BoundaryTypeToString(const BoundaryConditionType& type) {
   switch (type) {
     case BoundaryConditionType::kNeumann:
       return "Neumann";
@@ -37,7 +37,7 @@ std::string BoundaryTypeToString(BoundaryConditionType type) {
 }
 
 /// Transforms a string to the corresponding BoundaryConditionType
-BoundaryConditionType StringToBoundaryType(std::string type) {
+BoundaryConditionType StringToBoundaryType(const std::string& type) {
   if (type == "Neumann") {
     return BoundaryConditionType::kNeumann;
   } else if (type == "open") {
