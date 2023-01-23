@@ -1152,6 +1152,7 @@ TEST(DiffusionTest, GradientComputation) {
   DiffusionGrid* d_grid = nullptr;
   d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 100);
   rm->AddContinuum(d_grid);
+  d_grid->SetLowerThreshold(-1e15);
 
   // Define scalar field for initialization
   auto scalar_field = [&](real_t x, real_t y, real_t z) {
