@@ -23,7 +23,7 @@ void EulerDepletionGrid::ApplyDepletion(real_t dt) {
   const auto* rm = sim->GetResourceManager();
 
   // The explicit scheme computes the new concentarion c2 based on c1. Efficient
-  // updates are ensured by swaping pointers at each step. Here, however, we
+  // updates are ensured by swapping pointers at each step. Here, however, we
   // want to continue to use c1 for the next step. Thus, we swap pointers here
   // (and again after the depletion). This is necessary because ApplyDepletion
   // is called after the diffusion of the EulerGrid (swaps pointer at the end).
@@ -35,12 +35,23 @@ void EulerDepletionGrid::ApplyDepletion(real_t dt) {
       // depletion.
       continue;
     }
-    auto* depleting_concentration =
-        rm->GetDiffusionGrid(binding_substances_[s])->GetAllConcentrations();
+
+    size_t depleting_boxes =
+        rm->GetDiffusionGrid(binding_substances_[s])->GetNumBoxes();
+
+    if (depleting_boxes != GetNumBoxes()) {
+      Log::Fatal("EulerDepletionGrid::ApplyDepletion()",
+       "The number of voxels of the depleting diffusion grid ", rm->GetDiffusionGrid(binding_substances_[s])->GetContinuumName(),
+       " differs from that of the depleted one (", GetContinuumName(),
+       "). Check the resolution.");
+    } else {
+      auto* depleting_concentration =
+          rm->GetDiffusionGrid(binding_substances_[s])->GetAllConcentrations();
 #pragma omp parallel for simd
-    for (size_t c = 0; c < total_num_boxes_; c++) {
-      c2_[c] -=
-          c1_[c] * binding_coefficients_[s] * depleting_concentration[c] * dt;
+      for (size_t c = 0; c < total_num_boxes_; c++) {
+        c2_[c] -=
+            c1_[c] * binding_coefficients_[s] * depleting_concentration[c] * dt;
+      }
     }
   }
   // See comment above.
