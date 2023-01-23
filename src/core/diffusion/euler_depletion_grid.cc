@@ -40,10 +40,12 @@ void EulerDepletionGrid::ApplyDepletion(real_t dt) {
         rm->GetDiffusionGrid(binding_substances_[s])->GetNumBoxes();
 
     if (depleting_boxes != GetNumBoxes()) {
-      Log::Fatal("EulerDepletionGrid::ApplyDepletion()",
-       "The number of voxels of the depleting diffusion grid ", rm->GetDiffusionGrid(binding_substances_[s])->GetContinuumName(),
-       " differs from that of the depleted one (", GetContinuumName(),
-       "). Check the resolution.");
+      Log::Fatal(
+          "EulerDepletionGrid::ApplyDepletion()",
+          "The number of voxels of the depleting diffusion grid ",
+          rm->GetDiffusionGrid(binding_substances_[s])->GetContinuumName(),
+          " differs from that of the depleted one (", GetContinuumName(),
+          "). Check the resolution.");
     } else {
       auto* depleting_concentration =
           rm->GetDiffusionGrid(binding_substances_[s])->GetAllConcentrations();
