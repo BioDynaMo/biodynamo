@@ -41,26 +41,40 @@ enum class BoundaryConditionType {
 
 enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
 
+/// @brief  This class implements the boundary conditions. It is integrated into
+/// the diffusion grid as a smart pointer. The diffusion grid will call the
+/// Evaluate() method of the boundary condition object for Neumann and Dirichlet
+/// boundary conditions.
 class BoundaryCondition {
  public:
   BoundaryCondition() = default;
   explicit BoundaryCondition(const TRootIOCtor*) {}
   virtual ~BoundaryCondition() = default;
 
-  virtual real_t Evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const {
-    return 0.0;
-  }
+  /// @brief Boundary condition for Neumann and Dirichlet boundary conditions.
+  /// @param n_x Index of the box in x direction
+  /// @param n_y Index of the box in y direction
+  /// @param n_z Index of the box in z direction
+  /// @param time Time of the simulation (for time-dependent boundary
+  /// conditions)
+  /// @return The value of the boundary condition at the given position and time
+  virtual real_t Evaluate(size_t n_x, size_t n_y, size_t n_z,
+                          real_t time) const = 0;
 
   BDM_CLASS_DEF(BoundaryCondition, 1);
 };
 
+/// @brief  This class implements constant boundary conditions (Dirichlet and
+/// Neumann). The value of the boundary condition is constant and independent of
+/// the position and time, i.e. u = const or du/dn = const on the boundary.
 class ConstantBoundaryCondition : public BoundaryCondition {
   using BoundaryCondition::BoundaryCondition;
 
  public:
   explicit ConstantBoundaryCondition(real_t value) : value_(value) {}
 
-  real_t Evaluate(size_t n1, size_t n2, size_t n3, size_t n4) const override {
+  /// @brief see BoundaryCondition::Evaluate()
+  real_t Evaluate(size_t n1, size_t n2, size_t n3, real_t time) const final {
     return value_;
   }
 
