@@ -246,6 +246,7 @@ void DiffusionGrid::RunInitializers() {
   auto nx = resolution_;
   auto ny = resolution_;
   auto nz = resolution_;
+  size_t negative_voxels_counter_ = 0;
 
   // Apply all functions that initialize this diffusion grid
   for (size_t f = 0; f < initializers_.size(); f++) {
@@ -265,10 +266,20 @@ void DiffusionGrid::RunInitializers() {
           } else {
             value = initializers_[f](real_x, real_y, real_z);
           }
+          if (value < 0.0) {
+            negative_voxels_counter_++;
+          }
+
           ChangeConcentrationBy(idx, value);
         }
       }
     }
+  }
+  if (negative_voxels_counter_ > 0) {
+    Log::Warning("DiffusionGrid::RunInitializers()",
+                 "Some voxels of the diffusion grid ", GetContinuumName(),
+                 " were initialized with value ", lower_threshold_,
+                 " to avoid negative concentrations.");
   }
   // Copy data to second array to ensure valid Dirichlet Boundary Conditions
   c2_ = c1_;

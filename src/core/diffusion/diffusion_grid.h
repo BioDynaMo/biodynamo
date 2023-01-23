@@ -316,7 +316,7 @@ class DiffusionGrid : public ScalarField {
   /// The maximum concentration value that a box can have
   real_t upper_threshold_ = 1e15;
   /// The minimum concentration value that a box can have
-  real_t lower_threshold_ = -1e15;
+  real_t lower_threshold_ = 0.0;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   std::array<real_t, 7> dc_ = {{0}};
   /// The decay constant
