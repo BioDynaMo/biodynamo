@@ -257,7 +257,14 @@ void DiffusionGrid::RunInitializers() {
           real_t real_z = grid_dimensions_[0] + z * box_length_;
           std::array<uint32_t, 3> box_coord = {x, y, z};
           size_t idx = GetBoxIndex(box_coord);
-          real_t value = initializers_[f](real_x, real_y, real_z);
+          real_t value{0};
+          if (bc_type_ == BoundaryConditionType::kDirichlet &&
+              (x == 0 || x == nx - 1 || y == 0 || y == ny - 1 || z == 0 ||
+               z == nz - 1)) {
+            value = boundary_condition_->Evaluate(real_x, real_y, real_z, 0);
+          } else {
+            value = initializers_[f](real_x, real_y, real_z);
+          }
           ChangeConcentrationBy(idx, value);
         }
       }
