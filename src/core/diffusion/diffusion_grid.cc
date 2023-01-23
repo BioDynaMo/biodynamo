@@ -58,7 +58,7 @@ DiffusionGrid::DiffusionGrid(int substance_id,
     : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
       mu_(mu),
       resolution_(resolution),
-      boundary_condition_(std::make_unique<BoundaryCondition>()) {
+      boundary_condition_(std::make_unique<ConstantBoundaryCondition>(0.0)) {
   // Compatibility with new abstract interface
   SetContinuumId(substance_id);
   SetContinuumName(substance_name);

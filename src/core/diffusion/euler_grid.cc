@@ -162,6 +162,8 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
   const real_t ibl2 = 1 / (box_length_ * box_length_);
   const real_t d = 1 - dc_[0];
 
+  const auto sim_time = GetSimulatedTime();
+
   constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
   for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -182,7 +184,7 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
         for (x = 0; x < nx; x++) {
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
-            c2_[c] = boundary_condition_->Evaluate(x, y, z, nx - 1);
+            c2_[c] = boundary_condition_->Evaluate(x, y, z, sim_time);
             ++c;
             continue;
           }
@@ -212,6 +214,8 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
   const real_t ibl2 = 1 / (box_length_ * box_length_);
   const real_t d = 1 - dc_[0];
 
+  const auto sim_time = GetSimulatedTime();
+
   constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
   for (size_t yy = 0; yy < ny; yy += YBF) {
@@ -240,37 +244,37 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           real_t k_comp{0};
 
           if (x == 0) {
-            i_comp =
-                -box_length_ * boundary_condition_->Evaluate(x, y, z, nx - 1) -
-                c1_[c] + c1_[c + 1];
+            i_comp = -box_length_ *
+                         boundary_condition_->Evaluate(x, y, z, sim_time) -
+                     c1_[c] + c1_[c + 1];
           } else if (x == (nx - 1)) {
-            i_comp =
-                -box_length_ * boundary_condition_->Evaluate(x, y, z, nx - 1) -
-                c1_[c] + c1_[c - 1];
+            i_comp = -box_length_ *
+                         boundary_condition_->Evaluate(x, y, z, sim_time) -
+                     c1_[c] + c1_[c - 1];
           } else {
             i_comp = c1_[c - 1] - 2 * c1_[c] + c1_[c + 1];
           }
 
           if (y == 0) {
-            j_comp =
-                -box_length_ * boundary_condition_->Evaluate(x, y, z, nx - 1) -
-                c1_[c] + c1_[s];
+            j_comp = -box_length_ *
+                         boundary_condition_->Evaluate(x, y, z, sim_time) -
+                     c1_[c] + c1_[s];
           } else if (y == (ny - 1)) {
-            j_comp =
-                -box_length_ * boundary_condition_->Evaluate(x, y, z, nx - 1) -
-                c1_[c] + c1_[n];
+            j_comp = -box_length_ *
+                         boundary_condition_->Evaluate(x, y, z, sim_time) -
+                     c1_[c] + c1_[n];
           } else {
             j_comp = c1_[s] - 2 * c1_[c] + c1_[n];
           }
 
           if (z == 0) {
-            k_comp =
-                -box_length_ * boundary_condition_->Evaluate(x, y, z, nx - 1) -
-                c1_[c] + c1_[t];
+            k_comp = -box_length_ *
+                         boundary_condition_->Evaluate(x, y, z, sim_time) -
+                     c1_[c] + c1_[t];
           } else if (z == (nz - 1)) {
-            k_comp =
-                -box_length_ * boundary_condition_->Evaluate(x, y, z, nx - 1) -
-                c1_[c] + c1_[b];
+            k_comp = -box_length_ *
+                         boundary_condition_->Evaluate(x, y, z, sim_time) -
+                     c1_[c] + c1_[b];
           } else {
             k_comp = c1_[b] - 2 * c1_[c] + c1_[t];
           }
