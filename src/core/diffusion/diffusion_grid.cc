@@ -266,7 +266,7 @@ void DiffusionGrid::RunInitializers() {
           } else {
             value = initializers_[f](real_x, real_y, real_z);
           }
-          if (value < 0.0) {
+          if (value < lower_threshold_) {
             negative_voxels_counter_++;
           }
 
