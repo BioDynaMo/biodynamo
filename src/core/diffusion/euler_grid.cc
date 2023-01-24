@@ -18,6 +18,18 @@
 
 namespace bdm {
 
+// Function to move <val> into the range [<min>, <max>]. If it is in the range
+// already, it is returned unchanged. Else, the closest boundary is returned.
+inline size_t Clamp(size_t val, size_t min, size_t max) {
+  if (val < min) {
+    return min;
+  }
+  if (val > max) {
+    return max;
+  }
+  return val;
+}
+
 void EulerGrid::DiffuseWithClosedEdge(real_t dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
@@ -215,6 +227,7 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
+  const auto num_boxes = nx * ny * nz;
 
   const real_t ibl2 = 1 / (box_length_ * box_length_);
   const real_t d = 1 - dc_[0];
@@ -244,12 +257,15 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
-          real_t left{c1_[c - 1]};
-          real_t right{c1_[c + 1]};
-          real_t bottom{c1_[b]};
-          real_t top{c1_[t]};
-          real_t north{c1_[n]};
-          real_t south{c1_[s]};
+          // Clamp to avoid out of bounds access. Clamped values are initialized
+          // to a wrong value but will be overwritten by the boundary condition
+          // evaluation. All other values are correct.
+          real_t left{c1_[Clamp(c - 1, 0, num_boxes - 1)]};
+          real_t right{c1_[Clamp(c + 1, 0, num_boxes - 1)]};
+          real_t bottom{c1_[Clamp(b, 0, num_boxes - 1)]};
+          real_t top{c1_[Clamp(t, 0, num_boxes - 1)]};
+          real_t north{c1_[Clamp(n, 0, num_boxes - 1)]};
+          real_t south{c1_[Clamp(s, 0, num_boxes - 1)]};
           real_t center_factor{6.0};
 
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
