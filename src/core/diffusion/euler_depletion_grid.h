@@ -45,7 +45,7 @@ class EulerDepletionGrid : public EulerGrid {
   /// Simulates the Diffusion with EulerGrid::DiffuseWithClosedEdge and
   /// subsequently depletes the substance according to binding_substances_ and
   /// binding_coefficients_. See ApplyDepletion for details.
-  DiffuseWithClosedEdge(real_t dt) override;
+  void DiffuseWithClosedEdge(real_t dt) override;
   /// Simulates the Diffusion with EulerGrid::DiffuseWithOpenEdge and
   /// subsequently depletes the substance according to binding_substances_ and
   /// binding_coefficients_. See ApplyDepletion for details.
