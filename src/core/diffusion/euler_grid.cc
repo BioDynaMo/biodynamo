@@ -196,24 +196,24 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
         for (x = 0; x < nx; x++) {
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
+            // For all boxes on the boundary, we simply evaluate the boundary
             real_t real_x = grid_dimensions_[0] + x * box_length_;
             real_t real_y = grid_dimensions_[0] + y * box_length_;
             real_t real_z = grid_dimensions_[0] + z * box_length_;
             c2_[c] =
                 boundary_condition_->Evaluate(real_x, real_y, real_z, sim_time);
-            ++c;
-            continue;
+          } else {
+            // For inner boxes, we compute the regular stencil update
+            n = c - nx;
+            s = c + nx;
+            b = c - nx * ny;
+            t = c + nx * ny;
+
+            c2_[c] = c1_[c] * (1 - mu_ * dt) +
+                     (d * dt * ibl2) *
+                         (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] + c1_[s] -
+                          2 * c1_[c] + c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t]);
           }
-
-          n = c - nx;
-          s = c + nx;
-          b = c - nx * ny;
-          t = c + nx * ny;
-
-          c2_[c] = c1_[c] * (1 - mu_ * dt) +
-                   (d * dt * ibl2) *
-                       (c1_[c - 1] - 2 * c1_[c] + c1_[c + 1] + c1_[s] -
-                        2 * c1_[c] + c1_[n] + c1_[b] - 2 * c1_[c] + c1_[t]);
           ++c;
         }
       }  // tile ny
