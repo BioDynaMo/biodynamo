@@ -827,6 +827,54 @@ TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
   // dgrids are deleted by rm's destructor
 }
 
+// Tests Fatal if depletion grids don't match in size
+TEST(DiffusionTest, DepletionMissmatch) {
+  ASSERT_DEATH(
+      {
+        double simulation_time_step{0.1};
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -100;
+          param->max_bound = 100;
+          param->diffusion_boundary_condition = "Neumann";
+        };
+        Simulation simulation(TEST_NAME, set_param);
+        simulation.GetEnvironment()->Update();
+        auto* rm = simulation.GetResourceManager();
+
+        double diff_coef = 0.0;
+        double decay_depletes = 0.0;
+        double decay_depleted = 0.01;
+        int res = 20;
+
+        // Generate two substances with different resolutions
+        auto* dgrid_depletes1 =
+            new EulerGrid(0, "MMP", diff_coef, decay_depletes, res);
+        auto* dgrid_depleted = new EulerDepletionGrid(2, "ECM", diff_coef,
+                                                      decay_depleted, res + 1);
+
+        // Add substances to simulation
+        dgrid_depletes1->Initialize();
+        rm->AddContinuum(dgrid_depletes1);
+        dgrid_depleted->Initialize();
+        rm->AddContinuum(dgrid_depleted);
+
+        // Add depleting substance with its binding coefficient
+        std::vector<double> bnd_coeff{0.01};
+        std::vector<int> bnd_subs{dgrid_depletes1->GetContinuumId()};
+        dgrid_depleted->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
+
+        // Simulate diffusion / exponential decay for `tot` timesteps
+        int tot = 2;
+        for (int t = 0; t < tot; t++) {
+          dgrid_depletes1->Diffuse(simulation_time_step);
+          dgrid_depleted->Diffuse(simulation_time_step);
+        }
+      },
+      ".*The number of voxels of the depleting diffusion grid MMP differs from "
+      "that of the depleted one (ECM)*");
+}
+
 TEST(DiffusionTest, EulerDirichletBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [](auto* param) {
