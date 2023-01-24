@@ -167,7 +167,7 @@ dependence), you may derive classes from `BoundaryCondition` and implement its
 member `BoundaryCondition::Evaluate(real_t,real_t,real_t,real_t)` accordingly.
 If your application required different equations, different domains, different
 numerical schemes, please consult the API for `Continuum`, `ScalarField`, and
-`VectorField` to see how to interface with continuum models with the BioDyanMo
+`VectorField` to see how to interface continuum models with the BioDyanMo
 simulation runtime. (see also `bdm demo analytic_continuum`)
 
 ### Diffusion parameter constraints
