@@ -410,7 +410,7 @@ real_t DiffusionGrid::GetValue(const Real3& position) const {
 }
 
 /// Get the concentration at specified voxel
-double DiffusionGrid::GetConcentration(const size_t idx) const {
+real_t DiffusionGrid::GetConcentration(const size_t idx) const {
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::ChangeConcentrationBy",
                "You tried to get the concentration outside the bounds of "

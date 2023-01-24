@@ -149,7 +149,7 @@ class DiffusionGrid : public ScalarField {
   void ChangeConcentrationBy(size_t idx, real_t amount,
                              InteractionMode mode = InteractionMode::kAdditive);
 
-  /// @brief  Get the concentration at specified position
+  /// @brief  Get the value of the scalar field at specified position
   /// @param postion 3D position of
   /// @return c1_[idx[position]]
   real_t GetValue(const Real3& position) const override;
