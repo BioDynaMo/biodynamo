@@ -52,14 +52,13 @@ class BoundaryCondition {
   virtual ~BoundaryCondition() = default;
 
   /// @brief Boundary condition for Neumann and Dirichlet boundary conditions.
-  /// @param n_x Index of the box in x direction
-  /// @param n_y Index of the box in y direction
-  /// @param n_z Index of the box in z direction
+  /// @param x x coordinate
+  /// @param y y coordinate
+  /// @param z z coordinate
   /// @param time Time of the simulation (for time-dependent boundary
   /// conditions)
   /// @return The value of the boundary condition at the given position and time
-  virtual real_t Evaluate(size_t n_x, size_t n_y, size_t n_z,
-                          real_t time) const = 0;
+  virtual real_t Evaluate(real_t x, real_t y, real_t z, real_t time) const = 0;
 
   BDM_CLASS_DEF(BoundaryCondition, 1);
 };
@@ -74,7 +73,7 @@ class ConstantBoundaryCondition : public BoundaryCondition {
   explicit ConstantBoundaryCondition(real_t value) : value_(value) {}
 
   /// @brief see BoundaryCondition::Evaluate()
-  real_t Evaluate(size_t n1, size_t n2, size_t n3, real_t time) const final {
+  real_t Evaluate(real_t x, real_t y, real_t z, real_t time) const final {
     return value_;
   }
 

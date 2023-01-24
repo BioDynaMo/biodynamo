@@ -184,7 +184,12 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
         for (x = 0; x < nx; x++) {
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
-            c2_[c] = boundary_condition_->Evaluate(x, y, z, sim_time);
+            real_t offset = grid_dimensions_[0] + box_length_ / 2.;
+            real_t real_x = offset + x * box_length_;
+            real_t real_y = offset + y * box_length_;
+            real_t real_z = offset + z * box_length_;
+            c2_[c] =
+                boundary_condition_->Evaluate(real_x, real_y, real_z, sim_time);
             ++c;
             continue;
           }
@@ -239,48 +244,55 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
-          real_t i_comp{0};
-          real_t j_comp{0};
-          real_t k_comp{0};
+          real_t left{c1_[c - 1]};
+          real_t right{c1_[c + 1]};
+          real_t bottom{c1_[b]};
+          real_t top{c1_[t]};
+          real_t north{c1_[n]};
+          real_t south{c1_[s]};
+          real_t center_factor{6.0};
 
-          if (x == 0) {
-            i_comp = -box_length_ *
-                         boundary_condition_->Evaluate(x, y, z, sim_time) -
-                     c1_[c] + c1_[c + 1];
-          } else if (x == (nx - 1)) {
-            i_comp = -box_length_ *
-                         boundary_condition_->Evaluate(x, y, z, sim_time) -
-                     c1_[c] + c1_[c - 1];
-          } else {
-            i_comp = c1_[c - 1] - 2 * c1_[c] + c1_[c + 1];
-          }
+          if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
+              z == (nz - 1)) {
+            real_t offset = grid_dimensions_[0] + box_length_ / 2.;
+            real_t real_x = offset + x * box_length_;
+            real_t real_y = offset + y * box_length_;
+            real_t real_z = offset + z * box_length_;
 
-          if (y == 0) {
-            j_comp = -box_length_ *
-                         boundary_condition_->Evaluate(x, y, z, sim_time) -
-                     c1_[c] + c1_[s];
-          } else if (y == (ny - 1)) {
-            j_comp = -box_length_ *
-                         boundary_condition_->Evaluate(x, y, z, sim_time) -
-                     c1_[c] + c1_[n];
-          } else {
-            j_comp = c1_[s] - 2 * c1_[c] + c1_[n];
-          }
+            if (x == 0) {
+              left = -box_length_ * boundary_condition_->Evaluate(
+                                        real_x, real_y, real_z, sim_time);
+              center_factor -= 1.0;
+            } else if (x == (nx - 1)) {
+              right = -box_length_ * boundary_condition_->Evaluate(
+                                         real_x, real_y, real_z, sim_time);
+              center_factor -= 1.0;
+            }
 
-          if (z == 0) {
-            k_comp = -box_length_ *
-                         boundary_condition_->Evaluate(x, y, z, sim_time) -
-                     c1_[c] + c1_[t];
-          } else if (z == (nz - 1)) {
-            k_comp = -box_length_ *
-                         boundary_condition_->Evaluate(x, y, z, sim_time) -
-                     c1_[c] + c1_[b];
-          } else {
-            k_comp = c1_[b] - 2 * c1_[c] + c1_[t];
+            if (y == 0) {
+              north = -box_length_ * boundary_condition_->Evaluate(
+                                         real_x, real_y, real_z, sim_time);
+              center_factor -= 1.0;
+            } else if (y == (ny - 1)) {
+              south = -box_length_ * boundary_condition_->Evaluate(
+                                         real_x, real_y, real_z, sim_time);
+              center_factor -= 1.0;
+            }
+
+            if (z == 0) {
+              bottom = -box_length_ * boundary_condition_->Evaluate(
+                                          real_x, real_y, real_z, sim_time);
+              center_factor -= 1.0;
+            } else if (z == (nz - 1)) {
+              top = -box_length_ * boundary_condition_->Evaluate(
+                                       real_x, real_y, real_z, sim_time);
+              center_factor -= 1.0;
+            }
           }
 
           c2_[c] = c1_[c] * (1 - mu_ * dt) +
-                   (d * dt * ibl2) * (i_comp + j_comp + k_comp);
+                   (d * dt * ibl2) * (left + right + south + north + top +
+                                      bottom - center_factor * c1_[c]);
 
           ++c;
         }

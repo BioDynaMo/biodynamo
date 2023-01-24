@@ -164,7 +164,7 @@ member functions of the `DiffusionGrid` (see API documentation).
 
 If you want to implement more sophisticated boundaries (e.g. with spatial 
 dependence), you may derive classes from `BoundaryCondition` and implement its
-member `BoundaryCondition::Evaluate(size_t,size_t,size_t,real_t)` accordingly.
+member `BoundaryCondition::Evaluate(real_t,real_t,real_t,real_t)` accordingly.
 If your application required different equations, different domains, different
 numerical schemes, please consult the API for `Continuum`, `ScalarField`, and
 `VectorField` to see how to interface with continuum models with the BioDyanMo
