@@ -258,34 +258,30 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
             real_t real_x = offset + x * box_length_;
             real_t real_y = offset + y * box_length_;
             real_t real_z = offset + z * box_length_;
+            real_t boundary_value = -box_length_ * boundary_condition_->Evaluate(
+            real_x, real_y, real_z, sim_time);
 
             if (x == 0) {
-              left = -box_length_ * boundary_condition_->Evaluate(
-                                        real_x, real_y, real_z, sim_time);
+              left = boundary_value;
               center_factor -= 1.0;
             } else if (x == (nx - 1)) {
-              right = -box_length_ * boundary_condition_->Evaluate(
-                                         real_x, real_y, real_z, sim_time);
+              right = boundary_value;
               center_factor -= 1.0;
             }
 
             if (y == 0) {
-              north = -box_length_ * boundary_condition_->Evaluate(
-                                         real_x, real_y, real_z, sim_time);
+              north = boundary_value;
               center_factor -= 1.0;
             } else if (y == (ny - 1)) {
-              south = -box_length_ * boundary_condition_->Evaluate(
-                                         real_x, real_y, real_z, sim_time);
+              south = boundary_value;
               center_factor -= 1.0;
             }
 
             if (z == 0) {
-              bottom = -box_length_ * boundary_condition_->Evaluate(
-                                          real_x, real_y, real_z, sim_time);
+              bottom = boundary_value;
               center_factor -= 1.0;
             } else if (z == (nz - 1)) {
-              top = -box_length_ * boundary_condition_->Evaluate(
-                                       real_x, real_y, real_z, sim_time);
+              top = boundary_value;
               center_factor -= 1.0;
             }
           }
