@@ -70,6 +70,8 @@ class ConstantBoundaryCondition : public BoundaryCondition {
   using BoundaryCondition::BoundaryCondition;
 
  public:
+  /// @brief Constructor for a constant boundary condition
+  /// @param value Constant on the boundary (u = value or du/dn = value)
   explicit ConstantBoundaryCondition(real_t value) : value_(value) {}
 
   /// @brief see BoundaryCondition::Evaluate()
@@ -78,6 +80,7 @@ class ConstantBoundaryCondition : public BoundaryCondition {
   }
 
  private:
+  /// Constant value of the boundary condition for all positions and times.
   real_t value_ = 0.0;
 
   BDM_CLASS_DEF_OVERRIDE(ConstantBoundaryCondition, 1);
@@ -146,13 +149,18 @@ class DiffusionGrid : public ScalarField {
   void ChangeConcentrationBy(size_t idx, real_t amount,
                              InteractionMode mode = InteractionMode::kAdditive);
 
-  /// Get the concentration at specified position
+  /// @brief  Get the concentration at specified position
+  /// @param postion 3D position of
+  /// @return c1_[idx[position]]
   real_t GetValue(const Real3& position) const override;
   [[deprecated("Use GetValue instead")]] real_t GetConcentration(
       const Real3& position) const {
     return GetValue(position);
   };
-  double GetConcentration(const size_t idx) const;
+  /// @brief  Get the concentration at specified index
+  /// @param idx Flat index of the grid
+  /// @return c1_[idx]
+  real_t GetConcentration(const size_t idx) const;
 
   // NOTE: virtual because of test
   /// Get the gradient at a specified position. By default, the obtained

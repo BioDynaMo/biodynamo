@@ -80,7 +80,11 @@ void DiffusionGrid::Initialize() {
   auto bounds = env->GetDimensionThresholds();
 
   grid_dimensions_ = {bounds[0], bounds[1]};
-  assert((bounds[0] < bounds[1]) && "Max bound is bigger than Min bound");
+  if (bounds[0] > bounds[1]) {
+    Log::Fatal("DiffusionGrid::Initialize",
+               "The grid dimensions are not correct. Lower bound is greater",
+               " than upper bound. (substance '", GetContinuumName(), "')");
+  }
 
   auto adjusted_res =
       resolution_ == 1 ? 2 : resolution_;  // avoid division by 0

@@ -42,27 +42,53 @@ class EulerDepletionGrid : public EulerGrid {
         binding_coefficients_(std::move(binding_coefficients)),
         binding_substances_(std::move(binding_substances)) {}
 
-  void DiffuseWithClosedEdge(real_t dt) override;
+  /// Simulates the Diffusion with EulerGrid::DiffuseWithClosedEdge and
+  /// subsequently depletes the substance according to binding_substances_ and
+  /// binding_coefficients_. See ApplyDepletion for details.
+  DiffuseWithClosedEdge(real_t dt) override;
+  /// Simulates the Diffusion with EulerGrid::DiffuseWithOpenEdge and
+  /// subsequently depletes the substance according to binding_substances_ and
+  /// binding_coefficients_. See ApplyDepletion for details.
   void DiffuseWithOpenEdge(real_t dt) override;
+  /// Simulates the Diffusion with EulerGrid::DiffuseWithDirichlet and
+  /// subsequently depletes the substance according to binding_substances_ and
+  /// binding_coefficients_. See ApplyDepletion for details.
   void DiffuseWithDirichlet(real_t dt) override;
+  /// Simulates the Diffusion with EulerGrid::DiffuseWithNeumann and
+  /// subsequently depletes the substance according to binding_substances_ and
+  /// binding_coefficients_. See ApplyDepletion for details.
   void DiffuseWithNeumann(real_t dt) override;
 
   // To avoid missing substances or coefficients, name of the sub and binding
   // coefficient must be set at the same time
+
+  /// @brief Sets a binding substance and coefficient for the substance
+  /// @param bnd_sub ID of the binding substance
+  /// @param bnd_coeff Binding coefficient that determines the rate of
+  /// depletion
   void SetBindingSubstance(int bnd_sub, real_t bnd_coeff) {
     binding_substances_.push_back(bnd_sub);
     binding_coefficients_.push_back(bnd_coeff);
   }
 
+  /// Get the vector of binding substances (vector of IDs)
   std::vector<int> GetBindingSubstances() const { return binding_substances_; }
+  /// Get the vector of binding coefficients (vector of coefficients)
   std::vector<real_t> GetBindingCoefficients() const {
     return binding_coefficients_;
   }
 
  private:
+  /// @brief Depletes the substance according to binding_substances_ and
+  /// binding_coefficients_. Iterates over all grid points and calculates the
+  /// new concentration according to the depletion. See class description.
+  /// @param dt Time step
   void ApplyDepletion(real_t dt);
 
+  /// Vector of binding coefficients for each binding substance. All
+  /// coefficients should be positive.
   std::vector<real_t> binding_coefficients_ = {};
+  /// Vector of binding substances.
   std::vector<int> binding_substances_ = {};
 
   BDM_CLASS_DEF_OVERRIDE(EulerDepletionGrid, 1);
