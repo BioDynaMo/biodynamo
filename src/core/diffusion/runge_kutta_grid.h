@@ -54,7 +54,9 @@ class RungeKuttaGrid : public DiffusionGrid {
 
   void DiffuseWithClosedEdge(real_t dt) override;
   void DiffuseWithOpenEdge(real_t dt) override;
+  /// Not implemented for RungeKuttaGrid
   void DiffuseWithDirichlet(real_t dt) override;
+  /// Not implemented for RungeKuttaGrid
   void DiffuseWithNeumann(real_t dt) override;
 
  private:
