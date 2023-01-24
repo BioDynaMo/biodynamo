@@ -196,10 +196,9 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
         for (x = 0; x < nx; x++) {
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
-            real_t offset = grid_dimensions_[0] + box_length_ / 2.;
-            real_t real_x = offset + x * box_length_;
-            real_t real_y = offset + y * box_length_;
-            real_t real_z = offset + z * box_length_;
+            real_t real_x = grid_dimensions_[0] + x * box_length_;
+            real_t real_y = grid_dimensions_[0] + y * box_length_;
+            real_t real_z = grid_dimensions_[0] + z * box_length_;
             c2_[c] =
                 boundary_condition_->Evaluate(real_x, real_y, real_z, sim_time);
             ++c;
@@ -270,12 +269,12 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
 
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
-            real_t offset = grid_dimensions_[0] + box_length_ / 2.;
-            real_t real_x = offset + x * box_length_;
-            real_t real_y = offset + y * box_length_;
-            real_t real_z = offset + z * box_length_;
-            real_t boundary_value = -box_length_ * boundary_condition_->Evaluate(
-            real_x, real_y, real_z, sim_time);
+            real_t real_x = grid_dimensions_[0] + x * box_length_;
+            real_t real_y = grid_dimensions_[0] + y * box_length_;
+            real_t real_z = grid_dimensions_[0] + z * box_length_;
+            real_t boundary_value =
+                -box_length_ *
+                boundary_condition_->Evaluate(real_x, real_y, real_z, sim_time);
 
             if (x == 0) {
               left = boundary_value;

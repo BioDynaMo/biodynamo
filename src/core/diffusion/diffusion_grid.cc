@@ -262,9 +262,7 @@ void DiffusionGrid::RunInitializers() {
           if (bc_type_ == BoundaryConditionType::kDirichlet &&
               (x == 0 || x == nx - 1 || y == 0 || y == ny - 1 || z == 0 ||
                z == nz - 1)) {
-            value = boundary_condition_->Evaluate(real_x + box_length_ / 2.,
-                                                  real_y + box_length_ / 2.,
-                                                  real_z + box_length_ / 2., 0);
+            value = boundary_condition_->Evaluate(real_x, real_y, real_z, 0);
           } else {
             value = initializers_[f](real_x, real_y, real_z);
           }
