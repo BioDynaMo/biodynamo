@@ -104,7 +104,7 @@ inline int Simulate(int argc, const char** argv) {
   };
 
   Simulation simulation(argc, argv, set_param);
-  auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecutionContext();
   auto* param = simulation.GetParam();
   auto* myrand = simulation.GetRandom();
 
@@ -125,7 +125,7 @@ inline int Simulate(int argc, const char** argv) {
     // will vary from 0 to 5. so 6 different layers depending on y_coord
     cell->SetCellColor(static_cast<int>((y_coord / param->max_bound * 6)));
 
-    rm->AddAgent(cell);  // put the created cell in our cells structure
+    ctxt->AddAgent(cell);  // put the created cell in our cells structure
   }
 
   // create a cancerous cell, containing the behavior Growth
@@ -134,7 +134,7 @@ inline int Simulate(int argc, const char** argv) {
   cell->SetCellColor(8);
   cell->SetCanDivide(true);
   cell->AddBehavior(new Growth());
-  rm->AddAgent(cell);  // put the created cell in our cells structure
+  ctxt->AddAgent(cell);  // put the created cell in our cells structure
 
   // Run simulation
   simulation.GetScheduler()->Simulate(500);
