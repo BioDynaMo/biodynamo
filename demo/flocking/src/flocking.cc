@@ -29,7 +29,7 @@ int Simulate(int argc, const char** argv) {
   // Set references
   Param::RegisterParamGroup(new SimParam());
   Simulation simulation(argc, argv);
-  auto* rm = simulation.GetResourceManager();
+  auto* ctxt = simulation.GetExecutionContext();
   auto* param = simulation.GetParam();
   auto* sparam = param->Get<SimParam>();
   auto* scheduler = simulation.GetScheduler();
@@ -53,7 +53,7 @@ int Simulate(int argc, const char** argv) {
         new RandomPerturbation(sparam->random_perturbation_strength));
     boid->InitializeMembers();
 
-    rm->AddAgent(boid);
+    ctxt->AddAgent(boid);
   }
 
   // ---------------------------------------------------------------------------

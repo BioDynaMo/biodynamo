@@ -387,9 +387,12 @@ class ResourceManager {
 
   void DebugNuma() const;
 
-  /// NB: This method is not thread-safe! This function might invalidate
-  /// agent references pointing into the ResourceManager. AgentPointer are
-  /// not affected.
+  /// @brief Add an agent to the ResourceManager (not thread-safe). This
+  /// function might invalidate agent references pointing into the
+  /// ResourceManager. AgentPointer are not affected. For adding agents to a
+  /// Simulation, use ExecutionContext::AddAgent.
+  /// @param agent Agent to be added
+  /// @param numa_node NUMA node to which the agent will be added (default: 0)
   void AddAgent(Agent* agent,  // NOLINT
                 typename AgentHandle::NumaNode_t numa_node = 0) {
     auto uid = agent->GetUid();

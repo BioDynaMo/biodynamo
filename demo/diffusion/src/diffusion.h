@@ -49,7 +49,7 @@ inline int Simulate(int argc, const char** argv) {
   // The cell responsible for secretion
   auto* secreting_cell = new Cell({50, 50, 50});
   secreting_cell->AddBehavior(new Secretion("Kalium", 4));
-  simulation.GetResourceManager()->AddAgent(secreting_cell);
+  simulation.GetExecutionContext()->AddAgent(secreting_cell);
 
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(300);

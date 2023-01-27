@@ -48,10 +48,10 @@ inline int Simulate(int argc, const char** argv) {
     sim->Activate();
 
     // Create initial model
-    auto* rm = sim->GetResourceManager();
+    auto* ctxt = sim->GetExecutionContext();
     Cell* cell = new Cell(30);
     cell->AddBehavior(new Divide());
-    rm->AddAgent(cell);
+    ctxt->AddAgent(cell);
   }
 
   // For each simulation simulate 5 timesteps
