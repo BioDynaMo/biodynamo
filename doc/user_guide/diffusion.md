@@ -76,7 +76,7 @@ attributes:
    // The cell responsible for secretion
   Cell secreting_cell({50, 50, 50});
   secreting_cell.AddBehavior(new Secretion("Kalium", 4));
-  simulation.GetResourceManager()->AddAgent(&secreting_cell);
+  simulation.GetExecutionContext()->AddAgent(&secreting_cell);
 ```
 
 The `construct` lambda defines the properties of each cell that we create. These can be
