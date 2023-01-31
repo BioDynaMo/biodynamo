@@ -21,19 +21,33 @@
 
 namespace bdm {
 
+inline double TimeConversionFactor(const std::string& unit) {
+  if (unit == "ms") {
+    return 1;
+  } else if (unit == "s") {
+    return 1000;
+  } else if (unit == "min") {
+    return 1000 * 60;
+  } else {
+    return 1000 * 60 * 60;
+  }
+}
+
 ProgressBar::ProgressBar() : ProgressBar(0){};
 
 ProgressBar::ProgressBar(int total_steps)
-    : total_steps_(total_steps),
+    : time_unit_("s"),
+      total_steps_(total_steps),
       executed_steps_(0),
       start_time_(Timing::Timestamp()),
+      time_conversion_factor_(TimeConversionFactor(time_unit_)),
       first_iter_(true),
       n_digits_time_(0),
       write_to_file_(false) {}
 
 void ProgressBar::Step(uint64_t steps) { executed_steps_ += steps; }
 
-void ProgressBar::PrintProgressBar(std::ostream &out) {
+void ProgressBar::PrintProgressBar(std::ostream& out) {
   // Do not write to file because it does not handle "\r" well.
   if (write_to_file_) {
     return;
@@ -62,13 +76,15 @@ void ProgressBar::PrintProgressBar(std::ostream &out) {
 
   // 1. Get current and compute elapsed time
   int64_t current_time = Timing::Timestamp();
-  real_t elapsed_time = static_cast<real_t>(current_time - start_time_);
+  auto elapsed_time = static_cast<real_t>(current_time - start_time_);
 
   // 2. Compute ETA
   real_t fraction_computed =
       static_cast<real_t>(executed_steps_) / static_cast<real_t>(total_steps_);
   assert(fraction_computed <= 1);
   real_t remaining_time = elapsed_time / fraction_computed - elapsed_time;
+  elapsed_time /= time_conversion_factor_;
+  remaining_time /= time_conversion_factor_;
 
   // 3. Print progress bar
   size_t n_steps_computed = std::floor(fraction_computed / 0.02);
@@ -86,14 +102,27 @@ void ProgressBar::PrintProgressBar(std::ostream &out) {
       << std::setw(n_digits_steps) << total_steps_ << " ";
   // Print remaining time
   out << "( ET: " << std::setw(n_digits_time_) << elapsed_time
-      << ", TR:" << std::setw(n_digits_time_) << std::ceil(remaining_time)
-      << ")[ms]";
+      << ", TR:" << std::setw(n_digits_time_) << remaining_time << ")["
+      << time_unit_ << "]";
   // Override lines in next step
   out << "\r";
 
   // 3. Go to new line once we've reached the last step
   if (executed_steps_ == total_steps_) {
     out << "\n";
+  }
+}
+
+void ProgressBar::SetTimeUnit(const std::string& time_unit) {
+  // Accept only the following time units: ms, s, min, h
+  if (time_unit == "ms" || time_unit == "s" || time_unit == "min" ||
+      time_unit == "h") {
+    time_unit_ = time_unit;
+    time_conversion_factor_ = TimeConversionFactor(time_unit);
+  } else {
+    Log::Warning("ProgressBar::SetTimeUnit",
+                 "Time unit not supported. Use ms, s, min, h instead. ",
+                 "Falling back to [s].");
   }
 }
 

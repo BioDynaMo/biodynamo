@@ -17,17 +17,22 @@
 
 #include <cstdint>
 #include <iostream>
+#include <string>
 
 namespace bdm {
 
 class ProgressBar {
  private:
+  /// Time unit string for elapsed and remaining time.
+  std::string time_unit_;
   /// Total number of steps to be executed.
   uint64_t total_steps_;
   /// Number of steps that have already been executed.
   uint64_t executed_steps_;
   /// Timestamp when to when the progress bar was initialized.
   int64_t start_time_;
+  /// Variable for conversion of time units
+  double time_conversion_factor_;
   /// Boolean variable to print certain informatoin only once in the first
   /// iteration.
   bool first_iter_;
@@ -46,7 +51,10 @@ class ProgressBar {
   void Step(uint64_t steps = 1);
 
   /// Prints the progress bar.
-  void PrintProgressBar(std::ostream &out = std::cout);
+  void PrintProgressBar(std::ostream& out = std::cout);
+
+  /// Set the time unit for elapsed and remaining time.
+  void SetTimeUnit(const std::string& time_unit);
 };
 
 }  // namespace bdm
