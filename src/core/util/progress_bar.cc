@@ -36,14 +36,7 @@ inline double TimeConversionFactor(const std::string& unit) {
 ProgressBar::ProgressBar() : ProgressBar(0){};
 
 ProgressBar::ProgressBar(int total_steps)
-    : time_unit_("s"),
-      total_steps_(total_steps),
-      executed_steps_(0),
-      start_time_(Timing::Timestamp()),
-      time_conversion_factor_(TimeConversionFactor(time_unit_)),
-      first_iter_(true),
-      n_digits_time_(0),
-      write_to_file_(false) {}
+    : total_steps_(total_steps), start_time_(Timing::Timestamp()) {}
 
 void ProgressBar::Step(uint64_t steps) { executed_steps_ += steps; }
 
@@ -88,24 +81,38 @@ void ProgressBar::PrintProgressBar(std::ostream& out) {
 
   // 3. Print progress bar
   size_t n_steps_computed = std::floor(fraction_computed / 0.02);
-  int n_digits_steps = std::ceil(std::log10(total_steps_));
-  n_digits_time_ =
-      std::max({static_cast<int>(std::ceil(std::log10(elapsed_time))),
-                static_cast<int>(std::ceil(std::log10(remaining_time))),
-                n_digits_time_});
 
-  // Progress bar
-  out << "[" << std::string(n_steps_computed, '#')
-      << std::string(50 - n_steps_computed, ' ') << "] ";
-  // Print number of executed steps
-  out << std::setw(n_digits_steps) << executed_steps_ << " / "
-      << std::setw(n_digits_steps) << total_steps_ << " ";
-  // Print remaining time
-  out << "( ET: " << std::setw(n_digits_time_) << elapsed_time
-      << ", TR:" << std::setw(n_digits_time_) << remaining_time << ")["
-      << time_unit_ << "]";
-  // Override lines in next step
-  out << "\r";
+  // Write terminal ouput to string first to determine the number of digits
+  std::string terminal_output = "";
+  terminal_output.append("[")
+      .append(std::string(n_steps_computed, '#'))
+      .append(std::string(50 - n_steps_computed, ' '))
+      .append("] ");
+  terminal_output.append(std::to_string(executed_steps_))
+      .append(" / ")
+      .append(std::to_string(total_steps_))
+      .append(" ");
+  terminal_output.append("( ET: ")
+      .append(std::to_string(elapsed_time))
+      .append(", TR:")
+      .append(std::to_string(remaining_time))
+      .append(")[")
+      .append(time_unit_)
+      .append("]");
+  terminal_output.append("\r");
+
+  // Update number of terminal characters
+  n_terminal_chars_ = std::max({terminal_output.length(), n_terminal_chars_});
+
+  // If the string is shorter than n_terminal_chars_, we need to add spaces
+  // to override the previous output
+  if (terminal_output.length() < n_terminal_chars_) {
+    terminal_output.append(
+        std::string(n_terminal_chars_ - terminal_output.length(), ' '));
+  }
+
+  // Print to terminal
+  out << terminal_output;
 
   // 3. Go to new line once we've reached the last step
   if (executed_steps_ == total_steps_) {
