@@ -21,6 +21,21 @@
 
 namespace bdm {
 
+/// @brief This class implements a progress bar that can be used to track the
+/// progress of a simulation.
+///
+/// The progress bar is printed to the terminal and looks like this:
+/// 100% [====================] 1000/1000 0.0s
+///
+/// The progress bar is updated every time the function `Step` is called in the
+/// scheduler.
+///
+/// The progress bar is not visible if the simulation output is written to a
+/// file.
+///
+/// Relevant parameters:
+/// - `Param::progress_bar_time_unit` (default: "s")
+/// - `Param::use_progress_bar` (default: false)
 class ProgressBar {
  private:
   /// Time unit string for elapsed and remaining time.
