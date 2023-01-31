@@ -476,6 +476,7 @@ void Scheduler::Initialize(uint64_t steps) {
     delete progress_bar_;
     progress_bar_ = nullptr;
     progress_bar_ = new ProgressBar(steps);
+    progress_bar_->SetTimeUnit(param->progress_bar_time_unit);
   }
 
   // Update the uid generator in case the number of threads has changed.
