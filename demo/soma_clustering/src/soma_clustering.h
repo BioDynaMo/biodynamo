@@ -93,7 +93,7 @@ inline int Simulate(int argc, const char** argv) {
                                        num_cells / 2, construct);
 
   // Run simulation for N timesteps
-  const uint64_t timesteps = 6000;
+  const uint64_t timesteps = 1000;
   if (timesteps < 6000) {
     Log::Warning("SomaClustering",
                  "We recommend to run the simulation for roughly 6000 time "
