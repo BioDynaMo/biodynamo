@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include "core/real_t.h"
 
 namespace bdm {
 
