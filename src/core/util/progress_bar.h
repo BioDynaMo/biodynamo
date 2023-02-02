@@ -50,7 +50,7 @@ class ProgressBar {
   /// for nicer output.
   size_t n_terminal_chars_ = 0;
   /// Variable for conversion of time units (e.g. 1000 for ms to s).
-  double time_conversion_factor_ = 1000;
+  real_t time_conversion_factor_ = 1000;
   /// Boolean variable to print certain information only once in the first
   /// iteration.
   bool first_iter_ = true;

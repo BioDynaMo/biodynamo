@@ -21,7 +21,7 @@
 
 namespace bdm {
 
-inline double TimeConversionFactor(const std::string& unit) {
+inline real_t TimeConversionFactor(const std::string& unit) {
   if (unit == "ms") {
     return 1;
   } else if (unit == "s") {
