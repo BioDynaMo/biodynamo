@@ -489,5 +489,64 @@ TEST(TimeSeries, MoveAssignmentOperator) {
   EXPECT_TRUE(ts2.Contains("my-entry"));
 }
 
+// -----------------------------------------------------------------------------
+TEST(TimeSeries, DataTransformer) {
+  TimeSeries ts;
+  EXPECT_EQ(0u, ts.Size());
+  ts.Add("my-entry", {1, 2}, {3, 4}, {0.1, 0.2}, {0.3, 0.4});
+  EXPECT_EQ(1u, ts.Size());
+  LinearTransformer lt;
+  lt.SetXSlope(2.0);
+  lt.SetXIntercept(3.0);
+  lt.SetYSlope(4.0);
+  lt.SetYIntercept(5.0);
+  lt.SetYErrorLowSlope(6.0);
+  lt.SetYErrorLowIntercept(7.0);
+  lt.SetYErrorHighSlope(8.0);
+  lt.SetYErrorHighIntercept(9.0);
+  ts.AddTransformedData("my-entry", "my-entry-transformed", lt);
+
+  // Check if we have 2 data entries
+  EXPECT_EQ(2u, ts.Size());
+
+  // Check the original data entries
+  EXPECT_TRUE(ts.Contains("my-entry"));
+  const auto& xvals = ts.GetXValues("my-entry");
+  EXPECT_EQ(2u, xvals.size());
+  EXPECT_NEAR(1.0, xvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0, xvals[1], abs_error<real_t>::value);
+  const auto& yvals = ts.GetYValues("my-entry");
+  EXPECT_EQ(2u, yvals.size());
+  EXPECT_NEAR(3.0, yvals[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0, yvals[1], abs_error<real_t>::value);
+  const auto& yel = ts.GetYErrorLow("my-entry");
+  EXPECT_EQ(2u, yel.size());
+  EXPECT_NEAR(0.1, yel[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.2, yel[1], abs_error<real_t>::value);
+  const auto& yeh = ts.GetYErrorHigh("my-entry");
+  EXPECT_EQ(2u, yeh.size());
+  EXPECT_NEAR(0.3, yeh[0], abs_error<real_t>::value);
+  EXPECT_NEAR(0.4, yeh[1], abs_error<real_t>::value);
+
+  // Check the transformed data entries
+  EXPECT_TRUE(ts.Contains("my-entry-transformed"));
+  const auto& xvals2 = ts.GetXValues("my-entry-transformed");
+  EXPECT_EQ(2u, xvals2.size());
+  EXPECT_NEAR(2.0 * 1 + 3.0, xvals2[0], abs_error<real_t>::value);
+  EXPECT_NEAR(2.0 * 2.0 + 3.0, xvals2[1], abs_error<real_t>::value);
+  const auto& yvals2 = ts.GetYValues("my-entry-transformed");
+  EXPECT_EQ(2u, yvals2.size());
+  EXPECT_NEAR(4.0 * 3.0 + 5.0, yvals2[0], abs_error<real_t>::value);
+  EXPECT_NEAR(4.0 * 4.0 + 5.0, yvals2[1], abs_error<real_t>::value);
+  const auto& yel2 = ts.GetYErrorLow("my-entry-transformed");
+  EXPECT_EQ(2u, yel2.size());
+  EXPECT_NEAR(6.0 * 0.1 + 7.0, yel2[0], abs_error<real_t>::value);
+  EXPECT_NEAR(6.0 * 0.2 + 7.0, yel2[1], abs_error<real_t>::value);
+  const auto& yeh2 = ts.GetYErrorHigh("my-entry-transformed");
+  EXPECT_EQ(2u, yeh2.size());
+  EXPECT_NEAR(8.0 * 0.3 + 9.0, yeh2[0], abs_error<real_t>::value);
+  EXPECT_NEAR(8.0 * 0.4 + 9.0, yeh2[1], abs_error<real_t>::value);
+}
+
 }  // namespace experimental
 }  // namespace bdm
