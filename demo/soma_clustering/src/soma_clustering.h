@@ -38,17 +38,18 @@ enum Substances { kSubstance0, kSubstance1 };
 inline int Simulate(int argc, const char** argv) {
   auto set_param = [](Param* param) {
     // Create an artificial bound for the simulation space
+    param->use_progress_bar = true;
     param->bound_space = Param::BoundSpaceMode::kClosed;
     param->min_bound = 0;
-    param->max_bound = 250;
-    param->unschedule_default_operations = {"mechanical forces"};
+    param->max_bound = 800;
+    // param->unschedule_default_operations = {"mechanical forces"};
   };
 
   Simulation simulation(argc, argv, set_param);
 
   // Define initial model
   auto* param = simulation.GetParam();
-  int num_cells = 20000;
+  int num_cells = 32000;
 
 #pragma omp parallel
   simulation.GetRandom()->SetSeed(4357);
@@ -56,8 +57,8 @@ inline int Simulate(int argc, const char** argv) {
   // Define the substances that cells may secrete
   // Order: substance id, substance_name, diffusion_coefficient, decay_constant,
   // and the resolution of the (finite difference) diffusion grid.
-  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 50.0, 0.1, 20);
-  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 50.0, 0.1, 20);
+  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.05, 0.001, 40);
+  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.05, 0.001, 40);
 
   int cell_type = 1;
   std::string substance_name = "Substance_0";
@@ -65,25 +66,30 @@ inline int Simulate(int argc, const char** argv) {
   auto construct = [&cell_type, &substance_name](const Real3& position) {
     auto* cell = new MyCell(position, cell_type);
     cell->SetDiameter(10);
-    cell->AddBehavior(new Secretion(substance_name));
-    cell->AddBehavior(new Chemotaxis(substance_name, 5));
+    cell->SetMass(0.1);
+    cell->AddBehavior(new Secretion(substance_name, 1));
+    cell->AddBehavior(new Chemotaxis(substance_name, 0.75));
     return cell;
   };
 
   // Construct num_cells/2 cells of type 0
-  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+  ModelInitializer::CreateAgentsRandom(param->max_bound/2 -125, param->max_bound/2 +125,
                                        num_cells / 2, construct);
   // Construct num_cells/2 cells of type 1
   cell_type = -1;
   substance_name = "Substance_1";
-  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+  ModelInitializer::CreateAgentsRandom(param->max_bound/2 -125, param->max_bound/2 +125,
                                        num_cells / 2, construct);
 
   // Run simulation for N timesteps
-  simulation.GetScheduler()->Simulate(1000);
+  const uint64_t timesteps = 1000;
+  if (timesteps < 6000) {
+    Log::Warning("SomaClustering", "We recommend to run the simulation for roughly 6000 time steps. Please change 'timesteps = ..'.");
+  }
+  simulation.GetScheduler()->Simulate(timesteps);
 
   // Check if criterion is met
-  real_t spatial_range = 5;
+  real_t spatial_range = 15;
   auto crit = GetCriterion(spatial_range, num_cells / 8);
   if (crit) {
     std::cout << "Simulation completed successfully!\n";
