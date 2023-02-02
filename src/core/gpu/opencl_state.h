@@ -57,6 +57,9 @@ class OpenCLState {
   /// Disable support for double-precision floating point operations
   void DisableSupportForDouble();
 
+/// Enable support for double-precision floating point operations
+  void EnableSupportForDouble();
+
   const char* GetErrorString(int error);
 
   int ClAssert(int const code, char const* const file, int const line,

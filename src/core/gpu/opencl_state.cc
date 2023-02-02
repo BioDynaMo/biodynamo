@@ -85,6 +85,10 @@ void OpenCLState::DisableSupportForDouble() {
   impl_->fp64_support_.push_back(false);
 }
 
+void OpenCLState::EnableSupportForDouble() {
+  impl_->fp64_support_.push_back(true);
+}
+
 const char* OpenCLState::GetErrorString(int error) {
   switch (error) {
     // run-time and JIT compiler errors
