@@ -57,8 +57,10 @@ inline int Simulate(int argc, const char** argv) {
   // Define the substances that cells may secrete
   // Order: substance id, substance_name, diffusion_coefficient, decay_constant,
   // and the resolution of the (finite difference) diffusion grid.
-  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.05, 0.001, 40);
-  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.05, 0.001, 40);
+  ModelInitializer::DefineSubstance(kSubstance0, "Substance_0", 0.05, 0.001,
+                                    40);
+  ModelInitializer::DefineSubstance(kSubstance1, "Substance_1", 0.05, 0.001,
+                                    40);
 
   int cell_type = 1;
   std::string substance_name = "Substance_0";
@@ -73,18 +75,22 @@ inline int Simulate(int argc, const char** argv) {
   };
 
   // Construct num_cells/2 cells of type 0
-  ModelInitializer::CreateAgentsRandom(param->max_bound/2 -125, param->max_bound/2 +125,
+  ModelInitializer::CreateAgentsRandom(param->max_bound / 2 - 125,
+                                       param->max_bound / 2 + 125,
                                        num_cells / 2, construct);
   // Construct num_cells/2 cells of type 1
   cell_type = -1;
   substance_name = "Substance_1";
-  ModelInitializer::CreateAgentsRandom(param->max_bound/2 -125, param->max_bound/2 +125,
+  ModelInitializer::CreateAgentsRandom(param->max_bound / 2 - 125,
+                                       param->max_bound / 2 + 125,
                                        num_cells / 2, construct);
 
   // Run simulation for N timesteps
   const uint64_t timesteps = 1000;
   if (timesteps < 6000) {
-    Log::Warning("SomaClustering", "We recommend to run the simulation for roughly 6000 time steps. Please change 'timesteps = ..'.");
+    Log::Warning("SomaClustering",
+                 "We recommend to run the simulation for roughly 6000 time "
+                 "steps. Please change 'timesteps = ..'.");
   }
   simulation.GetScheduler()->Simulate(timesteps);
 
