@@ -604,6 +604,13 @@ struct Param {
   ///     use_progress_bar = false
   bool use_progress_bar = false;
 
+  /// Time unit of the progress bar. Possible values: "ms", "s", "min", "h"
+  /// Default value: `"s"`\n
+  /// TOML config file:
+  ///     [development]
+  ///     progress_bar_time_unit = "s"
+  std::string progress_bar_time_unit = "s";
+
   // ---------------------------------------------------------------------------
   // experimental group
 
