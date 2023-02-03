@@ -75,9 +75,6 @@ inline Algorithm *CreateOptimizationAlgorithm(OptimizationParam *opt_params) {
   }
   auto ret =
       AlgorithmRegistry::GetInstance()->GetAlgorithm(opt_params->algorithm);
-  if (ret == nullptr) {
-    return ret;
-  }
   return ret;
 }
 
