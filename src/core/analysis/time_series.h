@@ -27,6 +27,96 @@ class Simulation;
 
 namespace experimental {
 
+/// DataTransformer class that can be used to transform the data of a time
+/// series entry.
+/// \code
+/// DataTransformer transformer;
+/// ts.AddTransformedData("my-entry", "my-entry-transformed", transformer);
+/// \endcode
+/// This adds a new entry to the time series with the name
+/// "my-entry-transformed" whose data has been transformed according to
+/// the member functions.
+class DataTransformer {
+ public:
+  virtual ~DataTransformer() = default;
+
+  virtual void TransformXValues(const std::vector<real_t>& old_x_values,
+                                std::vector<real_t>& new_x_values) const = 0;
+  virtual void TransformYValues(const std::vector<real_t>& old_y_values,
+                                std::vector<real_t>& new_y_values) const = 0;
+  virtual void TransformYErrorLow(
+      const std::vector<real_t>& old_y_error_low,
+      std::vector<real_t>& new_y_error_low) const = 0;
+  virtual void TransformYErrorHigh(
+      const std::vector<real_t>& old_y_error_high,
+      std::vector<real_t>& new_y_error_high) const = 0;
+
+  BDM_CLASS_DEF(DataTransformer, 1);
+};
+
+/// This class implements a linear transformation of the data of a time series.
+/// It is used to transform the data of a time series entry. The transformation
+/// is applied to the x-vales, y-values, y-error-low, and y-error-high.
+/// Each transformation is linear and has its own slope and intercept.
+/// \code
+/// LinearTransformer transformer;
+/// transformer.SetXSlope(2.0);
+/// transformer.SetXIntercept(1.0);
+/// ts.AddTransformedData("my-entry", "my-entry-transformed", transformer);
+/// \endcode
+/// This adds a new entry to the time series with the name
+/// "my-entry-transformed" whose data has been transformed according to
+/// the member functions.
+class LinearTransformer : public DataTransformer {
+ public:
+  /// @brief  Transforms the x-values according to the linear transformation
+  /// @param old_x_values x-values of the time series entry
+  /// @param new_x_values x_slope_ * old_x_values + x_intercept_
+  void TransformXValues(const std::vector<real_t>& old_x_values,
+                        std::vector<real_t>& new_x_values) const final;
+
+  /// @brief  Transforms the y-values according to the linear transformation
+  /// @param old_y_values y-values of the time series entry
+  /// @param new_y_values y_slope_ * old_y_values + y_intercept_
+  void TransformYValues(const std::vector<real_t>& old_y_values,
+                        std::vector<real_t>& new_y_values) const final;
+
+  /// @brief  Transforms the y-error-low according to the linear transformation
+  /// @param old_y_error_low y-error-low of the time series entry
+  /// @param new_y_error_low y_error_low_slope_ * old_y_error_low +
+  /// y_error_low_intercept_
+  void TransformYErrorLow(const std::vector<real_t>& old_y_error_low,
+                          std::vector<real_t>& new_y_error_low) const final;
+
+  /// @brief  Transforms the y-error-high according to the linear transformation
+  /// @param old_y_error_high y-error-high of the time series entry
+  /// @param new_y_error_high y_error_high_slope_ * old_y_error_high +
+  /// y_error_high_intercept_
+  void TransformYErrorHigh(const std::vector<real_t>& old_y_error_high,
+                           std::vector<real_t>& new_y_error_high) const final;
+
+  void SetXSlope(real_t slope);
+  void SetXIntercept(real_t intercept);
+  void SetYSlope(real_t slope);
+  void SetYIntercept(real_t intercept);
+  void SetYErrorLowSlope(real_t slope);
+  void SetYErrorLowIntercept(real_t intercept);
+  void SetYErrorHighSlope(real_t slope);
+  void SetYErrorHighIntercept(real_t intercept);
+
+ private:
+  real_t x_slope_ = 1.0;
+  real_t x_intercept_ = 0.0;
+  real_t y_slope_ = 1.0;
+  real_t y_intercept_ = 0.0;
+  real_t y_error_low_slope_ = 1.0;
+  real_t y_error_low_intercept_ = 0.0;
+  real_t y_error_high_slope_ = 1.0;
+  real_t y_error_high_intercept_ = 0.0;
+
+  BDM_CLASS_DEF_OVERRIDE(LinearTransformer, 1);
+};
+
 /// This class simplifies the collection of time series data during a
 /// simulation. Every entry has an id and data arrays storing x-values,
 /// y-values, y-error-low, and y-error-high.
@@ -173,6 +263,15 @@ class TimeSeries {
   /// In this scenario the following entries will be added to this
   /// object: "entry1-from-ts", "entry2-from-ts"
   void Add(const TimeSeries& ts, const std::string& suffix);
+
+  /// Copies the data of an existing entry and adds it to this object. During
+  /// the copy process, the data is transformed using the given `transformer`.
+  /// This allows to e.g. convert the x-values from simulation time to
+  /// simulation steps, or vice versa. A common use case are linear or log
+  /// scaling of the x-axis.
+  void AddTransformedData(const std::string& old_id,
+                          const std::string& transformed_id,
+                          const DataTransformer& transformer);
 
   /// Adds a new data point to all time series with a collector.
   void Update();

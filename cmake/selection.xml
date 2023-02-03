@@ -88,6 +88,8 @@
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
     <class name="bdm::experimental::TimeSeries" />
+    <class name="bdm::experimental::DataTransformer" />
+    <class name="bdm::experimental::LinearTransformer" />
     <class name="bdm::experimental::TimeSeries::Data" />
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
     <class name="bdm::experimental::Reducer<uint64_t>" />
