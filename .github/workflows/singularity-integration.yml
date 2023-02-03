@@ -1,21 +1,21 @@
-# name: Singularity Integration
+name: Singularity Integration
 
-# on:
-#   push:
-#     branches:
-#       - master
-#   pull_request:
-#     types: [opened, synchronize, reopened]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
 
-# jobs:
-#   build:
-#     name: Build
-#     runs-on: ubuntu-latest
-#     container:
-#       image: quay.io/singularity/singularity:v3.9.0
-#       options: "--privileged --workdir /data"
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Build singularity image...
-#         run: |
-#           singularity build Singularity.sif Singularity
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/singularity/singularity:v3.9.0
+      options: "--privileged --workdir /data"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build singularity image...
+        run: |
+          singularity build Singularity.sif Singularity
