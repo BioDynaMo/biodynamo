@@ -28,7 +28,7 @@ example where diffusion plays a role.
 with `biodynamo demo`.
 
 ```bash
-biodynamo demo diffusion .
+bdm demo diffusion .
 ```
 
 ### Inspect the code
@@ -124,7 +124,7 @@ extracellular diffusion
 Run the following commands to build and run the simulation.
 
 ``` bash
-biodynamo run
+bdm run
 ```
 
 ### Visualize the simulation
@@ -139,6 +139,36 @@ Then click the Play button at the top of the screen to run the simulation visual
   <source src="https://cernbox.cern.ch/index.php/s/rzl2Kb4uxny4ZXF/download?path=%2F&files=exported_visualization.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
+
+### Boundary conditions
+
+For a numerical solution, we need to specify the equation, the boundary
+conditions, and the domain. BioDynaMo supports Neumann and Dirichlet boundaries 
+with constant coefficients on a cube domain. For instance, you may specify 
+no-flux boundaries (homogeneous Neumann) via
+``` cpp
+ModelInitializer::AddBoundaryConditions(
+    kKalium, BoundaryConditionType::kNeumann,
+    std::make_unique<ConstantBoundaryCondition>(0));
+```
+or some Dirichlet boundaries via
+``` cpp
+ModelInitializer::AddBoundaryConditions(
+    kKalium, BoundaryConditionType::kDirichlet,
+    std::make_unique<ConstantBoundaryCondition>(1.0));
+```
+
+The `ModelInitializer` conveniently wraps the access to the `ResourceManager`
+and sets the boundaries. You can also set the boundaries directly by calling
+member functions of the `DiffusionGrid` (see API documentation).
+
+If you want to implement more sophisticated boundaries (e.g. with spatial 
+dependence), you may derive classes from `BoundaryCondition` and implement its
+member `BoundaryCondition::Evaluate(real_t,real_t,real_t,real_t)` accordingly.
+If your application required different equations, different domains, different
+numerical schemes, please consult the API for `Continuum`, `ScalarField`, and
+`VectorField` to see how to interface continuum models with the BioDyanMo
+simulation runtime. (see also `bdm demo analytic_continuum`)
 
 ### Diffusion parameter constraints
 The partial differential equations that describe diffusion are solved 

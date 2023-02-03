@@ -16,6 +16,7 @@
 
 #include "core/agent/cell.h"
 #include "core/diffusion/diffusion_grid.h"
+#include "core/diffusion/euler_depletion_grid.h"
 #include "core/diffusion/euler_grid.h"
 #include "core/diffusion/runge_kutta_grid.h"
 #include "core/environment/environment.h"
@@ -94,7 +95,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 7);
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 6);
 
   env->ForcedUpdate();
   dgrid->Initialize();
@@ -110,9 +111,9 @@ TEST(DiffusionTest, UpdateGrid) {
 
   auto d_dims = dgrid->GetDimensions();
 
-  EXPECT_EQ(-60, d_dims[0]);
-  EXPECT_EQ(-60, d_dims[2]);
-  EXPECT_EQ(-60, d_dims[4]);
+  EXPECT_EQ(-90, d_dims[0]);
+  EXPECT_EQ(-90, d_dims[2]);
+  EXPECT_EQ(-90, d_dims[4]);
   EXPECT_EQ(210, d_dims[1]);
   EXPECT_EQ(210, d_dims[3]);
   EXPECT_EQ(210, d_dims[5]);
@@ -508,6 +509,10 @@ TEST(DiffusionTest, IOTest) {
   dgrid->SetLowerThreshold(-42);
   dgrid->SetDecayConstant(0.01);
 
+  dgrid->SetBoundaryCondition(
+      std::make_unique<ConstantBoundaryCondition>(13.0));
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
+
   // write to root file
   WritePersistentObject(ROOTFILE, "dgrid", *dgrid, "new");
 
@@ -535,11 +540,14 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[1]);
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[3]);
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[5]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[0]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[1]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[2]);
-  EXPECT_EQ(1331u, restored_dgrid->GetNumBoxes());
-  EXPECT_EQ(11u, restored_dgrid->GetResolution());
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[0]);
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[1]);
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[2]);
+  EXPECT_EQ(1000u, restored_dgrid->GetNumBoxes());
+  EXPECT_EQ(10u, restored_dgrid->GetResolution());
+  EXPECT_EQ(BoundaryConditionType::kDirichlet,
+            restored_dgrid->GetBoundaryConditionType());
+  EXPECT_EQ(13.0, restored_dgrid->GetBoundaryCondition()->Evaluate(0, 0, 0, 0));
 
   remove(ROOTFILE);
   delete dgrid;
@@ -667,9 +675,9 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
   simulation.GetEnvironment()->Update();
 
   real_t diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* dgrid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* dgrid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* dgrid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 20);
+  DiffusionGrid* dgrid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 40);
+  DiffusionGrid* dgrid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 80);
 
   dgrid2->Initialize();
   dgrid4->Initialize();
@@ -730,6 +738,303 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
   delete dgrid2;
   delete dgrid4;
   delete dgrid8;
+}
+
+TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "closed";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double diff_coef = 0.0;
+  double decay_depletes = 0.0;
+  double decay_depleted = 0.01;
+  int res = 20;
+  // Depleting substance is fixed, i.e. no diff and no decay
+  auto* dgrid_depletes1 =
+      new EulerGrid(0, "MMP", diff_coef, decay_depletes, res);
+  auto* dgrid_depletes2 =
+      new EulerGrid(1, "TIMP", diff_coef, decay_depletes, res);
+  auto* dgrid_depleted =
+      new EulerDepletionGrid(2, "ECM", diff_coef, decay_depleted, res);
+  dgrid_depletes1->Initialize();
+  dgrid_depletes1->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid_depletes1);
+  dgrid_depletes2->Initialize();
+  dgrid_depletes2->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid_depletes2);
+  dgrid_depleted->Initialize();
+  dgrid_depleted->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid_depleted);
+
+  // Add depleting substance with its binding coefficient
+  std::vector<double> bnd_coeff{0.01, 0.01};
+  std::vector<int> bnd_subs{dgrid_depletes1->GetContinuumId(),
+                            dgrid_depletes2->GetContinuumId()};
+  dgrid_depleted->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
+  dgrid_depleted->SetBindingSubstance(bnd_subs[1], bnd_coeff[1]);
+
+  // instantaneous point source
+  double init_depleted = 1e2;
+  double init_depletes = 1;
+  Real3 source = {{0, 0, 0}};
+  dgrid_depletes1->ChangeConcentrationBy(source, init_depletes);
+  dgrid_depletes2->ChangeConcentrationBy(source, init_depletes);
+  dgrid_depleted->ChangeConcentrationBy(source, init_depleted);
+  Real3 marker = {50.0, 50.0, 50.0};
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100;
+  for (int t = 0; t < tot; t++) {
+    dgrid_depletes1->Diffuse(simulation_time_step);
+    dgrid_depletes2->Diffuse(simulation_time_step);
+    dgrid_depleted->Diffuse(simulation_time_step);
+  }
+
+  auto conc_depletes1 = dgrid_depletes1->GetAllConcentrations();
+  auto conc_depletes2 = dgrid_depletes2->GetAllConcentrations();
+  auto conc_depleted = dgrid_depleted->GetAllConcentrations();
+
+  // If there is no diffusion, each grid point of the depleted substance simply
+  // executes an independet exponential decay due to self and induced depletion
+  double total_mu = decay_depleted + init_depletes * bnd_coeff[0] +
+                    init_depletes * bnd_coeff[1];
+  double expected_solution =
+      init_depleted * std::exp(-total_mu * tot * simulation_time_step);
+
+  // No diffusing substance -> Solution is 0 if not at source.
+  EXPECT_FLOAT_EQ(0.0, conc_depletes1[dgrid_depletes1->GetBoxIndex(marker)]);
+  EXPECT_FLOAT_EQ(0.0, conc_depletes2[dgrid_depletes2->GetBoxIndex(marker)]);
+  EXPECT_FLOAT_EQ(0.0, conc_depleted[dgrid_depleted->GetBoxIndex(marker)]);
+  // Depleting substances don't decay -> Conc shouldn't change at source
+  EXPECT_EQ(init_depletes,
+            conc_depletes1[dgrid_depletes1->GetBoxIndex(source)]);
+  EXPECT_EQ(init_depletes,
+            conc_depletes2[dgrid_depletes2->GetBoxIndex(source)]);
+  // Expect numeric value of exponential decay to coincide with +/- 1% of
+  // analytic solution.
+  EXPECT_LT(std::abs(expected_solution -
+                     conc_depleted[dgrid_depleted->GetBoxIndex(source)]) /
+                expected_solution,
+            0.01);
+
+  // dgrids are deleted by rm's destructor
+}
+
+// Tests Fatal if depletion grids don't match in size
+TEST(DiffusionTest, DepletionMissmatch) {
+  ASSERT_DEATH(
+      {
+        double simulation_time_step{0.1};
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -100;
+          param->max_bound = 100;
+          param->diffusion_boundary_condition = "Neumann";
+        };
+        Simulation simulation(TEST_NAME, set_param);
+        simulation.GetEnvironment()->Update();
+        auto* rm = simulation.GetResourceManager();
+
+        double diff_coef = 0.0;
+        double decay_depletes = 0.0;
+        double decay_depleted = 0.01;
+        int res = 20;
+
+        // Generate two substances with different resolutions
+        auto* dgrid_depletes1 =
+            new EulerGrid(0, "MMP", diff_coef, decay_depletes, res);
+        auto* dgrid_depleted = new EulerDepletionGrid(2, "ECM", diff_coef,
+                                                      decay_depleted, res + 1);
+
+        // Add substances to simulation
+        dgrid_depletes1->Initialize();
+        rm->AddContinuum(dgrid_depletes1);
+        dgrid_depleted->Initialize();
+        rm->AddContinuum(dgrid_depleted);
+
+        // Add depleting substance with its binding coefficient
+        std::vector<double> bnd_coeff{0.01};
+        std::vector<int> bnd_subs{dgrid_depletes1->GetContinuumId()};
+        dgrid_depleted->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
+
+        // Simulate diffusion / exponential decay for `tot` timesteps
+        int tot = 2;
+        for (int t = 0; t < tot; t++) {
+          dgrid_depletes1->Diffuse(simulation_time_step);
+          dgrid_depleted->Diffuse(simulation_time_step);
+        }
+      },
+      ".*The number of voxels of the depleting diffusion grid MMP differs from "
+      "that of the depleted one (ECM)*");
+}
+
+TEST(DiffusionTest, EulerDirichletBoundaries) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Dirichlet";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 100.0;
+  int res = 20;
+  // Depleting substance is fixed, i.e. no diff and no decay
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+
+  dgrid->Initialize();
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
+
+  dgrid->SetBoundaryCondition(std::make_unique<ConstantBoundaryCondition>(1.0));
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid);
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100000;  // ToDo This should probably be lower for final version
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+  }
+
+  // After a sufficient amount of iterations with dirichlet boundary conditions
+  // equal to 1.0, the concentration should be 1.0 everywhere.
+  auto conc = dgrid->GetAllConcentrations();
+  real_t average_concentration = 0.0;
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+    average_concentration += conc[i];
+  }
+  average_concentration /= dgrid->GetNumBoxes();
+  EXPECT_FLOAT_EQ(average_concentration, 1.0);
+}
+
+TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Neumann";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 10.0;
+  int res = 20;
+  double init = 1e5;
+  std::vector<Real3> sources;
+  sources.push_back({0, 0, 0});
+  sources.push_back({50, 50, 50});
+  sources.push_back({-50, -50, -50});
+
+  // Test multiple positions for the source
+  for (size_t s = 0; s < sources.size(); s++) {
+    auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+    dgrid->Initialize();
+    dgrid->ChangeConcentrationBy(sources[s], init);
+    dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
+    dgrid->SetBoundaryCondition(
+        std::make_unique<ConstantBoundaryCondition>(0.0));
+    dgrid->SetUpperThreshold(1e15);
+    rm->AddContinuum(dgrid);
+
+    // Simulate diffusion / exponential decay for `tot` timesteps
+    int tot = 10000;
+    for (int t = 0; t < tot; t++) {
+      dgrid->Diffuse(simulation_time_step);
+    }
+    double expected_solution = 0.0;
+    auto conc = dgrid->GetAllConcentrations();
+    for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+      expected_solution += conc[i];
+    }
+    EXPECT_LT(std::abs(init - expected_solution) / init, 0.0001);
+    rm->RemoveContinuum(0);
+  }
+}
+
+/// Test verifies if the diffusion grid is able to handle a Neumann boundary
+/// with a non-zero value. We test for -1.0 which should add concentration
+/// to the grid.
+TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
+  // Define some parameters & simulation
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Neumann";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;  // no decay
+  double diff_coef = 1.0;   // diffusion
+  int res = 20;             // some resolution
+
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  dgrid->Initialize();
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
+  /// Normal vector typically points outwards, hence -1.0 adds concentration to
+  /// the volume. This test tests if we add concentration to the volume.
+  dgrid->SetBoundaryCondition(
+      std::make_unique<ConstantBoundaryCondition>(-1.0));
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid);
+
+  // ----------------------------------------------------------
+  // 1. Test if DG was initialized correctly (zero initialized)
+  // ----------------------------------------------------------
+  auto conc = dgrid->GetAllConcentrations();
+  double init = 0.0;
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+    init += conc[i];
+  }
+  ASSERT_DOUBLE_EQ(init, 0.0);
+
+  // ----------------------------------------------------------
+  // 2. Simulate diffusion and check if concentration is added
+  // ----------------------------------------------------------
+
+  double intermediate_concentration_backup = 0.0;
+  int tot = 10000;
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+    conc = dgrid->GetAllConcentrations();  // get current concentrations.
+    double intermediate_concentration_1 = 0.0;
+    for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+      intermediate_concentration_1 += conc[i];
+    }
+    if (t == 0) {
+      /// Note: We have 20x20x20 boxes, so we have (20x20)x2+(19*18)x4=2168
+      /// boxes on the boundary. In the first step, each boundary box should
+      /// receive a concentration of
+      /// D * (dt / dx^2) * - BC * dx = 1.0 * (0.1 / (10*10)) * -(-1) * 10 =
+      /// 10^-2. Thus, the total concentration should be roughly 21.68 (the
+      /// edges get additional influx), and definitely bigger than 1.0 .
+      EXPECT_GT(intermediate_concentration_1, 1.0);
+    } else {
+      /// For all further iterations, we simply check if the concentration
+      /// increases. Which should be the case for the given BC.
+      EXPECT_GT(intermediate_concentration_1,
+                intermediate_concentration_backup);
+    }
+    intermediate_concentration_backup = intermediate_concentration_1;
+  }
+
+  rm->RemoveContinuum(0);
 }
 
 TEST(DiffusionTest, DynamicTimeStepping) {
@@ -803,9 +1108,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   };
   Simulation simulation(TEST_NAME, set_param);
   real_t diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 21);
-  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 41);
-  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 81);
+  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 20);
+  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 40);
+  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 80);
 
   dgrid2->Initialize();
   dgrid4->Initialize();
@@ -895,6 +1200,7 @@ TEST(DiffusionTest, GradientComputation) {
   DiffusionGrid* d_grid = nullptr;
   d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 100);
   rm->AddContinuum(d_grid);
+  d_grid->SetLowerThreshold(-1e15);
 
   // Define scalar field for initialization
   auto scalar_field = [&](real_t x, real_t y, real_t z) {
@@ -1005,6 +1311,7 @@ TEST(DiffusionTest, PrintInfoAfterInititialization) {
   EXPECT_TRUE(buffer.str().find("domain     : [-3, 4]") != std::string::npos);
   EXPECT_TRUE(buffer.str().find("bounds     : -5 < c < 5") !=
               std::string::npos);
+  EXPECT_TRUE(buffer.str().find("boundary   : Neumann") != std::string::npos);
 }
 
 #ifdef USE_PARAVIEW

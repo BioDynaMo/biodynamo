@@ -49,7 +49,7 @@ TEST(DiffusionInitTest, GaussianBand) {
                                        construct);
 
   // Define the substances in our simulation
-  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
+  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 25);
 
   // Initialize the substance according to a GaussianBand along the x-axis
   ModelInitializer::InitializeSubstance(kSubstance,
@@ -126,6 +126,51 @@ TEST(DiffusionInitTest, InitBothArrays) {
   // in c1_.
   auto* test_grid = bdm_static_cast<TestGrid*>(d_grid);
   EXPECT_TRUE(test_grid->ComapareArrayWithValue(0.5));
+  EXPECT_TRUE(test_grid->CompareArrays());
+}
+
+TEST(DiffusionInitTest, InitDirichlet) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0;
+    param->max_bound = 250;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+
+  // Create one cell at a random position
+  auto construct = [](const Real3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+                                       construct);
+
+  // Define the substances in our simulation
+  DiffusionGrid* d_grid = nullptr;
+  d_grid = new TestGrid(kSubstance, "Substance", 0.0, 0.0, 26);
+  rm->AddContinuum(d_grid);
+
+  // Set Dirichlet boundary conditions with value 0.25
+  ModelInitializer::AddBoundaryConditions(
+      kSubstance, BoundaryConditionType::kDirichlet,
+      std::make_unique<ConstantBoundaryCondition>(0.25));
+
+  // Initialize the substance to 0.5
+  auto SetValues = [&](real_t x, real_t y, real_t z) { return 0.5; };
+  ModelInitializer::InitializeSubstance(kSubstance, SetValues);
+
+  simulation.GetScheduler()->Simulate(1);
+
+  // Test if all values in c1_ are 0.5 (inner points) and 0 on the boundary.
+  // Test if all values in c2_ are the same as in c1_.
+  auto* test_grid = bdm_static_cast<TestGrid*>(d_grid);
+  EXPECT_FALSE(test_grid->ComapareArrayWithValue(0.5));
+  EXPECT_TRUE(test_grid->ComapareInnerArrayWithValue(0.5));
+  EXPECT_TRUE(test_grid->CompareBoundaryValues(0.25));
   EXPECT_TRUE(test_grid->CompareArrays());
 }
 }  // namespace bdm

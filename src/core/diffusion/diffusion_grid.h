@@ -17,6 +17,7 @@
 
 #include <array>
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,23 +31,72 @@
 
 namespace bdm {
 
+/// Available boundary conditions
+enum class BoundaryConditionType {
+  kDirichlet,
+  kNeumann,
+  kOpenBoundaries,
+  kClosedBoundaries
+};
+
 enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
+
+/// @brief  This class implements the boundary conditions. It is integrated into
+/// the diffusion grid as a smart pointer. The diffusion grid will call the
+/// Evaluate() method of the boundary condition object for Neumann and Dirichlet
+/// boundary conditions.
+class BoundaryCondition {
+ public:
+  BoundaryCondition() = default;
+  explicit BoundaryCondition(const TRootIOCtor*) {}
+  virtual ~BoundaryCondition() = default;
+
+  /// @brief Boundary condition for Neumann and Dirichlet boundary conditions.
+  /// @param x x coordinate
+  /// @param y y coordinate
+  /// @param z z coordinate
+  /// @param time Time of the simulation (for time-dependent boundary
+  /// conditions)
+  /// @return The value of the boundary condition at the given position and time
+  virtual real_t Evaluate(real_t x, real_t y, real_t z, real_t time) const = 0;
+
+  BDM_CLASS_DEF(BoundaryCondition, 1);
+};
+
+/// @brief  This class implements constant boundary conditions (Dirichlet and
+/// Neumann). The value of the boundary condition is constant and independent of
+/// the position and time, i.e. u = const or du/dn = const on the boundary.
+class ConstantBoundaryCondition : public BoundaryCondition {
+  using BoundaryCondition::BoundaryCondition;
+
+ public:
+  /// @brief Constructor for a constant boundary condition
+  /// @param value Constant on the boundary (u = value or du/dn = value)
+  explicit ConstantBoundaryCondition(real_t value) : value_(value) {}
+
+  /// @brief see BoundaryCondition::Evaluate()
+  real_t Evaluate(real_t x, real_t y, real_t z, real_t time) const final {
+    return value_;
+  }
+
+ private:
+  /// Constant value of the boundary condition for all positions and times.
+  real_t value_ = 0.0;
+
+  BDM_CLASS_DEF_OVERRIDE(ConstantBoundaryCondition, 1);
+};
 
 class DiffusionGrid : public ScalarField {
  public:
   DiffusionGrid() = default;
-  explicit DiffusionGrid(TRootIOCtor* p) {}
+  explicit DiffusionGrid(const TRootIOCtor*) {}
   DiffusionGrid(int substance_id, const std::string& substance_name, real_t dc,
-                real_t mu, int resolution = 11)
-      : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
-        mu_(mu),
-        resolution_(resolution) {
-    // Compatibility with new abstract interface
-    SetContinuumId(substance_id);
-    SetContinuumName(substance_name);
-  }
-
+                real_t mu, int resolution = 10);
   ~DiffusionGrid() override = default;
+  DiffusionGrid(const DiffusionGrid&) = delete;             // copy constructor
+  DiffusionGrid& operator=(const DiffusionGrid&) = delete;  // copy assignment
+  DiffusionGrid(DiffusionGrid&&) = delete;                  // move constructor
+  DiffusionGrid& operator=(DiffusionGrid&&) = delete;       // move assignment
 
   void Initialize() override;
 
@@ -59,8 +109,16 @@ class DiffusionGrid : public ScalarField {
   void Step(real_t dt) override { Diffuse(dt); }
   void Diffuse(real_t dt);
 
-  virtual void DiffuseWithClosedEdge(real_t dt) = 0;
-  virtual void DiffuseWithOpenEdge(real_t dt) = 0;
+  [[deprecated("Use Neumann / Dirichlet instead")]] virtual void
+  DiffuseWithClosedEdge(real_t dt) = 0;
+  [[deprecated("Use Neumann / Dirichlet instead")]] virtual void
+  DiffuseWithOpenEdge(real_t dt) = 0;
+  /// Compute the diffusion of the substance with Dirichlet boundary conditions
+  /// ( u = const on the boundary) for a given time step dt.
+  virtual void DiffuseWithDirichlet(real_t dt) = 0;
+  /// Compute the diffusion of the substance with Neumann boundary conditions
+  /// (du/dn = const on the boundary) for a given time step dt.
+  virtual void DiffuseWithNeumann(real_t dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -91,12 +149,18 @@ class DiffusionGrid : public ScalarField {
   void ChangeConcentrationBy(size_t idx, real_t amount,
                              InteractionMode mode = InteractionMode::kAdditive);
 
-  /// Get the concentration at specified position
+  /// @brief  Get the value of the scalar field at specified position
+  /// @param postion 3D position of
+  /// @return c1_[idx[position]]
   real_t GetValue(const Real3& position) const override;
   [[deprecated("Use GetValue instead")]] real_t GetConcentration(
       const Real3& position) const {
     return GetValue(position);
   };
+  /// @brief  Get the concentration at specified index
+  /// @param idx Flat index of the grid
+  /// @return c1_[idx]
+  real_t GetConcentration(const size_t idx) const;
 
   // NOTE: virtual because of test
   /// Get the gradient at a specified position. By default, the obtained
@@ -201,11 +265,26 @@ class DiffusionGrid : public ScalarField {
     initializers_.push_back(function);
   }
 
-  // retrun true if substance concentration and gradient don't evolve over time
+  /// Return if a substance is stationary, e.g. (mu == 0 && dc == 0)
   bool IsFixedSubstance() {
     return (mu_ == 0 && dc_[1] == 0 && dc_[2] == 0 && dc_[3] == 0 &&
             dc_[4] == 0 && dc_[5] == 0 && dc_[6] == 0);
   }
+
+  /// @brief Set the boundary condition, takes ownership of the object.
+  /// @param bc object that implements the boundary condition, see for example
+  /// `ConstantBoundaryCondition`
+  void SetBoundaryCondition(std::unique_ptr<BoundaryCondition> bc);
+
+  /// @brief  Returns the boundary condition. Does not transfer ownership.
+  /// @return const Pointer to the boundary condition
+  BoundaryCondition* GetBoundaryCondition() const;
+
+  /// Sets boundary condition type
+  void SetBoundaryConditionType(BoundaryConditionType bc_type);
+
+  /// Returns the BoundaryConditionType, see `BoundaryConditionType`
+  BoundaryConditionType GetBoundaryConditionType() const;
 
   /// Print information about the Diffusion Grid
   void PrintInfo(std::ostream& out = std::cout);
@@ -221,6 +300,7 @@ class DiffusionGrid : public ScalarField {
  private:
   friend class RungeKuttaGrid;
   friend class EulerGrid;
+  friend class EulerDepletionGrid;
   friend class TestGrid;  // class used for testing (e.g. initialization)
 
   void ParametersCheck(real_t dt);
@@ -257,7 +337,7 @@ class DiffusionGrid : public ScalarField {
   /// The maximum concentration value that a box can have
   real_t upper_threshold_ = 1e15;
   /// The minimum concentration value that a box can have
-  real_t lower_threshold_ = -1e15;
+  real_t lower_threshold_ = 0.0;
   /// The diffusion coefficients [cc, cw, ce, cs, cn, cb, ct]
   std::array<real_t, 7> dc_ = {{0}};
   /// The decay constant
@@ -281,6 +361,10 @@ class DiffusionGrid : public ScalarField {
       {};  //!
   // Turn to true after gradient initialization
   bool init_gradient_ = false;
+  /// Type of boundary conditions
+  BoundaryConditionType bc_type_ = BoundaryConditionType::kDirichlet;
+  /// Object that implements the boundary conditions.
+  std::unique_ptr<BoundaryCondition> boundary_condition_ = nullptr;
   /// Flag to indicate if the grid is initialized
   bool initialized_ = false;
   /// Flag to indicate if we want to print information about the grid after

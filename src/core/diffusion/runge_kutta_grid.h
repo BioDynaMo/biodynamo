@@ -35,7 +35,7 @@ class RungeKuttaGrid : public DiffusionGrid {
  public:
   RungeKuttaGrid() = default;
   RungeKuttaGrid(int substance_id, std::string substance_name, real_t dc,
-                 int resolution = 11)
+                 int resolution = 10)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, 0.0,
                       resolution) {}
 
@@ -54,6 +54,10 @@ class RungeKuttaGrid : public DiffusionGrid {
 
   void DiffuseWithClosedEdge(real_t dt) override;
   void DiffuseWithOpenEdge(real_t dt) override;
+  /// Not implemented for RungeKuttaGrid
+  void DiffuseWithDirichlet(real_t dt) override;
+  /// Not implemented for RungeKuttaGrid
+  void DiffuseWithNeumann(real_t dt) override;
 
  private:
   /// Buffers for Runge Kutta

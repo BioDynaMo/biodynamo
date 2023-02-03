@@ -20,6 +20,54 @@
 
 namespace bdm {
 
+/// Transforms a BoundaryConditionType to the corresponding string
+std::string BoundaryTypeToString(const BoundaryConditionType& type) {
+  switch (type) {
+    case BoundaryConditionType::kNeumann:
+      return "Neumann";
+    case BoundaryConditionType::kOpenBoundaries:
+      return "open";
+    case BoundaryConditionType::kClosedBoundaries:
+      return "closed";
+    case BoundaryConditionType::kDirichlet:
+      return "Dirichlet";
+    default:
+      return "unknown";
+  }
+}
+
+/// Transforms a string to the corresponding BoundaryConditionType
+BoundaryConditionType StringToBoundaryType(const std::string& type) {
+  if (type == "Neumann") {
+    return BoundaryConditionType::kNeumann;
+  } else if (type == "open") {
+    return BoundaryConditionType::kOpenBoundaries;
+  } else if (type == "closed") {
+    return BoundaryConditionType::kClosedBoundaries;
+  } else if (type == "Dirichlet") {
+    return BoundaryConditionType::kDirichlet;
+  } else {
+    Log::Fatal("StringToBoundaryType", "Unknown boundary type: ", type);
+    return BoundaryConditionType::kNeumann;
+  }
+}
+
+DiffusionGrid::DiffusionGrid(int substance_id,
+                             const std::string& substance_name, real_t dc,
+                             real_t mu, int resolution)
+    : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
+      mu_(mu),
+      resolution_(resolution),
+      boundary_condition_(std::make_unique<ConstantBoundaryCondition>(0.0)) {
+  // Compatibility with new abstract interface
+  SetContinuumId(substance_id);
+  SetContinuumName(substance_name);
+
+  // Get the default boundary type (set via parameter file)
+  auto* param = Simulation::GetActive()->GetParam();
+  bc_type_ = StringToBoundaryType(param->diffusion_boundary_condition);
+}
+
 void DiffusionGrid::Initialize() {
   if (resolution_ == 0) {
     Log::Fatal("DiffusionGrid::Initialize",
@@ -32,22 +80,19 @@ void DiffusionGrid::Initialize() {
   auto bounds = env->GetDimensionThresholds();
 
   grid_dimensions_ = {bounds[0], bounds[1]};
+  if (bounds[0] > bounds[1]) {
+    Log::Fatal("DiffusionGrid::Initialize",
+               "The grid dimensions are not correct. Lower bound is greater",
+               " than upper bound. (substance '", GetContinuumName(), "')");
+  }
 
-  // Example: diffusion grid dimensions from 0-40 and resolution
-  // of 4. Resolution must be adjusted otherwise one data pointer will be
-  // missing.
-  // Without adjustment:
-  //   box_length_: 10
-  //   data points {0, 10, 20, 30} - 40 will be misssing!
-  // With adjustment
-  //   box_length_: 13.3
-  //   data points: {0, 13.3, 26.6, 39.9}
   auto adjusted_res =
       resolution_ == 1 ? 2 : resolution_;  // avoid division by 0
   box_length_ = (grid_dimensions_[1] - grid_dimensions_[0]) /
-                static_cast<real_t>(adjusted_res - 1);
-  // TODO(ahmad): parametrize the minimum box_length
-  if (box_length_ <= 1e-15) {
+                static_cast<real_t>(adjusted_res);
+
+  // Check if box length is not too small
+  if (box_length_ <= 1e-13) {
     Log::Fatal("DiffusionGrid::Initialize",
                "The box length was found to be (close to) zero. Please check "
                "the parameters for substance '",
@@ -84,10 +129,14 @@ void DiffusionGrid::Diffuse(real_t dt) {
   ParametersCheck(dt);
 
   auto* param = Simulation::GetActive()->GetParam();
-  if (param->diffusion_boundary_condition == "closed") {
+  if (bc_type_ == BoundaryConditionType::kClosedBoundaries) {
     DiffuseWithClosedEdge(dt);
-  } else if (param->diffusion_boundary_condition == "open") {
+  } else if (bc_type_ == BoundaryConditionType::kOpenBoundaries) {
     DiffuseWithOpenEdge(dt);
+  } else if (bc_type_ == BoundaryConditionType::kDirichlet) {
+    DiffuseWithDirichlet(dt);
+  } else if (bc_type_ == BoundaryConditionType::kNeumann) {
+    DiffuseWithNeumann(dt);
   } else {
     Log::Error(
         "EulerGrid::Diffuse", "Boundary condition of type '",
@@ -201,6 +250,7 @@ void DiffusionGrid::RunInitializers() {
   auto nx = resolution_;
   auto ny = resolution_;
   auto nz = resolution_;
+  size_t negative_voxels_counter_ = 0;
 
   // Apply all functions that initialize this diffusion grid
   for (size_t f = 0; f < initializers_.size(); f++) {
@@ -212,11 +262,28 @@ void DiffusionGrid::RunInitializers() {
           real_t real_z = grid_dimensions_[0] + z * box_length_;
           std::array<uint32_t, 3> box_coord = {x, y, z};
           size_t idx = GetBoxIndex(box_coord);
-          real_t value = initializers_[f](real_x, real_y, real_z);
+          real_t value{0};
+          if (bc_type_ == BoundaryConditionType::kDirichlet &&
+              (x == 0 || x == nx - 1 || y == 0 || y == ny - 1 || z == 0 ||
+               z == nz - 1)) {
+            value = boundary_condition_->Evaluate(real_x, real_y, real_z, 0);
+          } else {
+            value = initializers_[f](real_x, real_y, real_z);
+          }
+          if (value < lower_threshold_) {
+            negative_voxels_counter_++;
+          }
+
           ChangeConcentrationBy(idx, value);
         }
       }
     }
+  }
+  if (negative_voxels_counter_ > 0) {
+    Log::Warning("DiffusionGrid::RunInitializers()",
+                 "Some voxels of the diffusion grid ", GetContinuumName(),
+                 " were initialized with value ", lower_threshold_,
+                 " to avoid negative concentrations.");
   }
   // Copy data to second array to ensure valid Dirichlet Boundary Conditions
   c2_ = c1_;
@@ -339,6 +406,11 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
 /// Get the concentration at specified position
 real_t DiffusionGrid::GetValue(const Real3& position) const {
   auto idx = GetBoxIndex(position);
+  return GetConcentration(idx);
+}
+
+/// Get the concentration at specified voxel
+real_t DiffusionGrid::GetConcentration(const size_t idx) const {
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::ChangeConcentrationBy",
                "You tried to get the concentration outside the bounds of "
@@ -371,9 +443,23 @@ void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient,
 std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
     const Real3& position) const {
   std::array<uint32_t, 3> box_coord;
-  box_coord[0] = (floor(position[0]) - grid_dimensions_[0]) / box_length_;
-  box_coord[1] = (floor(position[1]) - grid_dimensions_[0]) / box_length_;
-  box_coord[2] = (floor(position[2]) - grid_dimensions_[0]) / box_length_;
+
+  for (size_t i = 0; i < 3; i++) {
+// Check if position is within boundaries
+#ifndef NDEBUG
+    assert((position[i] >= grid_dimensions_[0]) &&
+           "You tried to get the box coordinates outside the bounds of the "
+           "diffusion grid!");
+    assert((position[i] <= grid_dimensions_[1]) &&
+           "You tried to get the box coordinates outside the bounds of the "
+           "diffusion grid!");
+#endif  // NDEBUG
+    // Get box coords (Note: conversion to uint32_t should be save for typical
+    // grid sizes)
+    box_coord[i] = static_cast<uint32_t>(
+        (floor(position[i]) - grid_dimensions_[0]) / box_length_);
+  }
+
   return box_coord;
 }
 
@@ -388,6 +474,27 @@ size_t DiffusionGrid::GetBoxIndex(
 size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
   auto box_coord = GetBoxCoordinates(position);
   return GetBoxIndex(box_coord);
+}
+
+void DiffusionGrid::SetBoundaryCondition(
+    std::unique_ptr<BoundaryCondition> bc) {
+  boundary_condition_ = std::move(bc);
+}
+
+BoundaryCondition* DiffusionGrid::GetBoundaryCondition() const {
+  return boundary_condition_.get();
+}
+
+void DiffusionGrid::SetBoundaryConditionType(BoundaryConditionType bc_type) {
+  auto previous_bc = BoundaryTypeToString(bc_type_);
+  auto new_bc = BoundaryTypeToString(bc_type);
+  Log::Info("DiffusionGrid::SetBoundaryConditionType",
+            "Changing boundary condition from ", previous_bc, " to ", new_bc);
+  bc_type_ = bc_type;
+}
+
+BoundaryConditionType DiffusionGrid::GetBoundaryConditionType() const {
+  return bc_type_;
 }
 
 void DiffusionGrid::PrintInfo(std::ostream& out) {
@@ -428,6 +535,7 @@ void DiffusionGrid::PrintInfo(std::ostream& out) {
   out << "    resolution : " << resolution << " x " << resolution << " x "
       << resolution << "\n";
   out << "    num boxes  : " << num_boxes << "\n";
+  out << "    boundary   : " << BoundaryTypeToString(bc_type_) << "\n";
 };
 
 void DiffusionGrid::ParametersCheck(real_t dt) {
@@ -467,4 +575,5 @@ void DiffusionGrid::ParametersCheck(real_t dt) {
         "). Please refer to the user guide for more information.");
   }
 }
+
 }  // namespace bdm

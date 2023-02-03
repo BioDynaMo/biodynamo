@@ -29,6 +29,7 @@
 
 class EulerGrid;
 class RungeKuttaGrid;
+class EulerDepletionGrid;
 
 namespace bdm {
 
@@ -380,23 +381,42 @@ struct ModelInitializer {
   /// Allows agents to secrete the specified substance. Diffusion throughout the
   /// simulation space is automatically taken care of by the DiffusionGrid class
   ///
-  /// @param[in]  substance_id     The substance identifier
-  /// @param[in]  substance_name   The substance name
-  /// @param[in]  diffusion_coeff  The diffusion coefficient
-  /// @param[in]  decay_constant   The decay constant
-  /// @param[in]  resolution       The resolution of the diffusion grid
+  /// @param[in]  substance_id          The substance identifier
+  /// @param[in]  substance_name        The substance name
+  /// @param[in]  diffusion_coeff       The diffusion coefficient
+  /// @param[in]  decay_constant        The decay constant
+  /// @param[in]  resolution            The resolution of the diffusion grid
+  /// @param[in]  binding_coefficients  The binding coefficients of the
+  /// depleting substances
+  /// @param[in]  binding_substances    The depleting substances
   ///
-  static void DefineSubstance(size_t substance_id,
-                              const std::string& substance_name,
-                              real_t diffusion_coeff, real_t decay_constant,
-                              int resolution = 10);
+  static void DefineSubstance(
+      int substance_id, const std::string& substance_name,
+      real_t diffusion_coeff, real_t decay_constant, int resolution = 10,
+      const std::vector<real_t>& binding_coefficients = {},
+      const std::vector<int>& binding_substances = {});
 
   template <typename F>
-  static void InitializeSubstance(size_t substance_id, F function) {
+  static void InitializeSubstance(int substance_id, F function) {
     auto* sim = Simulation::GetActive();
     auto* rm = sim->GetResourceManager();
     auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
     diffusion_grid->AddInitializer(function);
+  }
+
+  /// Sets the boundary condition for the specified substance. Transfers the
+  /// ownership of the boundary condition to the diffusion grid.
+  /// @param[in]  substance_id  The substance identifier
+  /// @param[in]  bc_type       The boundary condition type
+  /// @param[in]  bc            The boundary condition
+  static void AddBoundaryConditions(int substance_id,
+                                    BoundaryConditionType bc_type,
+                                    std::unique_ptr<BoundaryCondition> bc) {
+    auto* sim = Simulation::GetActive();
+    const auto* rm = sim->GetResourceManager();
+    auto diffusion_grid = rm->GetDiffusionGrid(substance_id);
+    diffusion_grid->SetBoundaryConditionType(bc_type);
+    diffusion_grid->SetBoundaryCondition(std::move(bc));
   }
 };
 

@@ -36,6 +36,12 @@ inline int Simulate(int argc, const char** argv) {
   // Define the substances that cells may secrete
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
+  // Define homogeneous Neumann boundary conditions for the substance (this is
+  // in fact the default, so this line is not necessary)
+  ModelInitializer::AddBoundaryConditions(
+      kKalium, BoundaryConditionType::kNeumann,
+      std::make_unique<ConstantBoundaryCondition>(0));
+
   // Create 8 cells in a 2x2x2 grid setup
   auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
