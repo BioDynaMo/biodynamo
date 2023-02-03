@@ -14,4 +14,9 @@ nbclassic==0.4.8
 nbclient==0.6.6
 nbconvert==6.5.3
 nbformat==5.4.0
-markupsafe==2.0.1 
+markupsafe==2.0.1
+beautifulsoup4==4.11.1
+ipython==8.8.0
+traitlets==5.8.1
+websocket-client==1.4.2
+zipp==3.11.0
