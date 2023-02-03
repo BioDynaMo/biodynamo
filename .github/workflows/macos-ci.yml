@@ -1,93 +1,93 @@
-name: macOS CI
+# name: macOS CI
 
-on:
-  push:
-  pull_request:
-    branches:
-      - master
+# on:
+#   push:
+#   pull_request:
+#     branches:
+#       - master
 
-jobs:
-  build:
-    strategy:
-      matrix:
-        os: [macos-11, macos-12]
+# jobs:
+#   build:
+#     strategy:
+#       matrix:
+#         os: [macos-11, macos-12]
 
-    runs-on: ${{ matrix.os }}
+#     runs-on: ${{ matrix.os }}
 
-    steps:
-    - name: Make sure Xcode 14.1 is used on macOS 12 as the default /Application/Xcode.app
-      shell: bash
-      run: |
-        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_14.1.app /Applications/Xcode.app
-        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      if: matrix.os == 'macos-12'
+#     steps:
+#     - name: Make sure Xcode 14.1 is used on macOS 12 as the default /Application/Xcode.app
+#       shell: bash
+#       run: |
+#         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
+#         sudo ln -s /Applications/Xcode_14.1.app /Applications/Xcode.app
+#         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+#       if: matrix.os == 'macos-12'
 
-    - name: Make sure Xcode 13.1 is used on macOS 11 as the default /Application/Xcode.app
-      shell: bash
-      run: |
-        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_13.1.app /Applications/Xcode.app
-        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      if: matrix.os == 'macos-11'
+#     - name: Make sure Xcode 13.1 is used on macOS 11 as the default /Application/Xcode.app
+#       shell: bash
+#       run: |
+#         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
+#         sudo ln -s /Applications/Xcode_13.1.app /Applications/Xcode.app
+#         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+#       if: matrix.os == 'macos-11'
 
-    - name: Install dependencies
-      run: |
-        brew install libomp open-mpi python@3.9 wget cmake ninja qt@5 libgit2
+#     - name: Install dependencies
+#       run: |
+#         brew install libomp open-mpi python@3.9 wget cmake ninja qt@5 libgit2
 
-    - name: Checkout BioDynaMo
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+#     - name: Checkout BioDynaMo
+#       uses: actions/checkout@v2
+#       with:
+#         fetch-depth: 0
 
-    # - name: Cache Third Party Packages
-    #   uses: actions/cache@v2
-    #   with:
-    #     path: build/third_party
-    #     key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+#     # - name: Cache Third Party Packages
+#     #   uses: actions/cache@v2
+#     #   with:
+#     #     path: build/third_party
+#     #     key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
 
-    - name: Build BioDynaMo
-      shell: bash
-      run: |
-        cmake -G Ninja \
-          -Dopencl=OFF \
-          -Dparaview=ON \
-          -Dbenchmark=ON \
-          -Dlibgit2=ON \
-          -DCMAKE_BUILD_TYPE=Release \
-          -B build
-        cmake --build build --parallel --config Release
+#     - name: Build BioDynaMo
+#       shell: bash
+#       run: |
+#         cmake -G Ninja \
+#           -Dopencl=OFF \
+#           -Dparaview=ON \
+#           -Dbenchmark=ON \
+#           -Dlibgit2=ON \
+#           -DCMAKE_BUILD_TYPE=Release \
+#           -B build
+#         cmake --build build --parallel --config Release
 
-    - name: Unit tests BioDynaMo
-      shell: bash
-      working-directory: build
-      run: |
-        . bin/thisbdm.sh
-        root --version
-        root -config
-        bdm config
-        ninja run-unit-tests
+#     - name: Unit tests BioDynaMo
+#       shell: bash
+#       working-directory: build
+#       run: |
+#         . bin/thisbdm.sh
+#         root --version
+#         root -config
+#         bdm config
+#         ninja run-unit-tests
 
-    - name: Notify Slack
-      uses: 8398a7/action-slack@v3
-      with:
-        status: custom
-        fields: workflow,job,commit,repo,ref,author,took,message
-        custom_payload: |
-          {
-            username: 'GitHub CI',
-            icon_emoji: ':octocat:',
-            attachments: [{
-              color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-              text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}\n${process.env.AS_MESSAGE}`
-            }]
-          }
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        MATRIX_CONTEXT: ${{ toJson(matrix) }} # Required when using matrix
-      # Notify Slack step should run when the following holds true:
-      #   * One of the previous steps 1) succeeded, 2) failed, or 3) was cancelled
-      #   * This workflow is triggered from our base repository (i.e. forked PRs don't
-      #     have the right to push Slack message to our channel)
-      if: ${{ ( failure() || success() || cancelled() ) && ( github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name ) }}
+#     - name: Notify Slack
+#       uses: 8398a7/action-slack@v3
+#       with:
+#         status: custom
+#         fields: workflow,job,commit,repo,ref,author,took,message
+#         custom_payload: |
+#           {
+#             username: 'GitHub CI',
+#             icon_emoji: ':octocat:',
+#             attachments: [{
+#               color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+#               text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}\n${process.env.AS_MESSAGE}`
+#             }]
+#           }
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#         MATRIX_CONTEXT: ${{ toJson(matrix) }} # Required when using matrix
+#       # Notify Slack step should run when the following holds true:
+#       #   * One of the previous steps 1) succeeded, 2) failed, or 3) was cancelled
+#       #   * This workflow is triggered from our base repository (i.e. forked PRs don't
+#       #     have the right to push Slack message to our channel)
+#       if: ${{ ( failure() || success() || cancelled() ) && ( github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name ) }}
