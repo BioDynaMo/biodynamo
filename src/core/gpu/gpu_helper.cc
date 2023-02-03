@@ -214,11 +214,11 @@ void GpuHelper::FindGpuDevicesOpenCL() {
                            ocl_state->GetFp64Support()->end(), true);
       if (itr == ocl_state->GetFp64Support()->end()) {
         Log::Fatal("FindGpuDevicesOpenCL",
-                   "No OpenCL compatible GPU's with double precision support found on this machine!");
+                   "No OpenCL compatible GPU's with double precision support "
+                   "found on this machine!");
         return;
       } else {
-        selected_gpu =
-            std::distance(ocl_state->GetFp64Support()->begin(), itr);
+        selected_gpu = std::distance(ocl_state->GetFp64Support()->begin(), itr);
       }
     }
     Log::Info("", "Selected GPU [", selected_gpu,

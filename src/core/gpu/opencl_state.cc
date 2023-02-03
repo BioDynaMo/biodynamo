@@ -63,9 +63,7 @@ std::vector<cl::Device>* OpenCLState::GetOpenCLDeviceList() {
   return &impl_->opencl_devices_;
 }
 
-void OpenCLState::SelectGpu(int gpu) {
-  impl_->selected_gpu_ = gpu;
-}
+void OpenCLState::SelectGpu(int gpu) { impl_->selected_gpu_ = gpu; }
 
 std::vector<bool>* OpenCLState::GetFp64Support() {
   return &impl_->fp64_support_;

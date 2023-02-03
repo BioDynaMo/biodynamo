@@ -57,7 +57,7 @@ class OpenCLState {
   /// Disable support for double-precision floating point operations
   void DisableSupportForDouble();
 
-/// Enable support for double-precision floating point operations
+  /// Enable support for double-precision floating point operations
   void EnableSupportForDouble();
 
   const char* GetErrorString(int error);
