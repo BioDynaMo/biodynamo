@@ -10,7 +10,6 @@ jupyterlab-pygments==0.2.2
 jupyterlab-server==2.19.0
 jupyterlab-widgets==3.0.5
 metakernel
-jupyterlab
 nbclassic==0.4.8
 nbclient==0.6.6
 nbconvert==6.5.3
