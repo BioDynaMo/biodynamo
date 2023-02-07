@@ -56,6 +56,16 @@ void AddDisplacement(std::array<uint32_t, 3>& position,
   position[2] += displacement[2];
 }
 
+double ComputeSubstanceAmount(const double* concentration_array, size_t size,
+                              double box_length) {
+  const double volume = box_length * box_length * box_length;
+  double sum{0};
+  for (size_t i = 0; i < size; i++) {
+    sum += concentration_array[i];
+  }
+  return sum * volume;
+}
+
 // Test if the dimensions of the diffusion grid are corresponding to the
 // neighbor env dimensions
 TEST(DiffusionTest, GridDimensions) {
@@ -1312,6 +1322,56 @@ TEST(DiffusionTest, PrintInfoAfterInititialization) {
   EXPECT_TRUE(buffer.str().find("bounds     : -5 < c < 5") !=
               std::string::npos);
   EXPECT_TRUE(buffer.str().find("boundary   : Neumann") != std::string::npos);
+}
+
+TEST(DiffusionTest, ResolutionIndependence) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "closed";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+
+  // Create three diffusion grids with different resolution
+  real_t diff_coef = 0.5;
+  DiffusionGrid* dgrid1 = new EulerGrid(0, "Kalium1", diff_coef, 0, 15);
+  DiffusionGrid* dgrid2 = new EulerGrid(1, "Kalium4", diff_coef, 0, 30);
+  DiffusionGrid* dgrid3 = new EulerGrid(2, "Kalium8", diff_coef, 0, 45);
+  dgrid1->Initialize();
+  dgrid2->Initialize();
+  dgrid3->Initialize();
+
+  // instantaneous point source
+  int amount = 150;
+  Real3 source = {{0, 0, 0}};
+  dgrid1->ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                                true);
+  dgrid2->ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                                true);
+  dgrid3->ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                                true);
+
+  auto conc1 = dgrid1->GetAllConcentrations();
+  auto conc2 = dgrid2->GetAllConcentrations();
+  auto conc3 = dgrid3->GetAllConcentrations();
+  auto box1 = dgrid1->GetBoxLength();
+  auto box2 = dgrid2->GetBoxLength();
+  auto box3 = dgrid3->GetBoxLength();
+  auto N1 = dgrid1->GetNumBoxes();
+  auto N2 = dgrid2->GetNumBoxes();
+  auto N3 = dgrid3->GetNumBoxes();
+
+  // Compute the amount of substance in the diffusion grids
+  real_t total_amount1 = ComputeSubstanceAmount(conc1, N1, box1);
+  real_t total_amount2 = ComputeSubstanceAmount(conc2, N2, box2);
+  real_t total_amount3 = ComputeSubstanceAmount(conc3, N3, box3);
+
+  // Check that the amount of substance is correct
+  EXPECT_REAL_EQ(total_amount1, amount);
+  EXPECT_REAL_EQ(total_amount2, amount);
+  EXPECT_REAL_EQ(total_amount3, amount);
 }
 
 #ifdef USE_PARAVIEW
