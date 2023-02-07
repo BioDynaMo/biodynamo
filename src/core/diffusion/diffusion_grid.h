@@ -133,8 +133,9 @@ class DiffusionGrid : public ScalarField {
   /// Initialize the diffusion grid according to the initialization functions
   void RunInitializers();
 
-  /// Increase the concentration at specified position with specified amount.
-  /// Interaction mode defines how the new concentration is calculated.
+  /// Increase the concentration at a specified position a with specified
+  /// amount.
+  /// The InteractionMode defines how the new concentration is calculated.
   /// If the interaction mode is kAdditive, the new concentration is the sum of
   /// the old concentration and the amount.
   /// If the interaction mode is kExponential, the new concentration is the
@@ -144,10 +145,19 @@ class DiffusionGrid : public ScalarField {
   /// but scaled with (upper_threshold_ - u) or (u - lower_threshold_) if amount
   /// is positive or negative, respectively. Should be used with thresholds 1.0
   /// and 0.0.
+  /// The parameter `scale_with_resolution` scales the amount with the inverse
+  /// of the voxel volume. This is useful if the amount is given in units of,
+  /// for instance, [mg] but the diffusion grid is in units of [mg / um^3]. It's
+  /// helpful to model this way to obtain similar/identical results independent
+  /// of the resolution of the diffusion grid.
   void ChangeConcentrationBy(const Real3& position, real_t amount,
-                             InteractionMode mode = InteractionMode::kAdditive);
+                             InteractionMode mode = InteractionMode::kAdditive,
+                             bool scale_with_resolution = false);
+  /// @brief See ChangeConcentrationBy(const Real3&, real_t, InteractionMode,
+  /// bool).
   void ChangeConcentrationBy(size_t idx, real_t amount,
-                             InteractionMode mode = InteractionMode::kAdditive);
+                             InteractionMode mode = InteractionMode::kAdditive,
+                             bool scale_with_resolution = false);
 
   /// @brief  Get the value of the scalar field at specified position
   /// @param postion 3D position of
