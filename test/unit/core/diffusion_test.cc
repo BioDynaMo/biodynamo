@@ -56,10 +56,10 @@ void AddDisplacement(std::array<uint32_t, 3>& position,
   position[2] += displacement[2];
 }
 
-double ComputeSubstanceAmount(const double* concentration_array, size_t size,
-                              double box_length) {
-  const double volume = box_length * box_length * box_length;
-  double sum{0};
+real_t ComputeSubstanceAmount(const real_t* concentration_array, size_t size,
+                              real_t box_length) {
+  const real_t volume = box_length * box_length * box_length;
+  real_t sum{0};
   for (size_t i = 0; i < size; i++) {
     sum += concentration_array[i];
   }
