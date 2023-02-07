@@ -1336,32 +1336,32 @@ TEST(DiffusionTest, ResolutionIndependence) {
 
   // Create three diffusion grids with different resolution
   real_t diff_coef = 0.5;
-  DiffusionGrid* dgrid1 = new EulerGrid(0, "Kalium1", diff_coef, 0, 15);
-  DiffusionGrid* dgrid2 = new EulerGrid(1, "Kalium4", diff_coef, 0, 30);
-  DiffusionGrid* dgrid3 = new EulerGrid(2, "Kalium8", diff_coef, 0, 45);
-  dgrid1->Initialize();
-  dgrid2->Initialize();
-  dgrid3->Initialize();
+  EulerGrid dgrid1(0, "Kalium1", diff_coef, 0, 15);
+  EulerGrid dgrid2(1, "Kalium4", diff_coef, 0, 30);
+  EulerGrid dgrid3(2, "Kalium8", diff_coef, 0, 45);
+  dgrid1.Initialize();
+  dgrid2.Initialize();
+  dgrid3.Initialize();
 
   // instantaneous point source
   int amount = 150;
   Real3 source = {{0, 0, 0}};
-  dgrid1->ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
-                                true);
-  dgrid2->ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
-                                true);
-  dgrid3->ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
-                                true);
+  dgrid1.ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                               true);
+  dgrid2.ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                               true);
+  dgrid3.ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                               true);
 
-  auto conc1 = dgrid1->GetAllConcentrations();
-  auto conc2 = dgrid2->GetAllConcentrations();
-  auto conc3 = dgrid3->GetAllConcentrations();
-  auto box1 = dgrid1->GetBoxLength();
-  auto box2 = dgrid2->GetBoxLength();
-  auto box3 = dgrid3->GetBoxLength();
-  auto N1 = dgrid1->GetNumBoxes();
-  auto N2 = dgrid2->GetNumBoxes();
-  auto N3 = dgrid3->GetNumBoxes();
+  auto conc1 = dgrid1.GetAllConcentrations();
+  auto conc2 = dgrid2.GetAllConcentrations();
+  auto conc3 = dgrid3.GetAllConcentrations();
+  auto box1 = dgrid1.GetBoxLength();
+  auto box2 = dgrid2.GetBoxLength();
+  auto box3 = dgrid3.GetBoxLength();
+  auto N1 = dgrid1.GetNumBoxes();
+  auto N2 = dgrid2.GetNumBoxes();
+  auto N3 = dgrid3.GetNumBoxes();
 
   // Compute the amount of substance in the diffusion grids
   real_t total_amount1 = ComputeSubstanceAmount(conc1, N1, box1);
