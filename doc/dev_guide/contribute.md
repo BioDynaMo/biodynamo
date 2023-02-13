@@ -165,7 +165,12 @@ Please create a [pull request](https://help.github.com/articles/creating-a-pull-
 Open the Github Actions build for Linux and OSX and go through the checklist from point 11 for each of them.
 Unlike compilation and test suite execution, problems caused by formatting, code style and documentation will not fail the build. However, they need to be fixed!
 
-#### 15. If everything is OK contact one of the code reviewers on Slack
+#### 15. If everything is OK contact one of the code reviewers on GitHub / Discord
+
+We usually get back to you quickly but if, for some reason, we do not react
+to your PR within a few days, please consider pinging our developers by either
+mentioning some of them on GitHub (e.g., `@Developer1`) or contacting us
+directly via Discord.
 
 #### 16. Discuss suggested changes with the code reviewer
 
