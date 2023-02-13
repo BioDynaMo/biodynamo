@@ -360,19 +360,26 @@ void DiffusionGrid::CalculateGradient() {
 }
 
 void DiffusionGrid::ChangeConcentrationBy(const Real3& position, real_t amount,
-                                          InteractionMode mode) {
+                                          InteractionMode mode,
+                                          bool scale_with_resolution) {
   auto idx = GetBoxIndex(position);
-  ChangeConcentrationBy(idx, amount, mode);
+  ChangeConcentrationBy(idx, amount, mode, scale_with_resolution);
 }
 
 /// Increase the concentration at specified box with specified amount
 void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
-                                          InteractionMode mode) {
+                                          InteractionMode mode,
+                                          bool scale_with_resolution) {
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::ChangeConcentrationBy",
                "You tried to change the concentration outside the bounds of "
                "the diffusion grid! The change was ignored.");
     return;
+  }
+  if (scale_with_resolution) {
+    // Convert from amount to concentration of substance by dividing by
+    // volume of box
+    amount /= box_length_ * box_length_ * box_length_;
   }
   std::lock_guard<Spinlock> guard(locks_[idx]);
   assert(idx < locks_.size());
