@@ -431,6 +431,7 @@ real_t DiffusionGrid::GetConcentration(const size_t idx) const {
 
 void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient,
                                 bool normalize) const {
+  assert(gradient != nullptr);
   auto idx = GetBoxIndex(position);
   if (idx >= total_num_boxes_) {
     Log::Error("DiffusionGrid::GetGradient",

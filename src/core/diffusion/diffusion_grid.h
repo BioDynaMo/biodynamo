@@ -172,20 +172,24 @@ class DiffusionGrid : public ScalarField {
   /// @return c1_[idx]
   real_t GetConcentration(const size_t idx) const;
 
-  // NOTE: virtual because of test
   /// Get the gradient at a specified position. By default, the obtained
   /// gradient is scaled to norm 1, but with `normalize = false` one can obtain
   /// the full gradient information (e.g. the un-normalized gradient). If the
   /// gradient is zero and `normalize = true`, this method returns a zero
   /// vector. Note that the gradient is computed via a central difference scheme
   /// on the underlying spatial discretization.
-
   Real3 GetGradient(const Real3& position) const override {
     Real3 gradient;
     GetGradient(position, &gradient, false);
     return gradient;
   };
 
+  // NOTE: virtual because of test
+  /// Get the gradient at a specified position. See GetGradient(Real3) for
+  /// details.
+  /// Note that the pointer to the gradient is passed as an argument and is
+  /// dereferenced in the method. Thus the gradient must be initialized before
+  /// calling this method and must not be nullptr.
   virtual void GetGradient(const Real3& position, Real3* gradient,
                            bool normalize = true) const;
 
