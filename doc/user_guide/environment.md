@@ -53,7 +53,7 @@ auto* env = dynamic_cast<UniformGridEnvironment*>(sim.GetEnvironment());
 env->SetBoxLength(15);
 ```
 
-Since the mechanical interactions of agents relies on size of the agents, the mimimum
+Since the mechanical interactions of agents relies on size of the agents, the minimum
 box length size must be greater than the largest object in your simulation. If this is not the case, an error will occur to point this out.
 
 ## Create a custom Environment

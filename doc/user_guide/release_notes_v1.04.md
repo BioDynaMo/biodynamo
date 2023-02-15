@@ -53,7 +53,7 @@ The following people have contributed to this version
  * Add left-multiplication to MathArray [#255](https://github.com/BioDynaMo/biodynamo/pull/255)
  * Minor code quality improvements [#252](https://github.com/BioDynaMo/biodynamo/pull/252)
  * Create BioDynaMo singularity image [#244](https://github.com/BioDynaMo/biodynamo/pull/244)
- * Reenable gitpod image workflow but only for manual triggering
+ * Re-enable gitpod image workflow but only for manual triggering
  * Add additional LamdaFunctor tests
  * Add safety check in function PlotNeighborMemoryHistogram
  * Improve documentation of Agent::RemoveBehavior

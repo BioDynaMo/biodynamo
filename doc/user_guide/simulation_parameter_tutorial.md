@@ -210,7 +210,7 @@ Value of bar                  84
 Simulation completed successfully!
 ```
 
-BioDynaMo automatically picked up the configutation file and parsed its content.
+BioDynaMo automatically picked up the configuration file and parsed its content.
 BioDynaMo looks for a file with the name `bdm.json` in the current working directory and 
 it's parent directory. If it finds one it automatically uses it.
 
