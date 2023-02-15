@@ -15,7 +15,7 @@
 // \title Cell Division
 // \visualize
 //
-// This model creates a grid of 4x4x4 cells. Each cell grows untill a specific
+// This model creates a grid of 4x4x4 cells. Each cell grows until a specific
 // volume, after which it proliferates (i.e. divides).
 //
 
