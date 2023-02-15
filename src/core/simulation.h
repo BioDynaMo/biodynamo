@@ -43,7 +43,7 @@ namespace experimental {
 class TimeSeries;
 }  // namespace experimental
 
-/// This is the central BioDynaMo object. It containes pointers to e.g. the
+/// This is the central BioDynaMo object. It contains pointers to e.g. the
 /// ResourceManager, the scheduler, parameters, ... \n
 /// It is possible to create multiple simulations, but only one can be active at
 /// the same time. Creating a new agent automatically activates it.
@@ -200,7 +200,7 @@ class Simulation {
   void LoadConfigFiles(const std::vector<std::string>& ctor_configs,
                        const std::vector<std::string>& cli_configs);
 
-  /// This function initialzes `unique_name_`
+  /// This function initializes `unique_name_`
   void InitializeUniqueName(const std::string& simulation_name);
 
   /// Initializes `output_dir_` and creates dir if it does not exist.

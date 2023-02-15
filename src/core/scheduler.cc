@@ -436,7 +436,7 @@ bool Scheduler::Restore(uint64_t* steps) {
   if (backup_->RestoreEnabled() && restore_point_ > total_steps_ + *steps) {
     total_steps_ += *steps;
     // restore requested, but not last backup was not done during this call to
-    // Simualte. Therefore, we skip it.
+    // Simulate. Therefore, we skip it.
     return true;
   } else if (backup_->RestoreEnabled() && restore_point_ > total_steps_ &&
              restore_point_ < total_steps_ + *steps) {

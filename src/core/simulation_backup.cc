@@ -27,7 +27,7 @@ SimulationBackup::SimulationBackup(const std::string& backup_file,
   } else if (backup_file == restore_file) {
     Log::Warning(
         "SimulationBackup",
-        "Backup file is identical to restore file. Will be overriden after "
+        "Backup file is identical to restore file. Will be overridden after "
         "restore.");
   }
 

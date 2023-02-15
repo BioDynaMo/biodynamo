@@ -82,7 +82,7 @@ void ProgressBar::PrintProgressBar(std::ostream& out) {
   // 3. Print progress bar
   size_t n_steps_computed = std::floor(fraction_computed / 0.02);
 
-  // Write terminal ouput to string first to determine the number of digits
+  // Write terminal output to string first to determine the number of digits
   std::string terminal_output = "";
   terminal_output.append("[")
       .append(std::string(n_steps_computed, '#'))

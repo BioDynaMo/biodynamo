@@ -21,7 +21,7 @@
 
 #include "core/util/root.h"
 
-/// This is BioDynaMo's default cachline size. If you system has a different
+/// This is BioDynaMo's default cacheline size. If you system has a different
 /// cacheline size, consider changing the value accordingly. When BioDynaMo
 /// moves to the C++17 standard, this choice will be automated. See :
 /// en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size
@@ -39,7 +39,7 @@ class SharedData {
   };
 
   /// Data type definition for a vector whose entries fill full cache lines.
-  /// A vector whose components' sizes are a multiple of the cachline size,
+  /// A vector whose components' sizes are a multiple of the cacheline size,
   /// e.g sizeof(Data[i]) = N*BDM_CACHE_LINE_SIZE.
   using Data = std::vector<AlignedT>;
 

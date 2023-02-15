@@ -51,7 +51,7 @@ struct ParamGroup {
 
  protected:
   /// Assign values from a toml config file.\n
-  /// Can be ommited if toml file support is not required.
+  /// Can be omitted if toml file support is not required.
   virtual void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
 
  private:

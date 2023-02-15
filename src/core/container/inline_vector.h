@@ -38,10 +38,10 @@
 
 namespace bdm {
 
-/// This containes stores up to N elements without heap allocations
+/// This contains stores up to N elements without heap allocations
 /// If further elements are added elements are stored on the heap
 /// Container grows in a geometric sequence
-/// Elements are contiguous in memory exept the transition from internal
+/// Elements are contiguous in memory except the transition from internal
 /// to heap allocated memory (between index N-1 and N)
 /// This container is optimized for minimal overhead. Therefore, it can only
 /// store 65535 elements.
@@ -222,7 +222,7 @@ class InlineVector final {
     } else {
       // allocate heap memory
       assert(size_ != std::numeric_limits<uint16_t>::max() &&
-             "Maxium number of elements exceeded");
+             "Maximum number of elements exceeded");
       if (size_ == capacity()) {
         uint64_t tmp =
             static_cast<uint64_t>(static_cast<float>(capacity()) * kGrowFactor);

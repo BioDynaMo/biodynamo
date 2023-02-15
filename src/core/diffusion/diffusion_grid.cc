@@ -215,7 +215,7 @@ void DiffusionGrid::CopyOldData(
       "increased. BioDynaMo adds a halo around the domain filled with zeros. "
       "Depending your use-case, this might or might not be what you want. If "
       "you have non-zero concentrations / temperatures in the surrounding, "
-      "this is likely to cause unphysical effects at the boudary. But if your "
+      "this is likely to cause unphysical effects at the boundary. But if your "
       "grid values are mostly zero this is likely to work fine. Evaluate your "
       "results carefully.");
 
@@ -508,7 +508,7 @@ BoundaryConditionType DiffusionGrid::GetBoundaryConditionType() const {
 void DiffusionGrid::PrintInfo(std::ostream& out) {
   auto continuum_name = GetContinuumName();
   if (!IsInitialized()) {
-    // If the grid is not yet initialized, many of the variables have no vaild
+    // If the grid is not yet initialized, many of the variables have no valid
     // values. We print a warning and print the info after the grid is
     // initialized.
     out << "DiffusionGrid" << continuum_name
