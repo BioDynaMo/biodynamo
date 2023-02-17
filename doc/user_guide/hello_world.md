@@ -54,7 +54,7 @@ biodynamo build
 biodynamo run
 ```
 
-You should see "Simulation completed succesfully" as the output.
+You should see "Simulation completed successfully" as the output.
 
 
 ## Extra: Cell division

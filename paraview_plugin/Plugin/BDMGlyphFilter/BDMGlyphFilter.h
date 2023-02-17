@@ -131,7 +131,7 @@ class VTKPVVTKEXTENSIONSFILTERSGENERAL_EXPORT BDMGlyphFilter : public BDMGlyph {
   virtual int FillOutputPortInformation(int, vtkInformation*) override;
 
   /**
-   * Returns 1 if point is to be glyped, otherwise returns 0.
+   * Returns 1 if point is to be glyphed, otherwise returns 0.
    */
   virtual int IsPointVisible(vtkDataSet* ds, vtkIdType ptId) override;
 

@@ -456,7 +456,7 @@ struct Param {
 
   /// Calculation of the displacement (mechanical interaction) is an
   /// expensive operation. If agents do not move or grow,
-  /// displacement calculation is ommited if detect_static_agents is turned
+  /// displacement calculation is omitted if detect_static_agents is turned
   /// on. However, the detection mechanism introduces an overhead. For dynamic
   /// simulations where agents move and grow, the overhead outweighs the
   /// benefits.\n
@@ -536,9 +536,9 @@ struct Param {
   /// MappedDataArrayMode options:
   ///   `kZeroCopy`: access agent data directly only if it is
   ///                requested. \n
-  ///   `kCache`:    Like `kZeroCopy` but stores the results in contigous
+  ///   `kCache`:    Like `kZeroCopy` but stores the results in contiguous
   ///                array, to speed up access if it is used again.\n
-  ///   `kCopy`:     Copy all data elements to a contigous array at
+  ///   `kCopy`:     Copy all data elements to a contiguous array at
   ///                initialization time. Serves requests from the cache.
   enum MappedDataArrayMode { kZeroCopy = 0, kCopy, kCache };
 

@@ -71,7 +71,7 @@ class SimulationBackup {
       f.Get()->WriteObject(&wrapper, kSimulationStepName.c_str());
       RuntimeVariables rv;
       f.Get()->WriteObject(&rv, kRuntimeVariableName.c_str());
-      // TODO(lukas)  random number generator; all statics (e.g. Param)
+      // TODO(lukas)  random number generator; all statistics (e.g. Param)
     }
 
     // remove last backup file

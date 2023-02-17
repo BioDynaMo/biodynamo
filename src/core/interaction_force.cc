@@ -246,7 +246,7 @@ void InteractionForce::ForceBetweenCylinders(const Agent* cylinder1,
 
   real_t denom = d2121 * d4343 - d4321 * d4321;
 
-  // if the two segments are not ABSOLUTLY parallel
+  // if the two segments are not ABSOLUTELY parallel
   if (denom > 0.000000000001) {  /// TODO(neurites) hardcoded value
     real_t numer = d1343 * d4321 - d1321 * d4343;
 

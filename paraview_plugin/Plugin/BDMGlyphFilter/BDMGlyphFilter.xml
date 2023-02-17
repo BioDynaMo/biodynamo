@@ -17,7 +17,7 @@ selected **Vectors**, use **Orient** property.  To scale the glyphs using
 the selected **Scalars** or **Vectors**, use the **Scale Mode** property.
 
 The **Glyph Mode** property controls which points in the input dataset
-are selected for glyphing (since in most cases, glyping all points in
+are selected for glyphing (since in most cases, glyphing all points in
 the input dataset can be both performance impeding as well as visually
 cluttred.
       </Documentation>

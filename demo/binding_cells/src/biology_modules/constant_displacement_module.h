@@ -19,7 +19,7 @@
 
 namespace bdm {
 
-/// @brief      Calculates the squared euclidian distance between two points
+/// @brief      Calculates the squared euclidean distance between two points
 ///             in 3D
 ///
 /// @param[in]  pos1  Position of the first point

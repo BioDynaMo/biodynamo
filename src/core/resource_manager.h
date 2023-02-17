@@ -425,7 +425,7 @@ class ResourceManager {
 
   /// Adds `new_agents` to `agents_[numa_node]`. `offset` specifies
   /// the index at which the first element is inserted. Agents are inserted
-  /// consecutively. This methos is thread safe only if insertion intervals do
+  /// consecutively. This method is thread safe only if insertion intervals do
   /// not overlap!
   virtual void AddAgents(typename AgentHandle::NumaNode_t numa_node,
                          uint64_t offset,
@@ -491,7 +491,7 @@ class ResourceManager {
 
  protected:
   /// Adding and removing agents does not immediately reflect in the state of
-  /// the environment. This function sets a flag in the envrionment such that
+  /// the environment. This function sets a flag in the environment such that
   /// it is aware of the changes.
   void MarkEnvironmentOutOfSync();
 

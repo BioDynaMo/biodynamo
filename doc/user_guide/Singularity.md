@@ -21,8 +21,8 @@ performance computers (HPCs). Due to many HPCs having higher security than stand
 that a user wishing to do this will need to build BioDynaMo within a container on the chosen HPC.
 
 For this we have chosen to Singularity. Singularity is an open source programme for operating-system-level virtualization. 
-Singularity works simillar to other popular container programmes such as Docker. However, due to its higher level of 
-security it has seen more widespread uptake by HPCs and we thus beleive the best choise for users.
+Singularity works similar to other popular container programmes such as Docker. However, due to its higher level of 
+security it has seen more widespread uptake by HPCs and we thus believe the best choice for users.
 
 To create our [singularity image](https://github.com/BioDynaMo/biodynamo/blob/master/Singularity) 
 for BioDynaMo we can use on of two methods.
@@ -51,8 +51,8 @@ Then simply run the BioDynaMo singularity container using:
 singularity run Singularity.sif
 ```
 ## Method 2, Export image from local PC to HPC.
-If you cannot utilise either sudo or fakeroot on the HPC, we can isntead build the BioDynaMo image on our local PC and export the image.
-This works simillar to method 1 but with a change in order. Firstly, we must build our image on the local PC with sudo rights:
+If you cannot utilise either sudo or fakeroot on the HPC, we can instead build the BioDynaMo image on our local PC and export the image.
+This works similar to method 1 but with a change in order. Firstly, we must build our image on the local PC with sudo rights:
 ```bash
 sudo singularity build Singularity.sif Singularity
 ```

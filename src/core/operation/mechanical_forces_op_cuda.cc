@@ -300,7 +300,7 @@ void MechanicalForcesOpCuda::operator()() {
     // If the number of agents increased
     if (total_num_agents >= total_num_agents_) {
       Log::Info("MechanicalForcesOpCuda",
-                "\nThe number of cells increased signficantly (from ",
+                "\nThe number of cells increased significantly (from ",
                 total_num_agents_, " to ", total_num_agents,
                 "), agent we allocate bigger GPU buffers\n");
       total_num_agents_ = static_cast<uint32_t>(1.25 * total_num_agents);
@@ -310,7 +310,7 @@ void MechanicalForcesOpCuda::operator()() {
     // If the neighbor grid size increased
     if (num_boxes >= num_boxes_) {
       Log::Info("MechanicalForcesOpCuda",
-                "\nThe number of boxes increased signficantly (from ",
+                "\nThe number of boxes increased significantly (from ",
                 num_boxes_, " to ", "), so we allocate bigger GPU buffers\n");
       num_boxes_ = static_cast<uint32_t>(1.25 * num_boxes);
       cdo_->ResizeGridBuffers(num_boxes_);

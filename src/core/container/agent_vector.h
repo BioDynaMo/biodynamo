@@ -33,7 +33,7 @@ class AgentVector {
   friend struct MechanicalForcesOpCuda;
 
  public:
-  /// NB: Elements will not be initilized.
+  /// NB: Elements will not be initialized.
   AgentVector() {
     data_.resize(thread_info_->GetNumaNodes());
     size_.resize(thread_info_->GetNumaNodes());
@@ -45,7 +45,7 @@ class AgentVector {
   /// e.g. ResourceManager has two types `A` and `B`. `A` has 10 elements
   /// and `B` 20. `data_[0]` corresponds to `A` and reserves 10 elements,
   /// while `data_[1]` corresponds to `B` and reserves 20 elements.
-  /// NB: Elements will not be initilized.
+  /// NB: Elements will not be initialized.
   void reserve() {  // NOLINT
     clear();
     auto* sim = Simulation::GetActive();

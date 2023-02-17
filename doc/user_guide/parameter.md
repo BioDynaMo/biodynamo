@@ -112,7 +112,7 @@ Usage:
                                 that point. (default: )
   -b, --backup FILE             Periodically create full simulation backup to
                                 the specified file. NOTA BENE: File will be
-                                overriden if it exists. (default: )
+                                overridden if it exists. (default: )
   -c, --config FILE             The TOML or JSON configuration that should be
                                 used. The JSON file must be in JSON merge
                                 patch format
@@ -146,7 +146,7 @@ uint64_t num_cells = parser.Get<uint64_t>("num-cells");
 ```
 
 The `AddOption` function can be broken down as follows: The template parameter
-(`uint64_t`) specifies what value type your option should be. The first fucntion
+(`uint64_t`) specifies what value type your option should be. The first function
 parameter is for the flag abbreviation (in this case -n and --num-cells) The
 second parameter is the name of your command line option The third parameter is
 the description (as shown in the help dialogue) The fourth parameter is the

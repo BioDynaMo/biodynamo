@@ -32,7 +32,7 @@ namespace bdm {
   (central difference of second-order). The method derives its name, Euler, from
   the time step length of the integration.
 
-  Further infomation:
+  Further information:
     - <a href="https://biodynamo.org/docs/userguide/diffusion/">
       BioDynaMo User Guide </a>
     - <a

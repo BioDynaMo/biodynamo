@@ -292,7 +292,7 @@ struct ModelInitializer {
   }
 
   /// Creates agents with random positions on a sphere and adds them to the
-  /// ExecutionContext. The agents' positions are uniformly distributed accross
+  /// ExecutionContext. The agents' positions are uniformly distributed across
   /// the surface. Agent creation is parallelized.
   /// Algorithm: Knop, 1970, 10.1145/362349.362377 (doi).
   ///

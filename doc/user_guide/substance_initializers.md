@@ -22,7 +22,7 @@ keywords:
 ---
 
 You might want to initialize the concentration of one or more of the substances
-in your simulation. In this tutorial we shal take a look on how to do so.
+in your simulation. In this tutorial we shall take a look on how to do so.
 
 ## Tutorial by example
 
@@ -72,7 +72,7 @@ ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0, 20);
 
 ### 5. Initialize the substance(s)
 Now comes the most important part of the tutorial: initializing our substance(s)
-concentration values throught the space. We will use the function
+concentration values through the space. We will use the function
 `ModelInitializer::InitializeSubstance` for this purpose.
 In this example we initialize our substance according to a Gaussian distribution.
 

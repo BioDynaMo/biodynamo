@@ -542,7 +542,7 @@ Real3 NeuriteElement::CalculateDisplacement(const InteractionForce* force,
                                                // in the opposite direction
   Real3 force_on_my_point_mass = spring_axis_ * factor;
 
-  // 2) InteractionForce transmitted by daugthers (if they exist)
+  // 2) InteractionForce transmitted by daughters (if they exist)
   if (daughter_left_ != nullptr) {
     force_on_my_point_mass +=
         daughter_left_->ForceTransmittedFromDaugtherToMother(*this);
@@ -635,7 +635,7 @@ void NeuriteElement::ApplyDisplacement(const Real3& displacement) {
   UpdateLocalCoordinateAxis();
 
   // FIXME this whole block might be superfluous - ApplyDisplacement is called
-  // For the relatives: recompute the lenght, tension etc. (why for mother?
+  // For the relatives: recompute the length, tension etc. (why for mother?
   // have to think about that)
   if (daughter_left_ != nullptr) {
     daughter_left_->UpdateDependentPhysicalVariables();
@@ -982,7 +982,7 @@ void NeuriteElement::InitializeNeuriteBifurcation(NeuriteElement* mother,
   SetRestingLengthForDesiredTension(param->neurite_default_tension);
 
   // set local coordinate axis in the new branches
-  // TODO(neurites) again?? alreay done a few lines up
+  // TODO(neurites) again?? already done a few lines up
   UpdateLocalCoordinateAxis();
 
   // 2) creating the first daughter branch

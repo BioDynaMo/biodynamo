@@ -56,7 +56,7 @@ class Continuum {
   virtual ~Continuum() = default;
 
   /// Manages the time evolution of the continuum. The method is called by the
-  /// `ContinuumOp::operator()` method. The method calles the `Step` method with
+  /// `ContinuumOp::operator()` method. The method calls the `Step` method with
   /// the appropriate time step(s) as defined via the `time_step_` member. If
   /// the time step is not set, `dt` is used.
   void IntegrateTimeAsynchronously(real_t dt);

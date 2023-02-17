@@ -83,7 +83,7 @@ void MechanicalForcesOpOpenCL::operator()() {
   auto programs = ocl_state->GetOpenCLProgramList();
 
   // Cannot use Real3 here, because the `data()` function returns a const
-  // pointer to the underlying array, whereas the CUDA kernal will cast it to
+  // pointer to the underlying array, whereas the CUDA kernel will cast it to
   // a void pointer. The conversion of `const real_t *` to `void *` is
   // illegal.
   std::vector<std::array<cl_real_t, 3>> cell_movements(num_objects);

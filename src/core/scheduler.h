@@ -72,7 +72,7 @@ class Scheduler {
   /// it is useful to do it manually (e.g.for tutorials).
   void FinalizeInitialization();
 
-  /// This function returns the numer of simulated steps (=iterations).
+  /// This function returns the number of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
   /// This function returns the time that has been simulated until this

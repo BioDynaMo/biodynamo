@@ -160,7 +160,7 @@ class DiffusionGrid : public ScalarField {
                              bool scale_with_resolution = false);
 
   /// @brief  Get the value of the scalar field at specified position
-  /// @param postion 3D position of
+  /// @param position 3D position of
   /// @return c1_[idx[position]]
   real_t GetValue(const Real3& position) const override;
   [[deprecated("Use GetValue instead")]] real_t GetConcentration(
@@ -308,7 +308,7 @@ class DiffusionGrid : public ScalarField {
     print_info_with_initialization_ = true;
   };
 
-  /// Returns if the gird has been initialized
+  /// Returns if the grid has been initialized
   bool IsInitialized() const { return initialized_; }
 
  private:

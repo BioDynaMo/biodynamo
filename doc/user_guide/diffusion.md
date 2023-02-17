@@ -222,8 +222,8 @@ However, there is a trade-off taken here with increased computational time for i
 
 As stated, the higher order Runge-Kutta methods often outperform lower order solvers for ODEs, however this does not happen for the currently implemented version of chemical diffusion. 
 This is due to the fact that when one breaks down the partial differential equations (PDEs) that define chemical diffusion into the set of ODEs that define equation 3.1, 
-the time dependant variable is lost on the right hand side of the equation.
-This results in the extra steps being taken for the Runge-Kutta method having minimal impact as there is no time dependant variable to estimate the slope from.
+the time dependent variable is lost on the right hand side of the equation.
+This results in the extra steps being taken for the Runge-Kutta method having minimal impact as there is no time dependent variable to estimate the slope from.
 
 Within BioDynaMo the number of intervals for the Runge-Kutta method to iterate over per time step can be set within the declaration of a diffusion grid itself as follows:
 

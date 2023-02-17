@@ -111,7 +111,7 @@ class BDMGlyphFilter::vtkInternals {
   //---------------------------------------------------------------------------
   // Again, primarily for SPATIALLY_UNIFORM_DISTRIBUTION. We sync the bounds
   // information among all ranks.
-  // Subsquently, we also build the list of random sample points using the
+  // Subsequently, we also build the list of random sample points using the
   // synchronized bounds.
   void SynchronizeGlobalInformation(BDMGlyphFilter* self) {
     if (self->GetGlyphMode() !=
