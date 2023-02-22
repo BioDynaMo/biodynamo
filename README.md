@@ -22,9 +22,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22Ubuntu+CI%22"><img src="https://github.com/BioDynaMo/biodynamo/workflows/Ubuntu%20CI/badge.svg?branch=github-actions"/></a>
-  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22CentOS+CI%22"><img src="https://github.com/BioDynaMo/biodynamo//workflows/CentOS%20CI/badge.svg?branch=github-actions"/></a>
-  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22macOS+CI%22"><img src="https://github.com/BioDynaMo/biodynamo//workflows/macOS%20CI/badge.svg?branch=github-actions"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions/workflows/ubuntu-system-ci.yml"><img src="https://github.com/BioDynaMo/biodynamo/actions/workflows/ubuntu-system-ci.yml/badge.svg"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions/workflows/centos-system-ci.yml"><img src="https://github.com/BioDynaMo/biodynamo/actions/workflows/centos-system-ci.yml/badge.svg"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions/workflows/macos-system-ci.yml"><img src="https://github.com/BioDynaMo/biodynamo/actions/workflows/macos-system-ci.yml/badge.svg"/></a>
   <a href="https://sonarcloud.io/project/overview?id=BioDynaMo_biodynamo"><img src="https://sonarcloud.io/api/project_badges/measure?project=BioDynaMo_biodynamo&metric=alert_status"/></a>
   <a href="https://discord.gg/9hNCbNYwcT"><img src="https://img.shields.io/discord/1029690454574370816"/></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
