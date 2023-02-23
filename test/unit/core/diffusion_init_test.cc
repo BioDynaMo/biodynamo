@@ -65,15 +65,14 @@ TEST(DiffusionInitTest, GaussianBand) {
   dgrid->RunInitializers();
 
   // Define points to evaluate the substance (coincides with the grid points)
-  Double3 a = {5, 0, 0};
-  Double3 b = {245, 0, 0};
-  Double3 c = {135, 0, 0};
-  Double3 d = {5, 135, 0};
-  Double3 e = {245, 0, 135};
-  Double3 f = {135, 135, 135};
+  Real3 a = {5, 0, 0};
+  Real3 b = {245, 0, 0};
+  Real3 c = {135, 0, 0};
+  Real3 d = {5, 135, 0};
+  Real3 e = {245, 0, 135};
+  Real3 f = {135, 135, 135};
 
   auto eps = abs_error<real_t>::value;
-  auto conc = dgrid->GetAllConcentrations();
 
   EXPECT_NEAR(ROOT::Math::normal_pdf(a[0], 50, 125), dgrid->GetValue(a), eps);
   EXPECT_NEAR(ROOT::Math::normal_pdf(b[0], 50, 125), dgrid->GetValue(b), eps);
