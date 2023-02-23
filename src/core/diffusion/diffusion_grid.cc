@@ -256,16 +256,15 @@ void DiffusionGrid::RunInitializers() {
   for (size_t f = 0; f < initializers_.size(); f++) {
     for (uint32_t x = 0; x < nx; x++) {
       real_t real_x = grid_dimensions_[0] +
-                      static_cast<real_t>(x) * box_length_ +
-                      static_cast<real_t>(box_length_) / 2.0;
+                      static_cast<real_t>(x) * box_length_ + box_length_ / 2.0;
       for (uint32_t y = 0; y < ny; y++) {
         real_t real_y = grid_dimensions_[0] +
                         static_cast<real_t>(y) * box_length_ +
-                        static_cast<real_t>(box_length_) / 2.0;
+                        box_length_ / 2.0;
         for (uint32_t z = 0; z < nz; z++) {
           real_t real_z = grid_dimensions_[0] +
                           static_cast<real_t>(z) * box_length_ +
-                          static_cast<real_t>(box_length_) / 2.0;
+                          box_length_ / 2.0;
           std::array<uint32_t, 3> box_coord = {x, y, z};
           size_t idx = GetBoxIndex(box_coord);
           real_t value{0};
