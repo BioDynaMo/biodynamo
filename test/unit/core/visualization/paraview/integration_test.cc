@@ -86,13 +86,8 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
   ModelInitializer::InitializeSubstance(0, [&](real_t x, real_t y, real_t z) {
     auto* dgrid =
         Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(0);
-    auto grid_dimensions = dgrid->GetDimensions();
-    auto box_length = dgrid->GetBoxLength();
 
-    std::array<uint32_t, 3> box_coord;
-    box_coord[0] = round((x - grid_dimensions[0]) / box_length);
-    box_coord[1] = round((y - grid_dimensions[2]) / box_length);
-    box_coord[2] = round((z - grid_dimensions[4]) / box_length);
+    std::array<uint32_t, 3> box_coord = dgrid->GetBoxCoordinates({x, y, z});
     const auto& num_boxes = dgrid->GetNumBoxesArray();
     return box_coord[2] * num_boxes[0] * num_boxes[1] +
            box_coord[1] * num_boxes[0] + box_coord[0];
