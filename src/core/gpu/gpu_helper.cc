@@ -176,12 +176,11 @@ void GpuHelper::FindGpuDevicesOpenCL() {
           if (!d->getInfo<CL_DEVICE_AVAILABLE>())  // NOLINT
             continue;
 
-          if (!d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()) {
+          if (d->getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>()) {
+            ocl_state->EnableSupportForDouble();
+          } else {
             ocl_state->DisableSupportForDouble();
           }
-
-          // The OpenCL extension available on this device
-          std::string ext = d->getInfo<CL_DEVICE_EXTENSIONS>();
 
           devices->push_back(*d);
         }
@@ -209,8 +208,23 @@ void GpuHelper::FindGpuDevicesOpenCL() {
     }
 
     int selected_gpu = param->preferred_gpu;
+    // If not specifically selected, we select the first GPU with double support
+    if (selected_gpu < 0) {
+      auto itr = std::find(ocl_state->GetFp64Support()->begin(),
+                           ocl_state->GetFp64Support()->end(), true);
+      if (itr == ocl_state->GetFp64Support()->end()) {
+        Log::Fatal("FindGpuDevicesOpenCL",
+                   "No OpenCL compatible GPU's with double precision support "
+                   "found on this machine!");
+        return;
+      } else {
+        selected_gpu = std::distance(ocl_state->GetFp64Support()->begin(), itr);
+      }
+    }
     Log::Info("", "Selected GPU [", selected_gpu,
               "]: ", (*devices)[selected_gpu].getInfo<CL_DEVICE_NAME>());
+
+    ocl_state->SelectGpu(selected_gpu);
 
     // Create command queue for that GPU
     cl_int queue_err;

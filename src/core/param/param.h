@@ -630,12 +630,13 @@ struct Param {
   ///     opencl_debug = false
   bool opencl_debug = false;
 
-  /// Set the index of the preferred GPU you wish to use.
+  /// Set the index of the preferred GPU you wish to use. In GpuHelper we
+  /// set the default to whichever GPU supports double precision
   /// Default value: `0`\n
   /// TOML config file:
   ///     [experimental]
-  ///     preferred_gpu = 0
-  int preferred_gpu = 0;
+  ///     preferred_gpu = <GPU with double precision support>
+  int preferred_gpu = -1;
 
   /// Determines if agents' memory layout plots should be generated
   /// during load balancing.
