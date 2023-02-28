@@ -318,7 +318,7 @@ void DiffusionGrid::CalculateGradient() {
         std::transform(neighbors.begin(), neighbors.end(), comparison.begin(),
                        [idx](size_t n) { return (n == idx) ? 0 : 1; });
 
-        // Calculate the gradient
+        // Calculate the gradient (no thread safety issues here)
         gradients_[idx][0] = (c1_[neighbors[1]] - c1_[neighbors[0]]) /
                              ((comparison[1] + comparison[0]) * box_length_);
         gradients_[idx][1] = (c1_[neighbors[3]] - c1_[neighbors[2]]) /
@@ -422,13 +422,20 @@ void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient,
     std::transform(neighbors.begin(), neighbors.end(), comparison.begin(),
                    [idx](size_t n) { return (n == idx) ? 0 : 1; });
 
-    // Calculate the gradient
-    real_t grad_x = (c1_[neighbors[1]] - c1_[neighbors[0]]) /
-                    ((comparison[1] + comparison[0]) * box_length_);
-    real_t grad_y = (c1_[neighbors[3]] - c1_[neighbors[2]]) /
-                    ((comparison[3] + comparison[2]) * box_length_);
-    real_t grad_z = (c1_[neighbors[5]] - c1_[neighbors[4]]) /
-                    ((comparison[5] + comparison[4]) * box_length_);
+    // Calculate the gradient (GetConcentration for thread safety)
+    const real_t x_minus = GetConcentration(neighbors[0]);
+    const real_t x_plus = GetConcentration(neighbors[1]);
+    const real_t y_minus = GetConcentration(neighbors[2]);
+    const real_t y_plus = GetConcentration(neighbors[3]);
+    const real_t z_minus = GetConcentration(neighbors[4]);
+    const real_t z_plus = GetConcentration(neighbors[5]);
+
+    real_t grad_x =
+        (x_plus - x_minus) / ((comparison[1] + comparison[0]) * box_length_);
+    real_t grad_y =
+        (y_plus - y_minus) / ((comparison[3] + comparison[2]) * box_length_);
+    real_t grad_z =
+        (z_plus - z_minus) / ((comparison[5] + comparison[4]) * box_length_);
 
     *gradient = Real3({grad_x, grad_y, grad_z});
   }
