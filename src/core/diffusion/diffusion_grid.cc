@@ -495,7 +495,6 @@ size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
 }
 
 std::array<size_t, 6> DiffusionGrid::GetNeighboringBoxes(size_t index) const {
-  std::array<size_t, 6> neighbors;
   const auto box_coord = GetBoxCoordinates(index);
   return GetNeighboringBoxes(index, box_coord);
 };
