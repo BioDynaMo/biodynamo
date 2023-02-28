@@ -176,8 +176,19 @@ class DiffusionGrid : public ScalarField {
   /// gradient is scaled to norm 1, but with `normalize = false` one can obtain
   /// the full gradient information (e.g. the un-normalized gradient). If the
   /// gradient is zero and `normalize = true`, this method returns a zero
-  /// vector. Note that the gradient is computed via a central difference scheme
-  /// on the underlying spatial discretization.
+  /// vector. The gradient is computed via a central difference scheme
+  /// on the underlying spatial discretization (central difference for inner
+  /// boxes, forward/backward difference for edge boxes). The gradients can
+  /// either be computed once for all boxes (set Param::calculate_gradients to
+  /// true) or on the fly (set Param::calculate_gradients to false). Depending
+  /// on the use case, one of the two options might be more efficient (e.g. if
+  /// the gradient is only needed for a few boxes, 'on the fly' might be more
+  /// efficient). Please note that the on the fly evaluation of the gradient
+  /// is done on the current state of the diffusion grid (c1_), thus, it
+  /// interferes with ChangeConcentrationBy() (e.g. Adding to the substance will
+  /// change the gradient: evaluating the gradient during the same iteration may
+  /// yield different results). Further, if you need to visualize the gradient
+  /// with Paraview, you must set Param::calculate_gradients to true.
   Real3 GetGradient(const Real3& position) const override {
     Real3 gradient;
     GetGradient(position, &gradient, false);
@@ -193,12 +204,30 @@ class DiffusionGrid : public ScalarField {
   virtual void GetGradient(const Real3& position, Real3* gradient,
                            bool normalize = true) const;
 
+  /// Get the coordinates of the box at the specified position
   std::array<uint32_t, 3> GetBoxCoordinates(const Real3& position) const;
 
+  // Get the coordinates of the box at the specified index
+  std::array<uint32_t, 3> GetBoxCoordinates(const size_t idx) const;
+
+  /// Calculates the box index at specified box coordinates
   size_t GetBoxIndex(const std::array<uint32_t, 3>& box_coord) const;
 
   /// Calculates the box index of the substance at specified position
   size_t GetBoxIndex(const Real3& position) const;
+
+  /// Determines the indices of the neighboring boxes of a given box index.
+  /// Order: x-, x+, y-, y+, z-, z+. If the box is on the edge of the grid, the
+  /// index itself is returned. E.g. if the box is on the left edge of the grid,
+  /// x- is the same as index.
+  std::array<size_t, 6> GetNeighboringBoxes(size_t index) const;
+
+  /// Determines the indices of the neighboring boxes of given box coordinates.
+  /// Order: x-, x+, y-, y+, z-, z+. If the box is on the edge of the grid, the
+  /// index itself is returned. E.g. if the box is on the left edge of the grid,
+  /// x- is the same as index.
+  std::array<size_t, 6> GetNeighboringBoxes(
+      size_t index, const std::array<uint32_t, 3>& box_coord) const;
 
   void SetDecayConstant(real_t mu) {
     // Check is done in ParametersCheck within the Diffuse(dt) method
@@ -206,7 +235,7 @@ class DiffusionGrid : public ScalarField {
   }
 
   /// Return the last timestep `dt` that was used to run `Diffuse(dt)`
-  real_t GetLastTimestep() { return last_dt_; }
+  real_t GetLastTimestep() const { return last_dt_; }
 
   // Sets an upper threshold for allowed values in the diffusion grid.
   void SetUpperThreshold(real_t t) { upper_threshold_ = t; }

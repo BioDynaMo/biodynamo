@@ -306,56 +306,25 @@ void DiffusionGrid::CalculateGradient() {
     return;
   }
 
-  real_t gd = 1 / (box_length_ * 2);
-
-  auto nx = resolution_;
-  auto ny = resolution_;
-  auto nz = resolution_;
-
 #pragma omp parallel for collapse(2)
-  for (size_t z = 0; z < nz; z++) {
-    for (size_t y = 0; y < ny; y++) {
-      for (size_t x = 0; x < nx; x++) {
-        int c, e, w, n, s, b, t;
-        c = x + y * nx + z * nx * ny;
+  for (uint32_t z = 0; z < resolution_; z++) {
+    for (uint32_t y = 0; y < resolution_; y++) {
+      for (uint32_t x = 0; x < resolution_; x++) {
+        size_t idx = x + y * resolution_ + z * resolution_ * resolution_;
+        const std::array<uint32_t, 3> box_coord = {x, y, z};
+        // Get the neighboring boxes
+        const auto neighbors = GetNeighboringBoxes(idx, box_coord);
+        std::array<int, 6> comparison;  // array to determine discretization h
+        std::transform(neighbors.begin(), neighbors.end(), comparison.begin(),
+                       [idx](size_t n) { return (n == idx) ? 0 : 1; });
 
-        if (x == 0) {
-          e = c;
-          w = c + 2;
-        } else if (x == nx - 1) {
-          e = c - 2;
-          w = c;
-        } else {
-          e = c - 1;
-          w = c + 1;
-        }
-
-        if (y == 0) {
-          n = c + 2 * nx;
-          s = c;
-        } else if (y == ny - 1) {
-          n = c;
-          s = c - 2 * nx;
-        } else {
-          n = c + nx;
-          s = c - nx;
-        }
-
-        if (z == 0) {
-          t = c + 2 * nx * ny;
-          b = c;
-        } else if (z == nz - 1) {
-          t = c;
-          b = c - 2 * nx * ny;
-        } else {
-          t = c + nx * ny;
-          b = c - nx * ny;
-        }
-
-        // Let the gradient point from low to high concentration
-        gradients_[c][0] = (c1_[w] - c1_[e]) * gd;
-        gradients_[c][1] = (c1_[n] - c1_[s]) * gd;
-        gradients_[c][2] = (c1_[t] - c1_[b]) * gd;
+        // Calculate the gradient
+        gradients_[idx][0] = (c1_[neighbors[1]] - c1_[neighbors[0]]) /
+                             ((comparison[1] + comparison[0]) * box_length_);
+        gradients_[idx][1] = (c1_[neighbors[3]] - c1_[neighbors[2]]) /
+                             ((comparison[3] + comparison[2]) * box_length_);
+        gradients_[idx][2] = (c1_[neighbors[5]] - c1_[neighbors[4]]) /
+                             ((comparison[5] + comparison[4]) * box_length_);
       }
     }
   }
@@ -444,7 +413,25 @@ void DiffusionGrid::GetGradient(const Real3& position, Real3* gradient,
                "the diffusion grid! Returning zero gradient.");
     return;
   }
-  *gradient = gradients_[idx];
+  if (init_gradient_) {
+    *gradient = gradients_[idx];
+  } else {
+    // Get the neighboring boxes
+    const auto neighbors = GetNeighboringBoxes(idx);
+    std::array<int, 6> comparison;  // array to determine discretization h
+    std::transform(neighbors.begin(), neighbors.end(), comparison.begin(),
+                   [idx](size_t n) { return (n == idx) ? 0 : 1; });
+
+    // Calculate the gradient
+    real_t grad_x = (c1_[neighbors[1]] - c1_[neighbors[0]]) /
+                    ((comparison[1] + comparison[0]) * box_length_);
+    real_t grad_y = (c1_[neighbors[3]] - c1_[neighbors[2]]) /
+                    ((comparison[3] + comparison[2]) * box_length_);
+    real_t grad_z = (c1_[neighbors[5]] - c1_[neighbors[4]]) /
+                    ((comparison[5] + comparison[4]) * box_length_);
+
+    *gradient = Real3({grad_x, grad_y, grad_z});
+  }
   if (normalize) {
     auto norm = gradient->Norm();
     if (norm > 1e-10) {
@@ -470,9 +457,20 @@ std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
     // Get box coords (Note: conversion to uint32_t should be save for typical
     // grid sizes)
     box_coord[i] = static_cast<uint32_t>(
-        (floor(position[i]) - grid_dimensions_[0]) / box_length_);
+        std::floor((position[i] - grid_dimensions_[0]) / box_length_));
   }
+  return box_coord;
+}
 
+std::array<uint32_t, 3> DiffusionGrid::GetBoxCoordinates(
+    const size_t idx) const {
+  // Resolution must be smaller than uint32_t max for the box coordinates to be
+  // representable
+  assert(resolution_ < std::numeric_limits<uint32_t>::max());
+  std::array<uint32_t, 3> box_coord;
+  box_coord[0] = static_cast<uint32_t>(idx % resolution_);
+  box_coord[1] = static_cast<uint32_t>((idx / resolution_) % resolution_);
+  box_coord[2] = static_cast<uint32_t>(idx / (resolution_ * resolution_));
   return box_coord;
 }
 
@@ -487,6 +485,28 @@ size_t DiffusionGrid::GetBoxIndex(
 size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
   auto box_coord = GetBoxCoordinates(position);
   return GetBoxIndex(box_coord);
+}
+
+std::array<size_t, 6> DiffusionGrid::GetNeighboringBoxes(size_t index) const {
+  std::array<size_t, 6> neighbors;
+  const auto box_coord = GetBoxCoordinates(index);
+  return GetNeighboringBoxes(index, box_coord);
+};
+
+std::array<size_t, 6> DiffusionGrid::GetNeighboringBoxes(
+    size_t index, const std::array<uint32_t, 3>& box_coord) const {
+  std::array<size_t, 6> neighbors;
+  neighbors[0] = (box_coord[0] == 0) ? index : index - 1;
+  neighbors[1] = (box_coord[0] == resolution_ - 1) ? index : index + 1;
+  neighbors[2] = (box_coord[1] == 0) ? index : index - resolution_;
+  neighbors[3] =
+      (box_coord[1] == resolution_ - 1) ? index : index + resolution_;
+  neighbors[4] =
+      (box_coord[2] == 0) ? index : index - resolution_ * resolution_;
+  neighbors[5] = (box_coord[2] == resolution_ - 1)
+                     ? index
+                     : index + resolution_ * resolution_;
+  return neighbors;
 }
 
 void DiffusionGrid::SetBoundaryCondition(
