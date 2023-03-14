@@ -586,6 +586,8 @@ void DiffusionGrid::ParametersCheck(real_t dt) {
   const bool stability =
       ((mu_ + 12.0 * (1 - dc_[0]) / (box_length_ * box_length_)) * dt <= 2.0);
   if (!stability) {
+    const double max_dt =
+        2.0 / (mu_ + 12.0 * (1 - dc_[0])) * (box_length_ * box_length_);
     Log::Fatal(
         "DiffusionGrid", "Stability condition violated. ",
         "The specified parameters of the diffusion grid with substance [",
@@ -593,7 +595,8 @@ void DiffusionGrid::ParametersCheck(real_t dt) {
         "] will result in unphysical behavior (diffusion coefficient = ",
         (1 - dc_[0]), ", resolution = ", resolution_,
         ", decay constant = ", mu_, ", dt = ", dt,
-        "). Please refer to the user guide for more information.");
+        "). For the given parameters, the time step must be smaller than ",
+        max_dt, ". Please refer to the user guide for more information.");
   }
 
   // We also check if the decay constant is too large. This is not a stability
