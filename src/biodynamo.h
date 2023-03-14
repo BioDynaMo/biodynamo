@@ -42,6 +42,7 @@
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
 #include "core/shape.h"
+#include "core/interaction_force.h"
 #include "core/substance_initializers.h"
 #include "core/util/filesystem.h"
 #include "core/util/root.h"

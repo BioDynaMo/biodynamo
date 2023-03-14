@@ -86,7 +86,8 @@ class MechanicalForcesOp : public AgentOperationImpl {
       last_iteration_[tid] = current_iteration;
 
       auto* grid = sim->GetEnvironment();
-      auto search_radius = grid->GetLargestAgentSize();
+      //auto search_radius = grid->GetLargestAgentSize();
+      auto search_radius = grid->GetLargestAgentSize() * 3;
       squared_radius_ = search_radius * search_radius;
       auto current_time = (current_iteration + 1) * param->simulation_time_step;
       delta_time_[tid] = current_time - last_time_run_[tid];

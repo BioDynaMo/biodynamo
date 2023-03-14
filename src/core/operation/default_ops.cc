@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <iostream>
 #include "core/analysis/time_series.h"
 #include "core/operation/bound_space_op.h"
 #include "core/operation/continuum_op.h"
@@ -142,5 +143,29 @@ struct PropagateStaticnessOp : public StandaloneOperationImpl {
 };
 
 BDM_REGISTER_OP(PropagateStaticnessOp, "propagate staticness", kCpu);
+
+
+struct yeet_yeet : public StandaloneOperationImpl {
+  BDM_OP_HEADER(yeet_yeet);
+
+  void operator()() override {
+    auto* sim = Simulation::GetActive();
+    auto* rm = sim->GetResourceManager();
+    real_t total = 0.0;
+    rm->ForEachAgent([&](Agent* agent) {
+        auto* cell = dynamic_cast<Cell*>(agent);
+        real_t mass = cell->GetMass();
+        total += mass;
+    });
+    int t = sim->GetScheduler()->GetSimulatedSteps();
+    std::ofstream outdata;
+    std::string file = "yeet/mass_" + std::to_string(t) + ".txt";
+    outdata.open(file);
+    outdata << total << std::endl;
+    outdata.close();
+  }
+};
+
+BDM_REGISTER_OP(yeet_yeet, "yeet_yeet", kCpu);
 
 }  // namespace bdm

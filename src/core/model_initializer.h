@@ -23,6 +23,7 @@
 
 #include "core/container/math_array.h"
 #include "core/diffusion/diffusion_grid.h"
+#include "core/diffusion/euler_grid.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "core/util/random.h"

@@ -46,7 +46,7 @@ Scheduler::Scheduler() {
   std::vector<std::string> default_op_names = {
       "update staticness", "bound space",    "behavior",
       "mechanical forces", "discretization", "propagate staticness agentop",
-      "continuum"};
+      "continuum", "yeet_yeet"};
 
   std::vector<std::string> pre_scheduled_ops_names = {"set up iteration",
                                                       "propagate staticness"};
