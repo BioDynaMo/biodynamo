@@ -305,6 +305,9 @@ void DiffusionGrid::CalculateGradient() {
   if (init_gradient_ && IsFixedSubstance()) {
     return;
   }
+  if (!precompute_gradients_) {
+    return;
+  }
 
 #pragma omp parallel for collapse(2)
   for (uint32_t z = 0; z < resolution_; z++) {

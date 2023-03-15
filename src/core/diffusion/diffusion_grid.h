@@ -340,6 +340,10 @@ class DiffusionGrid : public ScalarField {
   /// Returns if the grid has been initialized
   bool IsInitialized() const { return initialized_; }
 
+  /// Turn off the gradient calculation. Gradients are not precomputed but
+  /// can be calculated on the fly.
+  void TurnOffGradientCalculation() { precompute_gradients_ = false; }
+
  private:
   friend class RungeKuttaGrid;
   friend class EulerGrid;
@@ -413,6 +417,9 @@ class DiffusionGrid : public ScalarField {
   /// Flag to indicate if we want to print information about the grid after
   /// initialization
   bool print_info_with_initialization_ = false;
+  /// Flag to avoid gradient computation if not needed. (E.g. if multiple DGs
+  /// are used but the gradient is only needed for one of them.)
+  bool precompute_gradients_ = true;
 
   BDM_CLASS_DEF_OVERRIDE(DiffusionGrid, 1);
 };
