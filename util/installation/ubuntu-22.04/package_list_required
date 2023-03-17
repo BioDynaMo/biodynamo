@@ -22,7 +22,7 @@ liblzma-dev
 libreadline-dev
 libsqlite3-dev
 libssl-dev
-python-openssl
+python3-openssl
 tk-dev
 xz-utils
 zlib1g-dev
