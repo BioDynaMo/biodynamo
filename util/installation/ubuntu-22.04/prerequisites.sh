@@ -72,10 +72,8 @@ pyenv shell $PYVERS
 
 # Install optional packages
 if [ $1 == "all" ]; then
-  # this updates pip, but installs the updated version in $HOME/.local/bin
-  PIP_PACKAGES="markupsafe==2.0.1 jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6"
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
-  python -m pip install $PIP_PACKAGES
+  python -m pip install -r $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/pip_packages.txt
 
   sudo apt-get install -y \
     $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-22.04/package_list_extra)
