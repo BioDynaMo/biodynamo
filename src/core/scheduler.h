@@ -176,7 +176,7 @@ class Scheduler {
   /// Runs a lambda for each operation in the specified list of operations
   template <typename Lambda>
   void ForEachOperationInList(const std::vector<Operation*>& operations,
-                              Lambda lambda) {
+                              Lambda lambda) const {
     for (auto* op : operations) {
       lambda(op);
     }
