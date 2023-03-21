@@ -386,7 +386,7 @@ void* MemoryManager::New(std::size_t size) {
   }
 }
 
-void MemoryManager::Delete(void* p) const {
+void MemoryManager::Delete(void* p) {
   if (ignore_delete_) {
     return;
   }
