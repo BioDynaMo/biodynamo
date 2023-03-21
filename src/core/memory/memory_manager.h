@@ -155,7 +155,7 @@ class MemoryManager {
 
   void* New(std::size_t size);
 
-  void Delete(void* p);
+  void Delete(void* p) const;
 
   void SetIgnoreDelete(bool value);
 
