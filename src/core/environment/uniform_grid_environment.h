@@ -130,7 +130,7 @@ class UniformGridEnvironment : public Environment {
         }
       }
 
-      bool IsAtEnd() { return countdown_ <= 0; }
+      bool IsAtEnd() const { return countdown_ <= 0; }
 
       Iterator& operator++() {
         countdown_--;
@@ -273,7 +273,7 @@ class UniformGridEnvironment : public Environment {
 
   void SetDetermineSimSize(bool value) { determine_sim_size_ = value; }
 
-  int32_t GetBoxLength() { return box_length_; }
+  int32_t GetBoxLength() const { return box_length_; }
 
   /// @brief      Calculates the squared euclidean distance between two points
   ///             in 3D
