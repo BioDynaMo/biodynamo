@@ -112,7 +112,9 @@ class ResourceManager {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
-  AgentHandle GetAgentHandle(const AgentUid& uid) { return uid_ah_map_[uid]; }
+  AgentHandle GetAgentHandle(const AgentUid& uid) const {
+    return uid_ah_map_[uid];
+  }
 
   void SwapAgents(std::vector<std::vector<Agent*>>* agents);
 
@@ -493,7 +495,7 @@ class ResourceManager {
   /// Adding and removing agents does not immediately reflect in the state of
   /// the environment. This function sets a flag in the environment such that
   /// it is aware of the changes.
-  void MarkEnvironmentOutOfSync();
+  void MarkEnvironmentOutOfSync() const;
 
   /// Maps an AgentUid to its storage location in `agents_` \n
   AgentUidMap<AgentHandle> uid_ah_map_ = AgentUidMap<AgentHandle>(100u);  //!
