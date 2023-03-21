@@ -189,7 +189,7 @@ TClass* VtkAgents::FindTClass() {
 
 // -----------------------------------------------------------------------------
 void VtkAgents::InitializeDataMembers(
-    Agent* agent, std::vector<std::string>* data_members) const {
+    const Agent* agent, std::vector<std::string>* data_members) const {
   std::set<std::string> dm_set = agent->GetRequiredVisDataMembers();
   auto* param = Simulation::GetActive()->GetParam();
   for (auto& dm : param->visualize_agents.at(name_)) {

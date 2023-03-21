@@ -52,7 +52,7 @@ class VtkAgents {
   Shape shape_;
 
   TClass* FindTClass();
-  void InitializeDataMembers(Agent* agent,
+  void InitializeDataMembers(const Agent* agent,
                              std::vector<std::string>* data_members) const;
   void UpdateMappedDataArrays(uint64_t tid, const std::vector<Agent*>* agents,
                               uint64_t start, uint64_t end);
