@@ -253,33 +253,40 @@ void DiffusionGrid::RunInitializers() {
   size_t negative_voxels_counter_ = 0;
 
   // Apply all functions that initialize this diffusion grid
-  for (size_t f = 0; f < initializers_.size(); f++) {
-    for (uint32_t x = 0; x < nx; x++) {
-      real_t real_x = grid_dimensions_[0] +
-                      static_cast<real_t>(x) * box_length_ + box_length_ / 2.0;
-      for (uint32_t y = 0; y < ny; y++) {
-        real_t real_y = grid_dimensions_[0] +
-                        static_cast<real_t>(y) * box_length_ +
+#pragma omp parallel for schedule(static) reduction(+:negative_voxels_counter_) collapse(2)
+  for (uint32_t x = 0; x < nx; x++) {
+    real_t real_x = grid_dimensions_[0] + static_cast<real_t>(x) * box_length_ +
+                    box_length_ / 2.0;
+    for (uint32_t y = 0; y < ny; y++) {
+      real_t real_y = grid_dimensions_[0] +
+                      static_cast<real_t>(y) * box_length_ + box_length_ / 2.0;
+      for (uint32_t z = 0; z < nz; z++) {
+        real_t real_z = grid_dimensions_[0] +
+                        static_cast<real_t>(z) * box_length_ +
                         box_length_ / 2.0;
-        for (uint32_t z = 0; z < nz; z++) {
-          real_t real_z = grid_dimensions_[0] +
-                          static_cast<real_t>(z) * box_length_ +
-                          box_length_ / 2.0;
-          std::array<uint32_t, 3> box_coord = {x, y, z};
-          size_t idx = GetBoxIndex(box_coord);
-          real_t value{0};
-          if (bc_type_ == BoundaryConditionType::kDirichlet &&
-              (x == 0 || x == nx - 1 || y == 0 || y == ny - 1 || z == 0 ||
-               z == nz - 1)) {
-            value = boundary_condition_->Evaluate(real_x, real_y, real_z, 0);
-          } else {
-            value = initializers_[f](real_x, real_y, real_z);
+        std::array<uint32_t, 3> box_coord = {x, y, z};
+        size_t idx = GetBoxIndex(box_coord);
+        real_t value{0};
+        if (bc_type_ == BoundaryConditionType::kDirichlet &&
+            (x == 0 || x == nx - 1 || y == 0 || y == ny - 1 || z == 0 ||
+             z == nz - 1)) {
+          value = boundary_condition_->Evaluate(real_x, real_y, real_z, 0);
+        } else {
+          for (size_t f = 0; f < initializers_.size(); f++) {
+            value += initializers_[f](real_x, real_y, real_z);
           }
-          if (value < lower_threshold_) {
-            negative_voxels_counter_++;
-          }
-
-          ChangeConcentrationBy(idx, value);
+        }
+        if (value < lower_threshold_) {
+          negative_voxels_counter_++;
+        }
+        // ChangeConcentrationBy(idx, value);
+        c1_[idx] = value;
+        // Copy data to second array to ensure valid Dirichlet Boundary
+        // Conditions
+        if (bc_type_ == BoundaryConditionType::kDirichlet ||
+            bc_type_ == BoundaryConditionType::kClosedBoundaries ||
+            bc_type_ == BoundaryConditionType::kOpenBoundaries) {
+          c2_[idx] = value;
         }
       }
     }
@@ -290,8 +297,6 @@ void DiffusionGrid::RunInitializers() {
                  " were initialized with value ", lower_threshold_,
                  " to avoid negative concentrations.");
   }
-  // Copy data to second array to ensure valid Dirichlet Boundary Conditions
-  c2_ = c1_;
 
   // Clear the initializer to free up space
   initializers_.clear();
