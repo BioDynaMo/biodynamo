@@ -30,7 +30,7 @@ void RuntimeVariables::SetSystemInfo(const SysInfo_t& other) {
   sysinfo_ = other;
 }
 
-void RuntimeVariables::PrintSystemInfo() {
+void RuntimeVariables::PrintSystemInfo() const {
   // clang-format off
   Log::Info("RuntimeVariables", "OS:\t", sysinfo_.fOS, "\n",
             "Model:\t", sysinfo_.fModel,    "\n",

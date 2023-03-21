@@ -35,7 +35,7 @@ class RuntimeVariables {
   SysInfo_t GetSystemInfo() const;
   void SetSystemInfo(const SysInfo_t& other);
 
-  void PrintSystemInfo();
+  void PrintSystemInfo() const;
 
   bool operator==(const RuntimeVariables& other) const;
 
