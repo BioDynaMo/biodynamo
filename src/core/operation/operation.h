@@ -62,7 +62,7 @@ struct OperationImpl {
   virtual OperationImpl *Clone() = 0;
 
   /// Returns whether or not this operation is supposed to run on a GPU
-  bool IsGpuOperation() { return target_ == kCuda || target_ == kOpenCl; }
+  bool IsGpuOperation() const { return target_ == kCuda || target_ == kOpenCl; }
 
   /// Returns whether or not this operations is a stand-alone operation
   virtual bool IsStandalone() = 0;
