@@ -55,7 +55,7 @@ class JitForEachDataMemberFunctor {
                                       const std::vector<TDataMember*>&)>&
           code_generation);
 
-  void Compile();
+  void Compile() const;
 
   void* New(const std::string& parameter = "");
 

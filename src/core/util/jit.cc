@@ -128,7 +128,7 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
 }
 
 // -----------------------------------------------------------------------------
-void JitForEachDataMemberFunctor::Compile() {
+void JitForEachDataMemberFunctor::Compile() const {
   JitHeaders::IncludeIntoCling();
   gInterpreter->Declare(code_generator_(functor_name_, data_members_).c_str());
 }
