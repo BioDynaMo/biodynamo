@@ -255,9 +255,9 @@ void DiffusionGrid::RunInitializers() {
   // Apply all functions that initialize this diffusion grid
 #pragma omp parallel for schedule(static) reduction(+:negative_voxels_counter_) collapse(2)
   for (uint32_t x = 0; x < nx; x++) {
-    real_t real_x = grid_dimensions_[0] + static_cast<real_t>(x) * box_length_ +
-                    box_length_ / 2.0;
     for (uint32_t y = 0; y < ny; y++) {
+      real_t real_x = grid_dimensions_[0] +
+                      static_cast<real_t>(x) * box_length_ + box_length_ / 2.0;
       real_t real_y = grid_dimensions_[0] +
                       static_cast<real_t>(y) * box_length_ + box_length_ / 2.0;
       for (uint32_t z = 0; z < nz; z++) {
