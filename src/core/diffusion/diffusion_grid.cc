@@ -268,7 +268,7 @@ void DiffusionGrid::RunInitializers() {
     std::array<real_t, 3> real_coord;
 #pragma omp simd
     for (size_t i = 0; i < 3; i++) {
-      real_coord[i] = grid_dimensions_[i] +
+      real_coord[i] = grid_dimensions_[0] +
                       static_cast<real_t>(box_coord[i]) * box_length_ +
                       box_length_ / 2.0;
     }
