@@ -243,55 +243,63 @@ void DiffusionGrid::CopyOldData(
 }
 
 void DiffusionGrid::RunInitializers() {
+  // If there are no initializers, we don't need to do anything and can return
+  // immediately
   if (initializers_.empty()) {
     return;
   }
 
-  auto nx = resolution_;
-  auto ny = resolution_;
-  auto nz = resolution_;
-  size_t negative_voxels_counter_ = 0;
+  // Define variables for loop bounds & boundary condition check
+  const auto kNumBoxes = total_num_boxes_;
+  const auto kGridSize = resolution_;
+  // For certain boudaries, we also need to copy the values to the c2_ array
+  const bool kCopyToC2 =
+      (bc_type_ == BoundaryConditionType::kDirichlet ||
+       bc_type_ == BoundaryConditionType::kClosedBoundaries ||
+       bc_type_ == BoundaryConditionType::kOpenBoundaries);
 
-  // Apply all functions that initialize this diffusion grid
-  for (size_t f = 0; f < initializers_.size(); f++) {
-    for (uint32_t x = 0; x < nx; x++) {
-      real_t real_x = grid_dimensions_[0] +
-                      static_cast<real_t>(x) * box_length_ + box_length_ / 2.0;
-      for (uint32_t y = 0; y < ny; y++) {
-        real_t real_y = grid_dimensions_[0] +
-                        static_cast<real_t>(y) * box_length_ +
-                        box_length_ / 2.0;
-        for (uint32_t z = 0; z < nz; z++) {
-          real_t real_z = grid_dimensions_[0] +
-                          static_cast<real_t>(z) * box_length_ +
-                          box_length_ / 2.0;
-          std::array<uint32_t, 3> box_coord = {x, y, z};
-          size_t idx = GetBoxIndex(box_coord);
-          real_t value{0};
-          if (bc_type_ == BoundaryConditionType::kDirichlet &&
-              (x == 0 || x == nx - 1 || y == 0 || y == ny - 1 || z == 0 ||
-               z == nz - 1)) {
-            value = boundary_condition_->Evaluate(real_x, real_y, real_z, 0);
-          } else {
-            value = initializers_[f](real_x, real_y, real_z);
-          }
-          if (value < lower_threshold_) {
-            negative_voxels_counter_++;
-          }
+// Apply all functions that initialize this diffusion grid
+#pragma omp parallel for schedule(static)
+  for (size_t idx = 0; idx < kNumBoxes; idx++) {
+    // Determine the coordinates of the box
+    const std::array<uint32_t, 3> box_coord = GetBoxCoordinates(idx);
 
-          ChangeConcentrationBy(idx, value);
-        }
+    // Determine the real coordinates of the box
+    std::array<real_t, 3> real_coord;
+#pragma omp simd
+    for (size_t i = 0; i < 3; i++) {
+      real_coord[i] = grid_dimensions_[0] +
+                      static_cast<real_t>(box_coord[i]) * box_length_ +
+                      box_length_ / 2.0;
+    }
+
+    // Calculate the value of the substance in the box
+    real_t value{0};
+    if (bc_type_ == BoundaryConditionType::kDirichlet &&
+        (box_coord[0] == 0 || box_coord[0] == kGridSize - 1 ||
+         box_coord[1] == 0 || box_coord[1] == kGridSize - 1 ||
+         box_coord[2] == 0 || box_coord[2] == kGridSize - 1)) {
+      // Evaluate the boundary condition in case of Dirichlet boundary
+      value = boundary_condition_->Evaluate(real_coord[0], real_coord[1],
+                                            real_coord[2], 0);
+    } else {
+      for (size_t f = 0; f < initializers_.size(); f++) {
+        value += initializers_[f](real_coord[0], real_coord[1], real_coord[2]);
       }
     }
+
+    // Allow only lower_threshold_ <= value <= upper_threshold_
+    value = std::max(value, lower_threshold_);
+    value = std::min(value, upper_threshold_);
+
+    // Set the value of the substance in the box
+    c1_[idx] = value;
+
+    // For certain boundaries, we need to copy the value to c2_
+    if (kCopyToC2) {
+      c2_[idx] = value;
+    }
   }
-  if (negative_voxels_counter_ > 0) {
-    Log::Warning("DiffusionGrid::RunInitializers()",
-                 "Some voxels of the diffusion grid ", GetContinuumName(),
-                 " were initialized with value ", lower_threshold_,
-                 " to avoid negative concentrations.");
-  }
-  // Copy data to second array to ensure valid Dirichlet Boundary Conditions
-  c2_ = c1_;
 
   // Clear the initializer to free up space
   initializers_.clear();

@@ -88,6 +88,7 @@ TEST(DiffusionInitTest, GaussianBand) {
 TEST(DiffusionInitTest, InitBothArrays) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->diffusion_boundary_condition = "closed";
     param->min_bound = 0;
     param->max_bound = 250;
   };
