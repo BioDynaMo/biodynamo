@@ -243,59 +243,63 @@ void DiffusionGrid::CopyOldData(
 }
 
 void DiffusionGrid::RunInitializers() {
+  // If there are no initializers, we don't need to do anything and can return
+  // immediately
   if (initializers_.empty()) {
     return;
   }
 
-  auto nx = resolution_;
-  auto ny = resolution_;
-  auto nz = resolution_;
-  size_t negative_voxels_counter_ = 0;
+  // Variable for loop bounds & boundary condition check
+  const auto kGridSize = resolution_;
+  // For certain boudaries, we also need to copy the values to the c2_ array
+  const bool kCopyToC2 =
+      (bc_type_ == BoundaryConditionType::kDirichlet ||
+       bc_type_ == BoundaryConditionType::kClosedBoundaries ||
+       bc_type_ == BoundaryConditionType::kOpenBoundaries);
 
   // Apply all functions that initialize this diffusion grid
-#pragma omp parallel for schedule(static) reduction(+:negative_voxels_counter_) collapse(2)
-  for (uint32_t x = 0; x < nx; x++) {
-    for (uint32_t y = 0; y < ny; y++) {
+#pragma omp parallel for schedule(static) collapse(2)
+  for (uint32_t x = 0; x < kGridSize; x++) {
+    for (uint32_t y = 0; y < kGridSize; y++) {
       real_t real_x = grid_dimensions_[0] +
                       static_cast<real_t>(x) * box_length_ + box_length_ / 2.0;
       real_t real_y = grid_dimensions_[0] +
                       static_cast<real_t>(y) * box_length_ + box_length_ / 2.0;
-      for (uint32_t z = 0; z < nz; z++) {
+      for (uint32_t z = 0; z < kGridSize; z++) {
         real_t real_z = grid_dimensions_[0] +
                         static_cast<real_t>(z) * box_length_ +
                         box_length_ / 2.0;
+
+        // Determine the index of the box
         std::array<uint32_t, 3> box_coord = {x, y, z};
         size_t idx = GetBoxIndex(box_coord);
+
+        // Calculate the value of the substance in the box
         real_t value{0};
         if (bc_type_ == BoundaryConditionType::kDirichlet &&
-            (x == 0 || x == nx - 1 || y == 0 || y == ny - 1 || z == 0 ||
-             z == nz - 1)) {
+            (x == 0 || x == kGridSize - 1 || y == 0 || y == kGridSize - 1 ||
+             z == 0 || z == kGridSize - 1)) {
+          // Evaluate the boundary condition in case of Dirichlet boundary
           value = boundary_condition_->Evaluate(real_x, real_y, real_z, 0);
         } else {
           for (size_t f = 0; f < initializers_.size(); f++) {
             value += initializers_[f](real_x, real_y, real_z);
           }
         }
-        if (value < lower_threshold_) {
-          negative_voxels_counter_++;
-        }
-        // ChangeConcentrationBy(idx, value);
+
+        // Allow only lower_threshold_ <= value <= upper_threshold_
+        value = std::max(value, lower_threshold_);
+        value = std::min(value, upper_threshold_);
+
+        // Set the value of the substance in the box
         c1_[idx] = value;
-        // Copy data to second array to ensure valid Dirichlet Boundary
-        // Conditions
-        if (bc_type_ == BoundaryConditionType::kDirichlet ||
-            bc_type_ == BoundaryConditionType::kClosedBoundaries ||
-            bc_type_ == BoundaryConditionType::kOpenBoundaries) {
+
+        // For certain boundaries, we need to copy the value to c2_
+        if (kCopyToC2) {
           c2_[idx] = value;
         }
       }
     }
-  }
-  if (negative_voxels_counter_ > 0) {
-    Log::Warning("DiffusionGrid::RunInitializers()",
-                 "Some voxels of the diffusion grid ", GetContinuumName(),
-                 " were initialized with value ", lower_threshold_,
-                 " to avoid negative concentrations.");
   }
 
   // Clear the initializer to free up space

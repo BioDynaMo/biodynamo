@@ -130,7 +130,9 @@ class DiffusionGrid : public ScalarField {
   /// At the edges the gradient is the same as the box next to it
   void CalculateGradient();
 
-  /// Initialize the diffusion grid according to the initialization functions
+  /// Initialize the diffusion grid according to the initialization functions.
+  /// Note that if your initializers our outside the defined bounds (lower and
+  /// upper threshold), they will be clamped to the bounds.
   void RunInitializers();
 
   /// Increase the concentration at a specified position a with specified
