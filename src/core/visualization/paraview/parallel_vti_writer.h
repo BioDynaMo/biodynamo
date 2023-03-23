@@ -54,7 +54,7 @@ class PvtiWriter {
 
  private:
   template <typename T>
-  std::string ArrayToString(T* data, int length) {
+  std::string ArrayToString(T* data, int length) const {
     std::stringstream stream;
     stream << data[0];
     for (int i = 1; i < length; ++i) {

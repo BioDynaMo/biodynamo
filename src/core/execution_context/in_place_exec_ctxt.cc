@@ -60,7 +60,7 @@ void InPlaceExecutionContext::ThreadSafeAgentUidMap::Insert(
 
 const typename InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type&
 InPlaceExecutionContext::ThreadSafeAgentUidMap::operator[](
-    const AgentUid& uid) {
+    const AgentUid& uid) const {
   static InPlaceExecutionContext::ThreadSafeAgentUidMap::value_type kDefault;
   auto index = uid.GetIndex();
   auto bidx = index / kBatchSize;
@@ -235,7 +235,7 @@ void InPlaceExecutionContext::AddAgent(Agent* new_agent) {
 }
 
 bool InPlaceExecutionContext::IsNeighborCacheValid(
-    real_t query_squared_radius) {
+    real_t query_squared_radius) const {
   if (!cache_neighbors_) {
     return false;
   }

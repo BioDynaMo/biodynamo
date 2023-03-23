@@ -177,7 +177,7 @@ UniformRng::UniformRng(real_t min, real_t max) : min_(min), max_(max) {}
 UniformRng::~UniformRng() = default;
 real_t UniformRng::SampleImpl(TRandom* rng) { return rng->Uniform(min_, max_); }
 
-UniformRng Random::GetUniformRng(real_t min, real_t max) {
+UniformRng Random::GetUniformRng(real_t min, real_t max) const {
   return UniformRng(min, max);
 }
 
@@ -186,7 +186,7 @@ GausRng::GausRng(real_t mean, real_t sigma) : mean_(mean), sigma_(sigma) {}
 GausRng::~GausRng() = default;
 real_t GausRng::SampleImpl(TRandom* rng) { return rng->Gaus(mean_, sigma_); }
 
-GausRng Random::GetGausRng(real_t mean, real_t sigma) {
+GausRng Random::GetGausRng(real_t mean, real_t sigma) const {
   return GausRng(mean, sigma);
 }
 
@@ -195,7 +195,7 @@ ExpRng::ExpRng(real_t tau) : tau_(tau) {}
 ExpRng::~ExpRng() = default;
 real_t ExpRng::SampleImpl(TRandom* rng) { return rng->Exp(tau_); }
 
-ExpRng Random::GetExpRng(real_t tau) { return ExpRng(tau); }
+ExpRng Random::GetExpRng(real_t tau) const { return ExpRng(tau); }
 
 // -----------------------------------------------------------------------------
 LandauRng::LandauRng(real_t mean, real_t sigma) : mean_(mean), sigma_(sigma) {}
@@ -204,7 +204,7 @@ real_t LandauRng::SampleImpl(TRandom* rng) {
   return rng->Landau(mean_, sigma_);
 }
 
-LandauRng Random::GetLandauRng(real_t mean, real_t sigma) {
+LandauRng Random::GetLandauRng(real_t mean, real_t sigma) const {
   return LandauRng(mean, sigma);
 }
 
@@ -213,7 +213,9 @@ PoissonDRng::PoissonDRng(real_t mean) : mean_(mean) {}
 PoissonDRng::~PoissonDRng() = default;
 real_t PoissonDRng::SampleImpl(TRandom* rng) { return rng->PoissonD(mean_); }
 
-PoissonDRng Random::GetPoissonDRng(real_t mean) { return PoissonDRng(mean); }
+PoissonDRng Random::GetPoissonDRng(real_t mean) const {
+  return PoissonDRng(mean);
+}
 
 // -----------------------------------------------------------------------------
 BreitWignerRng::BreitWignerRng(real_t mean, real_t gamma)
@@ -223,7 +225,7 @@ real_t BreitWignerRng::SampleImpl(TRandom* rng) {
   return rng->BreitWigner(mean_, gamma_);
 }
 
-BreitWignerRng Random::GetBreitWignerRng(real_t mean, real_t gamma) {
+BreitWignerRng Random::GetBreitWignerRng(real_t mean, real_t gamma) const {
   return BreitWignerRng(mean, gamma);
 }
 
@@ -353,7 +355,7 @@ int BinomialRng::SampleImpl(TRandom* rng) {
   return rng->Binomial(ntot_, prob_);
 }
 
-BinomialRng Random::GetBinomialRng(int ntot, real_t prob) {
+BinomialRng Random::GetBinomialRng(int ntot, real_t prob) const {
   return BinomialRng(ntot, prob);
 }
 
@@ -362,6 +364,6 @@ PoissonRng::PoissonRng(real_t mean) : mean_(mean) {}
 PoissonRng::~PoissonRng() = default;
 int PoissonRng::SampleImpl(TRandom* rng) { return rng->Poisson(mean_); }
 
-PoissonRng Random::GetPoissonRng(real_t mean) { return PoissonRng(mean); }
+PoissonRng Random::GetPoissonRng(real_t mean) const { return PoissonRng(mean); }
 
 }  // namespace bdm

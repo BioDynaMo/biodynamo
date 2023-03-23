@@ -51,7 +51,7 @@ class SimulationBackup {
   SimulationBackup(const std::string& backup_file,
                    const std::string& restore_file);
 
-  void Backup(size_t completed_simulation_steps) {
+  void Backup(size_t completed_simulation_steps) const {
     if (!backup_) {
       Log::Fatal("SimulationBackup",
                  "Requested to backup data, but no backup file given.");
@@ -108,11 +108,11 @@ class SimulationBackup {
     after_restore_event_.clear();
   }
 
-  size_t GetSimulationStepsFromBackup();
+  size_t GetSimulationStepsFromBackup() const;
 
-  bool BackupEnabled();
+  bool BackupEnabled() const;
 
-  bool RestoreEnabled();
+  bool RestoreEnabled() const;
 
  private:
   bool backup_ = false;

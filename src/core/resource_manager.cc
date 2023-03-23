@@ -585,7 +585,7 @@ void ResourceManager::SwapAgents(std::vector<std::vector<Agent*>>* agents) {
   agents_.swap(*agents);
 }
 
-void ResourceManager::MarkEnvironmentOutOfSync() {
+void ResourceManager::MarkEnvironmentOutOfSync() const {
   auto* env = Simulation::GetActive()->GetEnvironment();
   env->MarkAsOutOfSync();
 }

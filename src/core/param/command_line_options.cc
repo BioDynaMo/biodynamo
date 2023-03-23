@@ -48,7 +48,7 @@ cxxopts::OptionAdder CommandLineOptions::AddOption(string group) {
   return cxxopts::OptionAdder(options_, std::move(group));
 }
 
-std::string CommandLineOptions::GetSimulationName() { return sim_name_; }
+std::string CommandLineOptions::GetSimulationName() const { return sim_name_; }
 
 /// Parse the given command line arguments
 void CommandLineOptions::Parse() {

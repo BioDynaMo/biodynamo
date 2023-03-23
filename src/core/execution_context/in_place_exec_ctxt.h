@@ -60,7 +60,7 @@ class InPlaceExecutionContext : public ExecutionContext {
     ~ThreadSafeAgentUidMap();
 
     void Insert(const AgentUid& uid, const value_type& value);
-    const value_type& operator[](const AgentUid& key);
+    const value_type& operator[](const AgentUid& key) const;
     uint64_t Size() const;
     void Resize(uint64_t new_size);
     void DeleteOldCopies();
@@ -160,7 +160,7 @@ class InPlaceExecutionContext : public ExecutionContext {
   /// Check whether or not the neighbors in `neighbor_cache_` were queried with
   /// the same squared radius (`cached_squared_search_radius_`) as currently
   /// being queried with (`query_squared_radius_`)
-  bool IsNeighborCacheValid(real_t query_squared_radius);
+  bool IsNeighborCacheValid(real_t query_squared_radius) const;
 
   virtual void AddAgentsToRm(
       const std::vector<ExecutionContext*>& all_exec_ctxts);
