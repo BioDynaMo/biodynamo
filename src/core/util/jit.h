@@ -31,7 +31,7 @@ class Agent;
 /// \param class_name does not have to be fully qualified
 ///        (e.g. `Cell` instead of `bdm::Cell`). \n
 ///        However, `Cell` will also match e.g "bdm::foo::Cell"
-/// \return multiple values if class_name is ambigous and multiple classes
+/// \return multiple values if class_name is ambiguous and multiple classes
 ///         were found in different namespaces
 std::vector<TClass*> FindClassSlow(const std::string& class_name);
 
@@ -40,7 +40,7 @@ std::vector<TClass*> FindClassSlow(const std::string& class_name);
 /// \param tclass TClass for which the data members should be determined
 /// \param data_member name of the data_member
 ///        (e.g. `position_` or  `bdm::Cell::position_`). \n
-/// \return multiple values if data_member name is ambigous and multiple
+/// \return multiple values if data_member name is ambiguous and multiple
 ///         instances were found in `tclass` and its base classes
 std::vector<TDataMember*> FindDataMemberSlow(TClass* tclass,
                                              const std::string& data_member);
@@ -55,7 +55,7 @@ class JitForEachDataMemberFunctor {
                                       const std::vector<TDataMember*>&)>&
           code_generation);
 
-  void Compile();
+  void Compile() const;
 
   void* New(const std::string& parameter = "");
 

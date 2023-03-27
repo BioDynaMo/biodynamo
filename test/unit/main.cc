@@ -18,8 +18,8 @@
 
 void HandleFlakyTests(int& failed_cnt, std::stringstream& filter) {
   auto unit_test = ::testing::UnitTest::GetInstance();
-  for (int i = 0; i < unit_test->total_test_case_count(); ++i) {
-    const auto& test_case = *unit_test->GetTestCase(i);
+  for (int i = 0; i < unit_test->total_test_suite_count(); ++i) {
+    const auto& test_case = *unit_test->GetTestSuite(i);
     for (int j = 0; j < test_case.total_test_count(); ++j) {
       const auto& test_info = *test_case.GetTestInfo(j);
       // process failed flaky test
@@ -37,7 +37,7 @@ int RunAllTests() {
   if (all_passed == 0) {
     return 0;
   }
-  return ::testing::UnitTest::GetInstance()->failed_test_case_count();
+  return ::testing::UnitTest::GetInstance()->failed_test_suite_count();
 }
 
 int main(int argc, char** argv) {

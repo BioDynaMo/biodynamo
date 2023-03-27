@@ -138,7 +138,7 @@ const std::vector<AgentPointer<NeuriteElement>>& NeuronSoma::GetDaughters()
   return daughters_;
 }
 
-// Helper function for PrintSWC to print the elements of a vector seperated by
+// Helper function for PrintSWC to print the elements of a vector separated by
 // a space.
 inline void PrintVector(std::ostream& out, const Real3& pos) {
   out << " " << pos[0] << " " << pos[1] << " " << pos[2] << " ";

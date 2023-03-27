@@ -239,7 +239,7 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
 void ResourceManager::LoadBalance() {
   // Load balancing destroys the synchronization between the simulation and the
   // environment. We mark the environment aus OutOfSync such that we can update
-  // the environment before acessing it again.
+  // the environment before accessing it again.
   MarkEnvironmentOutOfSync();
   auto* param = Simulation::GetActive()->GetParam();
   if (param->plot_memory_layout) {
@@ -585,7 +585,7 @@ void ResourceManager::SwapAgents(std::vector<std::vector<Agent*>>* agents) {
   agents_.swap(*agents);
 }
 
-void ResourceManager::MarkEnvironmentOutOfSync() {
+void ResourceManager::MarkEnvironmentOutOfSync() const {
   auto* env = Simulation::GetActive()->GetEnvironment();
   env->MarkAsOutOfSync();
 }

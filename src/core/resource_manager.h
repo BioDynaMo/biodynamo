@@ -112,7 +112,9 @@ class ResourceManager {
     return agents_[ah.GetNumaNode()][ah.GetElementIdx()];
   }
 
-  AgentHandle GetAgentHandle(const AgentUid& uid) { return uid_ah_map_[uid]; }
+  AgentHandle GetAgentHandle(const AgentUid& uid) const {
+    return uid_ah_map_[uid];
+  }
 
   void SwapAgents(std::vector<std::vector<Agent*>>* agents);
 
@@ -387,9 +389,12 @@ class ResourceManager {
 
   void DebugNuma() const;
 
-  /// NB: This method is not thread-safe! This function might invalidate
-  /// agent references pointing into the ResourceManager. AgentPointer are
-  /// not affected.
+  /// @brief Add an agent to the ResourceManager (not thread-safe). This
+  /// function might invalidate agent references pointing into the
+  /// ResourceManager. AgentPointer are not affected. For adding agents to a
+  /// Simulation, use ExecutionContext::AddAgent.
+  /// @param agent Agent to be added
+  /// @param numa_node NUMA node to which the agent will be added (default: 0)
   void AddAgent(Agent* agent,  // NOLINT
                 typename AgentHandle::NumaNode_t numa_node = 0) {
     auto uid = agent->GetUid();
@@ -422,7 +427,7 @@ class ResourceManager {
 
   /// Adds `new_agents` to `agents_[numa_node]`. `offset` specifies
   /// the index at which the first element is inserted. Agents are inserted
-  /// consecutively. This methos is thread safe only if insertion intervals do
+  /// consecutively. This method is thread safe only if insertion intervals do
   /// not overlap!
   virtual void AddAgents(typename AgentHandle::NumaNode_t numa_node,
                          uint64_t offset,
@@ -488,9 +493,9 @@ class ResourceManager {
 
  protected:
   /// Adding and removing agents does not immediately reflect in the state of
-  /// the environment. This function sets a flag in the envrionment such that
+  /// the environment. This function sets a flag in the environment such that
   /// it is aware of the changes.
-  void MarkEnvironmentOutOfSync();
+  void MarkEnvironmentOutOfSync() const;
 
   /// Maps an AgentUid to its storage location in `agents_` \n
   AgentUidMap<AgentHandle> uid_ah_map_ = AgentUidMap<AgentHandle>(100u);  //!

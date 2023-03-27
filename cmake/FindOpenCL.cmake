@@ -14,7 +14,7 @@
 #  OPENCL_INCLUDE_ROOT  - Path to CL/cl.h, overrides OPENCL_ROOT
 #  OPENCL_LIBRARY_ROOT  - Path to OpenCL library, overrides OPENCL_ROOT
 #
-#  Setting any of the _ROOT variables will override thier settings provided
+#  Setting any of the _ROOT variables will override their settings provided
 #  by vendor specific environment variables
 #
 # Once done this will define
@@ -154,7 +154,7 @@ if(NOT OPENCL_FOUND)
     if(EXISTS ${OPENCL_INCLUDE_DIR}/${_OPENCL_INCLUDE_BASE}/cl2.hpp)
       set(OPENCL_HAS_CXX TRUE)
 
-      # Interrogate the C++ header for seperate version information
+      # Interrogate the C++ header for separate version information
       file(STRINGS ${OPENCL_INCLUDE_DIR}/${_OPENCL_INCLUDE_BASE}/cl2.hpp
         _OPENCL_VER REGEX "version 1\\.[0-9]"
       )

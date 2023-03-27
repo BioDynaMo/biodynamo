@@ -52,9 +52,9 @@ inline int Simulate(int argc, const char** argv) {
   // Create a new simulation
   Simulation simulation(argc, argv, set_param);
   SetupResultCollection(&simulation);
-  auto* rm = simulation.GetResourceManager();   // Get the resource manager
-  auto* scheduler = simulation.GetScheduler();  // Get the scheduler
-  auto* param = simulation.GetParam();          // Get the parameters
+  auto* ctxt = simulation.GetExecutionContext();  // Get the execution context
+  auto* scheduler = simulation.GetScheduler();    // Get the scheduler
+  auto* param = simulation.GetParam();            // Get the parameters
   const auto* sparam = param->Get<SimParam>();  // Get the simulation parameters
 
   real_t x_coord = sparam->pos0;
@@ -72,7 +72,7 @@ inline int Simulate(int argc, const char** argv) {
       cell->SetCycle(CellState::kG1);
       cell->SetCanDivide(true);
       cell->AddBehavior(new GrowthAndCellCycle());
-      rm->AddAgent(cell);  // put the created cell in our cells structure
+      ctxt->AddAgent(cell);  // put the created cell in our cells structure
       y_coord += sparam->cell_diam;
     }
     x_coord += sparam->cell_diam;

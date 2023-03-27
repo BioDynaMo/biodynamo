@@ -23,7 +23,7 @@
 namespace bdm {
 
 /// AgentUidMap is an associative container that exploits the properties of
-/// AgentUid to store data in contigous arrays. Inserting elements and reading
+/// AgentUid to store data in contiguous arrays. Inserting elements and reading
 /// elements at the same time is thread-safe as long as the keys are different.
 /// These operations with distinct keys are lock-free and atomic free, and thus
 /// offer high-performance.

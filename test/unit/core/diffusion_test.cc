@@ -16,6 +16,7 @@
 
 #include "core/agent/cell.h"
 #include "core/diffusion/diffusion_grid.h"
+#include "core/diffusion/euler_depletion_grid.h"
 #include "core/diffusion/euler_grid.h"
 #include "core/diffusion/runge_kutta_grid.h"
 #include "core/environment/environment.h"
@@ -53,6 +54,16 @@ void AddDisplacement(std::array<uint32_t, 3>& position,
   position[0] += displacement[0];
   position[1] += displacement[1];
   position[2] += displacement[2];
+}
+
+real_t ComputeSubstanceAmount(const real_t* concentration_array, size_t size,
+                              real_t box_length) {
+  const real_t volume = box_length * box_length * box_length;
+  real_t sum{0};
+  for (size_t i = 0; i < size; i++) {
+    sum += concentration_array[i];
+  }
+  return sum * volume;
 }
 
 // Test if the dimensions of the diffusion grid are corresponding to the
@@ -94,7 +105,7 @@ TEST(DiffusionTest, UpdateGrid) {
   positions.push_back({90, 90, 90});
   CellFactory(positions);
 
-  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 7);
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 6);
 
   env->ForcedUpdate();
   dgrid->Initialize();
@@ -110,9 +121,9 @@ TEST(DiffusionTest, UpdateGrid) {
 
   auto d_dims = dgrid->GetDimensions();
 
-  EXPECT_EQ(-60, d_dims[0]);
-  EXPECT_EQ(-60, d_dims[2]);
-  EXPECT_EQ(-60, d_dims[4]);
+  EXPECT_EQ(-90, d_dims[0]);
+  EXPECT_EQ(-90, d_dims[2]);
+  EXPECT_EQ(-90, d_dims[4]);
   EXPECT_EQ(210, d_dims[1]);
   EXPECT_EQ(210, d_dims[3]);
   EXPECT_EQ(210, d_dims[5]);
@@ -304,6 +315,92 @@ TEST(DiffusionTest, CopyOldData) {
   EXPECT_REAL_EQ(gradient_x_top, grad_2[3 * dgrid->GetBoxIndex(top) + 0]);
   EXPECT_REAL_EQ(gradient_y_top, grad_2[3 * dgrid->GetBoxIndex(top) + 1]);
   EXPECT_REAL_EQ(gradient_z_top, grad_2[3 * dgrid->GetBoxIndex(top) + 2]);
+
+  delete dgrid;
+}
+
+TEST(DiffusionTest, GetBoxCoordinates) {
+  Simulation simulation(TEST_NAME);
+  auto* env = simulation.GetEnvironment();
+
+  std::vector<Real3> positions;
+  positions.push_back({-10, -10, -10});
+  positions.push_back({90, 90, 90});
+  CellFactory(positions);
+
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 6);
+
+  env->ForcedUpdate();
+  dgrid->Initialize();
+  auto res = dgrid->GetResolution();
+
+  for (uint32_t x = 0; x < res; x++) {
+    for (uint32_t y = 0; y < res; y++) {
+      for (uint32_t z = 0; z < res; z++) {
+        std::array<uint32_t, 3> box_coordinates_true{x, y, z};
+        auto box_index = dgrid->GetBoxIndex(box_coordinates_true);
+        auto box_coordinates_computed = dgrid->GetBoxCoordinates(box_index);
+        EXPECT_EQ(box_coordinates_computed[0], x);
+        EXPECT_EQ(box_coordinates_computed[1], y);
+        EXPECT_EQ(box_coordinates_computed[2], z);
+      }
+    }
+  }
+
+  delete dgrid;
+}
+
+TEST(DiffusionTest, GetNeighboringBoxes) {
+  Simulation simulation(TEST_NAME);
+  auto* env = simulation.GetEnvironment();
+
+  std::vector<Real3> positions;
+  positions.push_back({-10, -10, -10});
+  positions.push_back({90, 90, 90});
+  CellFactory(positions);
+
+  DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", 0.4, 0, 6);
+
+  env->ForcedUpdate();
+  dgrid->Initialize();
+  auto res = dgrid->GetResolution();
+
+  for (uint32_t x = 0; x < res; x++) {
+    for (uint32_t y = 0; y < res; y++) {
+      for (uint32_t z = 0; z < res; z++) {
+        std::array<uint32_t, 3> box_coordinates_true{x, y, z};
+        auto box_index = dgrid->GetBoxIndex(box_coordinates_true);
+        /// Get the box coordinates of the neighbors
+        auto x_minus = (x == 0) ? x : x - 1;
+        auto x_plus = (x == res - 1) ? x : x + 1;
+        auto y_minus = (y == 0) ? y : y - 1;
+        auto y_plus = (y == res - 1) ? y : y + 1;
+        auto z_minus = (z == 0) ? z : z - 1;
+        auto z_plus = (z == res - 1) ? z : z + 1;
+        std::array<uint32_t, 3> box_coordinates_x_minus{x_minus, y, z};
+        std::array<uint32_t, 3> box_coordinates_x_plus{x_plus, y, z};
+        std::array<uint32_t, 3> box_coordinates_y_minus{x, y_minus, z};
+        std::array<uint32_t, 3> box_coordinates_y_plus{x, y_plus, z};
+        std::array<uint32_t, 3> box_coordinates_z_minus{x, y, z_minus};
+        std::array<uint32_t, 3> box_coordinates_z_plus{x, y, z_plus};
+        auto box_index_x_minus = dgrid->GetBoxIndex(box_coordinates_x_minus);
+        auto box_index_x_plus = dgrid->GetBoxIndex(box_coordinates_x_plus);
+        auto box_index_y_minus = dgrid->GetBoxIndex(box_coordinates_y_minus);
+        auto box_index_y_plus = dgrid->GetBoxIndex(box_coordinates_y_plus);
+        auto box_index_z_minus = dgrid->GetBoxIndex(box_coordinates_z_minus);
+        auto box_index_z_plus = dgrid->GetBoxIndex(box_coordinates_z_plus);
+        /// Get the neighbors of the box
+        auto neighbors = dgrid->GetNeighboringBoxes(box_index);
+        /// Check if the neighbors are correct
+        EXPECT_EQ(neighbors[0], box_index_x_minus);
+        EXPECT_EQ(neighbors[1], box_index_x_plus);
+        EXPECT_EQ(neighbors[2], box_index_y_minus);
+        EXPECT_EQ(neighbors[3], box_index_y_plus);
+        EXPECT_EQ(neighbors[4], box_index_z_minus);
+        EXPECT_EQ(neighbors[5], box_index_z_plus);
+      }
+    }
+  }
 
   delete dgrid;
 }
@@ -508,6 +605,10 @@ TEST(DiffusionTest, IOTest) {
   dgrid->SetLowerThreshold(-42);
   dgrid->SetDecayConstant(0.01);
 
+  dgrid->SetBoundaryCondition(
+      std::make_unique<ConstantBoundaryCondition>(13.0));
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
+
   // write to root file
   WritePersistentObject(ROOTFILE, "dgrid", *dgrid, "new");
 
@@ -535,11 +636,14 @@ TEST(DiffusionTest, IOTest) {
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[1]);
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[3]);
   EXPECT_EQ(50, restored_dgrid->GetDimensions()[5]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[0]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[1]);
-  EXPECT_EQ(11u, restored_dgrid->GetNumBoxesArray()[2]);
-  EXPECT_EQ(1331u, restored_dgrid->GetNumBoxes());
-  EXPECT_EQ(11u, restored_dgrid->GetResolution());
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[0]);
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[1]);
+  EXPECT_EQ(10u, restored_dgrid->GetNumBoxesArray()[2]);
+  EXPECT_EQ(1000u, restored_dgrid->GetNumBoxes());
+  EXPECT_EQ(10u, restored_dgrid->GetResolution());
+  EXPECT_EQ(BoundaryConditionType::kDirichlet,
+            restored_dgrid->GetBoundaryConditionType());
+  EXPECT_EQ(13.0, restored_dgrid->GetBoundaryCondition()->Evaluate(0, 0, 0, 0));
 
   remove(ROOTFILE);
   delete dgrid;
@@ -667,9 +771,9 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
   simulation.GetEnvironment()->Update();
 
   real_t diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 21);
-  DiffusionGrid* dgrid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 41);
-  DiffusionGrid* dgrid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 81);
+  DiffusionGrid* dgrid2 = new EulerGrid(0, "Kalium1", diff_coef, 0, 20);
+  DiffusionGrid* dgrid4 = new EulerGrid(1, "Kalium4", diff_coef, 0, 40);
+  DiffusionGrid* dgrid8 = new EulerGrid(2, "Kalium8", diff_coef, 0, 80);
 
   dgrid2->Initialize();
   dgrid4->Initialize();
@@ -730,6 +834,303 @@ TEST(DiffusionTest, EulerConvergenceDiffusion) {
   delete dgrid2;
   delete dgrid4;
   delete dgrid8;
+}
+
+TEST(DiffusionTest, EulerDepletionConvergenceExponentialDecay) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "closed";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double diff_coef = 0.0;
+  double decay_depletes = 0.0;
+  double decay_depleted = 0.01;
+  int res = 20;
+  // Depleting substance is fixed, i.e. no diff and no decay
+  auto* dgrid_depletes1 =
+      new EulerGrid(0, "MMP", diff_coef, decay_depletes, res);
+  auto* dgrid_depletes2 =
+      new EulerGrid(1, "TIMP", diff_coef, decay_depletes, res);
+  auto* dgrid_depleted =
+      new EulerDepletionGrid(2, "ECM", diff_coef, decay_depleted, res);
+  dgrid_depletes1->Initialize();
+  dgrid_depletes1->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid_depletes1);
+  dgrid_depletes2->Initialize();
+  dgrid_depletes2->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid_depletes2);
+  dgrid_depleted->Initialize();
+  dgrid_depleted->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid_depleted);
+
+  // Add depleting substance with its binding coefficient
+  std::vector<double> bnd_coeff{0.01, 0.01};
+  std::vector<int> bnd_subs{dgrid_depletes1->GetContinuumId(),
+                            dgrid_depletes2->GetContinuumId()};
+  dgrid_depleted->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
+  dgrid_depleted->SetBindingSubstance(bnd_subs[1], bnd_coeff[1]);
+
+  // instantaneous point source
+  double init_depleted = 1e2;
+  double init_depletes = 1;
+  Real3 source = {{0, 0, 0}};
+  dgrid_depletes1->ChangeConcentrationBy(source, init_depletes);
+  dgrid_depletes2->ChangeConcentrationBy(source, init_depletes);
+  dgrid_depleted->ChangeConcentrationBy(source, init_depleted);
+  Real3 marker = {50.0, 50.0, 50.0};
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100;
+  for (int t = 0; t < tot; t++) {
+    dgrid_depletes1->Diffuse(simulation_time_step);
+    dgrid_depletes2->Diffuse(simulation_time_step);
+    dgrid_depleted->Diffuse(simulation_time_step);
+  }
+
+  auto conc_depletes1 = dgrid_depletes1->GetAllConcentrations();
+  auto conc_depletes2 = dgrid_depletes2->GetAllConcentrations();
+  auto conc_depleted = dgrid_depleted->GetAllConcentrations();
+
+  // If there is no diffusion, each grid point of the depleted substance simply
+  // executes an independet exponential decay due to self and induced depletion
+  double total_mu = decay_depleted + init_depletes * bnd_coeff[0] +
+                    init_depletes * bnd_coeff[1];
+  double expected_solution =
+      init_depleted * std::exp(-total_mu * tot * simulation_time_step);
+
+  // No diffusing substance -> Solution is 0 if not at source.
+  EXPECT_FLOAT_EQ(0.0, conc_depletes1[dgrid_depletes1->GetBoxIndex(marker)]);
+  EXPECT_FLOAT_EQ(0.0, conc_depletes2[dgrid_depletes2->GetBoxIndex(marker)]);
+  EXPECT_FLOAT_EQ(0.0, conc_depleted[dgrid_depleted->GetBoxIndex(marker)]);
+  // Depleting substances don't decay -> Conc shouldn't change at source
+  EXPECT_EQ(init_depletes,
+            conc_depletes1[dgrid_depletes1->GetBoxIndex(source)]);
+  EXPECT_EQ(init_depletes,
+            conc_depletes2[dgrid_depletes2->GetBoxIndex(source)]);
+  // Expect numeric value of exponential decay to coincide with +/- 1% of
+  // analytic solution.
+  EXPECT_LT(std::abs(expected_solution -
+                     conc_depleted[dgrid_depleted->GetBoxIndex(source)]) /
+                expected_solution,
+            0.01);
+
+  // dgrids are deleted by rm's destructor
+}
+
+// Tests Fatal if depletion grids don't match in size
+TEST(DiffusionTest, DepletionMissmatch) {
+  ASSERT_DEATH(
+      {
+        double simulation_time_step{0.1};
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -100;
+          param->max_bound = 100;
+          param->diffusion_boundary_condition = "Neumann";
+        };
+        Simulation simulation(TEST_NAME, set_param);
+        simulation.GetEnvironment()->Update();
+        auto* rm = simulation.GetResourceManager();
+
+        double diff_coef = 0.0;
+        double decay_depletes = 0.0;
+        double decay_depleted = 0.01;
+        int res = 20;
+
+        // Generate two substances with different resolutions
+        auto* dgrid_depletes1 =
+            new EulerGrid(0, "MMP", diff_coef, decay_depletes, res);
+        auto* dgrid_depleted = new EulerDepletionGrid(2, "ECM", diff_coef,
+                                                      decay_depleted, res + 1);
+
+        // Add substances to simulation
+        dgrid_depletes1->Initialize();
+        rm->AddContinuum(dgrid_depletes1);
+        dgrid_depleted->Initialize();
+        rm->AddContinuum(dgrid_depleted);
+
+        // Add depleting substance with its binding coefficient
+        std::vector<double> bnd_coeff{0.01};
+        std::vector<int> bnd_subs{dgrid_depletes1->GetContinuumId()};
+        dgrid_depleted->SetBindingSubstance(bnd_subs[0], bnd_coeff[0]);
+
+        // Simulate diffusion / exponential decay for `tot` timesteps
+        int tot = 2;
+        for (int t = 0; t < tot; t++) {
+          dgrid_depletes1->Diffuse(simulation_time_step);
+          dgrid_depleted->Diffuse(simulation_time_step);
+        }
+      },
+      ".*The number of voxels of the depleting diffusion grid MMP differs from "
+      "that of the depleted one (ECM)*");
+}
+
+TEST(DiffusionTest, EulerDirichletBoundaries) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Dirichlet";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 100.0;
+  int res = 20;
+  // Depleting substance is fixed, i.e. no diff and no decay
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+
+  dgrid->Initialize();
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kDirichlet);
+
+  dgrid->SetBoundaryCondition(std::make_unique<ConstantBoundaryCondition>(1.0));
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid);
+
+  // Simulate diffusion / exponential decay for `tot` timesteps
+  int tot = 100000;  // ToDo This should probably be lower for final version
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+  }
+
+  // After a sufficient amount of iterations with dirichlet boundary conditions
+  // equal to 1.0, the concentration should be 1.0 everywhere.
+  auto conc = dgrid->GetAllConcentrations();
+  real_t average_concentration = 0.0;
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+    average_concentration += conc[i];
+  }
+  average_concentration /= dgrid->GetNumBoxes();
+  EXPECT_FLOAT_EQ(average_concentration, 1.0);
+}
+
+TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Neumann";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 10.0;
+  int res = 20;
+  double init = 1e5;
+  std::vector<Real3> sources;
+  sources.push_back({0, 0, 0});
+  sources.push_back({50, 50, 50});
+  sources.push_back({-50, -50, -50});
+
+  // Test multiple positions for the source
+  for (size_t s = 0; s < sources.size(); s++) {
+    auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+    dgrid->Initialize();
+    dgrid->ChangeConcentrationBy(sources[s], init);
+    dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
+    dgrid->SetBoundaryCondition(
+        std::make_unique<ConstantBoundaryCondition>(0.0));
+    dgrid->SetUpperThreshold(1e15);
+    rm->AddContinuum(dgrid);
+
+    // Simulate diffusion / exponential decay for `tot` timesteps
+    int tot = 10000;
+    for (int t = 0; t < tot; t++) {
+      dgrid->Diffuse(simulation_time_step);
+    }
+    double expected_solution = 0.0;
+    auto conc = dgrid->GetAllConcentrations();
+    for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+      expected_solution += conc[i];
+    }
+    EXPECT_LT(std::abs(init - expected_solution) / init, 0.0001);
+    rm->RemoveContinuum(0);
+  }
+}
+
+/// Test verifies if the diffusion grid is able to handle a Neumann boundary
+/// with a non-zero value. We test for -1.0 which should add concentration
+/// to the grid.
+TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
+  // Define some parameters & simulation
+  double simulation_time_step{0.1};
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "Neumann";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;  // no decay
+  double diff_coef = 1.0;   // diffusion
+  int res = 20;             // some resolution
+
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  dgrid->Initialize();
+  dgrid->SetBoundaryConditionType(BoundaryConditionType::kNeumann);
+  /// Normal vector typically points outwards, hence -1.0 adds concentration to
+  /// the volume. This test tests if we add concentration to the volume.
+  dgrid->SetBoundaryCondition(
+      std::make_unique<ConstantBoundaryCondition>(-1.0));
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid);
+
+  // ----------------------------------------------------------
+  // 1. Test if DG was initialized correctly (zero initialized)
+  // ----------------------------------------------------------
+  auto conc = dgrid->GetAllConcentrations();
+  double init = 0.0;
+  for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+    init += conc[i];
+  }
+  ASSERT_DOUBLE_EQ(init, 0.0);
+
+  // ----------------------------------------------------------
+  // 2. Simulate diffusion and check if concentration is added
+  // ----------------------------------------------------------
+
+  double intermediate_concentration_backup = 0.0;
+  int tot = 10000;
+  for (int t = 0; t < tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+    conc = dgrid->GetAllConcentrations();  // get current concentrations.
+    double intermediate_concentration_1 = 0.0;
+    for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+      intermediate_concentration_1 += conc[i];
+    }
+    if (t == 0) {
+      /// Note: We have 20x20x20 boxes, so we have (20x20)x2+(19*18)x4=2168
+      /// boxes on the boundary. In the first step, each boundary box should
+      /// receive a concentration of
+      /// D * (dt / dx^2) * - BC * dx = 1.0 * (0.1 / (10*10)) * -(-1) * 10 =
+      /// 10^-2. Thus, the total concentration should be roughly 21.68 (the
+      /// edges get additional influx), and definitely bigger than 1.0 .
+      EXPECT_GT(intermediate_concentration_1, 1.0);
+    } else {
+      /// For all further iterations, we simply check if the concentration
+      /// increases. Which should be the case for the given BC.
+      EXPECT_GT(intermediate_concentration_1,
+                intermediate_concentration_backup);
+    }
+    intermediate_concentration_backup = intermediate_concentration_1;
+  }
+
+  rm->RemoveContinuum(0);
 }
 
 TEST(DiffusionTest, DynamicTimeStepping) {
@@ -803,9 +1204,9 @@ TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
   };
   Simulation simulation(TEST_NAME, set_param);
   real_t diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 21);
-  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 41);
-  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 81);
+  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 20);
+  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 40);
+  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 80);
 
   dgrid2->Initialize();
   dgrid4->Initialize();
@@ -893,8 +1294,9 @@ TEST(DiffusionTest, GradientComputation) {
 
   // Define the substance for our simulation
   DiffusionGrid* d_grid = nullptr;
-  d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 100);
+  d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 200);
   rm->AddContinuum(d_grid);
+  d_grid->SetLowerThreshold(-1e15);
 
   // Define scalar field for initialization
   auto scalar_field = [&](real_t x, real_t y, real_t z) {
@@ -919,43 +1321,110 @@ TEST(DiffusionTest, GradientComputation) {
   simulation.GetScheduler()->Simulate(1);
   d_grid->CalculateGradient();
 
-  // Define a few dummy positions where to evaluate the gradient
-  Real3 pos1{20, 50, 230};
-  Real3 pos2{100, 200, 150};
-  Real3 pos3{200, 100, 20};
+  const auto res = d_grid->GetResolution();
+  const auto box_length = d_grid->GetBoxLength();
 
-  // Get analytic and numerical gradients
-  Real3 grad1, grad2, grad3;
-  Real3 expected_grad1 = gradient_field(pos1);
-  Real3 expected_grad2 = gradient_field(pos2);
-  Real3 expected_grad3 = gradient_field(pos3);
-  d_grid->GetGradient(pos1, &grad1, false);
-  d_grid->GetGradient(pos2, &grad2, false);
-  d_grid->GetGradient(pos3, &grad3, false);
-  Real3 err1 = grad1 - expected_grad1;
-  Real3 err2 = grad2 - expected_grad2;
-  Real3 err3 = grad3 - expected_grad3;
-  std::vector<Real3> results{err1, err2, err3};
-  std::vector<Real3> expected_gradients{expected_grad1, expected_grad2,
-                                        expected_grad3};
+  for (u_int32_t x = 0; x < res; x++) {
+    for (u_int32_t y = 0; y < res; y++) {
+      for (u_int32_t z = 0; z < res; z++) {
+        // for (u_int32_t x = 1; x < res - 1; x++) {
+        //   for (u_int32_t y = 1; y < res - 1; y++) {
+        //     for (u_int32_t z = 1; z < res - 1; z++) {
+        const real_t xx = (x + 0.5) * box_length + param->min_bound;
+        const real_t yy = (y + 0.5) * box_length + param->min_bound;
+        const real_t zz = (z + 0.5) * box_length + param->min_bound;
+        Real3 pos({xx, yy, zz});
+        Real3 grad = d_grid->GetGradient(pos);
+        Real3 expected_grad = gradient_field(pos);
+        Real3 err = grad - expected_grad;
+        // relative error
+        Real3 rel_err({std::abs(err[0] / expected_grad[0]),
+                       std::abs(err[1] / expected_grad[1]),
+                       std::abs(err[2] / expected_grad[2])});
 
-  // Compare analytic and numeric gradient
-  for (size_t i = 0; i < results.size(); i++) {
-    auto res = results[i];
-    auto grad = expected_gradients[i];
-    EXPECT_LT(abs(res[0] / grad[0]), 1e-5);  // This gradient is very easy
-    EXPECT_LT(abs(res[1] / grad[1]), 0.05);  // Require 5 precent accuracy
-    EXPECT_LT(abs(res[2] / grad[2]), 0.03);  // Require 3 precent accuracy
+        EXPECT_NEAR(err[0], 0, 1e-5);
+        EXPECT_NEAR(err[1], 0, 1e-4);
+        EXPECT_NEAR(err[2], 0, 1e-4);
+      }
+    }
   }
+}
 
-  // Check alternative GetGradient method
-  Real3 grad4 = d_grid->GetGradient(pos1);
-  Real3 grad5 = d_grid->GetGradient(pos2);
-  Real3 grad6 = d_grid->GetGradient(pos3);
-  for (size_t i = 0; i < 3; i++) {
-    EXPECT_REAL_EQ(grad1[i], grad4[i]);
-    EXPECT_REAL_EQ(grad2[i], grad5[i]);
-    EXPECT_REAL_EQ(grad3[i], grad6[i]);
+TEST(DiffusionTest, LazyGradientComputation) {
+  // Define closed space with bounds
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0;
+    param->max_bound = 250;
+    param->calculate_gradients = false;
+  };
+
+  // Standard simulation objects
+  Simulation simulation(TEST_NAME, set_param);
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+
+  // Create a number of cells at a random position
+  uint64_t num_cells = 30;
+  auto construct = [](const Real3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound,
+                                       num_cells, construct);
+
+  // Define the substance for our simulation
+  DiffusionGrid* d_grid = nullptr;
+  d_grid = new EulerGrid(0, "Substance", 0.0, 0.0, 200);
+  rm->AddContinuum(d_grid);
+  d_grid->SetLowerThreshold(-1e15);
+
+  // Define scalar field for initialization
+  auto scalar_field = [&](real_t x, real_t y, real_t z) {
+    return 2 * x / param->max_bound + 4 * std::pow((y / param->max_bound), 2) +
+           std::sin(2 * Math::kPi * z / param->max_bound);
+  };
+
+  // Define the analytic gradient as a reference solution
+  auto gradient_field = [&](const Real3& pos) {
+    real_t y = pos[1];
+    real_t z = pos[2];
+    Real3 gradient;
+    gradient[0] = 2 / param->max_bound;
+    gradient[1] = 8 * y / std::pow(param->max_bound, 2);
+    gradient[2] = (2 * Math::kPi / param->max_bound) *
+                  std::cos(2 * Math::kPi * z / param->max_bound);
+    return gradient;
+  };
+
+  // Compute the gradient the scalar field.
+  ModelInitializer::InitializeSubstance(0, scalar_field);
+  simulation.GetScheduler()->Simulate(1);
+
+  const auto res = d_grid->GetResolution();
+  const auto box_length = d_grid->GetBoxLength();
+
+  for (u_int32_t x = 0; x < res; x++) {
+    for (u_int32_t y = 0; y < res; y++) {
+      for (u_int32_t z = 0; z < res; z++) {
+        const real_t xx = (x + 0.5) * box_length + param->min_bound;
+        const real_t yy = (y + 0.5) * box_length + param->min_bound;
+        const real_t zz = (z + 0.5) * box_length + param->min_bound;
+        Real3 pos({xx, yy, zz});
+        Real3 grad = d_grid->GetGradient(pos);
+        Real3 expected_grad = gradient_field(pos);
+        Real3 err = grad - expected_grad;
+        // relative error
+        Real3 rel_err({std::abs(err[0] / expected_grad[0]),
+                       std::abs(err[1] / expected_grad[1]),
+                       std::abs(err[2] / expected_grad[2])});
+
+        EXPECT_NEAR(err[0], 0, 1e-5);
+        EXPECT_NEAR(err[1], 0, 1e-4);
+        EXPECT_NEAR(err[2], 0, 1e-4);
+      }
+    }
   }
 }
 
@@ -1005,6 +1474,57 @@ TEST(DiffusionTest, PrintInfoAfterInititialization) {
   EXPECT_TRUE(buffer.str().find("domain     : [-3, 4]") != std::string::npos);
   EXPECT_TRUE(buffer.str().find("bounds     : -5 < c < 5") !=
               std::string::npos);
+  EXPECT_TRUE(buffer.str().find("boundary   : Neumann") != std::string::npos);
+}
+
+TEST(DiffusionTest, ResolutionIndependence) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -100;
+    param->max_bound = 100;
+    param->diffusion_boundary_condition = "closed";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+
+  // Create three diffusion grids with different resolution
+  real_t diff_coef = 0.5;
+  EulerGrid dgrid1(0, "Kalium1", diff_coef, 0, 15);
+  EulerGrid dgrid2(1, "Kalium4", diff_coef, 0, 30);
+  EulerGrid dgrid3(2, "Kalium8", diff_coef, 0, 45);
+  dgrid1.Initialize();
+  dgrid2.Initialize();
+  dgrid3.Initialize();
+
+  // instantaneous point source
+  int amount = 150;
+  Real3 source = {{0, 0, 0}};
+  dgrid1.ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                               true);
+  dgrid2.ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                               true);
+  dgrid3.ChangeConcentrationBy(source, amount, InteractionMode::kAdditive,
+                               true);
+
+  auto conc1 = dgrid1.GetAllConcentrations();
+  auto conc2 = dgrid2.GetAllConcentrations();
+  auto conc3 = dgrid3.GetAllConcentrations();
+  auto box1 = dgrid1.GetBoxLength();
+  auto box2 = dgrid2.GetBoxLength();
+  auto box3 = dgrid3.GetBoxLength();
+  auto N1 = dgrid1.GetNumBoxes();
+  auto N2 = dgrid2.GetNumBoxes();
+  auto N3 = dgrid3.GetNumBoxes();
+
+  // Compute the amount of substance in the diffusion grids
+  real_t total_amount1 = ComputeSubstanceAmount(conc1, N1, box1);
+  real_t total_amount2 = ComputeSubstanceAmount(conc2, N2, box2);
+  real_t total_amount3 = ComputeSubstanceAmount(conc3, N3, box3);
+
+  // Check that the amount of substance is correct
+  EXPECT_REAL_EQ(total_amount1, amount);
+  EXPECT_REAL_EQ(total_amount2, amount);
+  EXPECT_REAL_EQ(total_amount3, amount);
 }
 
 #ifdef USE_PARAVIEW

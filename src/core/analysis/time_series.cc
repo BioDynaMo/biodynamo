@@ -25,6 +25,71 @@ namespace bdm {
 namespace experimental {
 
 // -----------------------------------------------------------------------------
+void LinearTransformer::TransformXValues(
+    const std::vector<real_t>& old_x_values,
+    std::vector<real_t>& new_x_values) const {
+  new_x_values.resize(old_x_values.size());
+  for (size_t i = 0; i < old_x_values.size(); i++) {
+    new_x_values[i] = x_slope_ * old_x_values[i] + x_intercept_;
+  }
+};
+
+// -----------------------------------------------------------------------------
+void LinearTransformer::TransformYValues(
+    const std::vector<real_t>& old_y_values,
+    std::vector<real_t>& new_y_values) const {
+  new_y_values.resize(old_y_values.size());
+  for (size_t i = 0; i < old_y_values.size(); i++) {
+    new_y_values[i] = y_slope_ * old_y_values[i] + y_intercept_;
+  }
+};
+
+// -----------------------------------------------------------------------------
+void LinearTransformer::TransformYErrorLow(
+    const std::vector<real_t>& old_y_error_low,
+    std::vector<real_t>& new_y_error_low) const {
+  new_y_error_low.resize(old_y_error_low.size());
+  for (size_t i = 0; i < old_y_error_low.size(); i++) {
+    new_y_error_low[i] =
+        y_error_low_slope_ * old_y_error_low[i] + y_error_low_intercept_;
+  }
+};
+
+// -----------------------------------------------------------------------------
+void LinearTransformer::TransformYErrorHigh(
+    const std::vector<real_t>& old_y_error_high,
+    std::vector<real_t>& new_y_error_high) const {
+  new_y_error_high.resize(old_y_error_high.size());
+  for (size_t i = 0; i < old_y_error_high.size(); i++) {
+    new_y_error_high[i] =
+        y_error_high_slope_ * old_y_error_high[i] + y_error_high_intercept_;
+  }
+};
+
+// -----------------------------------------------------------------------------
+// Setters
+void LinearTransformer::SetXSlope(real_t slope) { x_slope_ = slope; }
+void LinearTransformer::SetXIntercept(real_t intercept) {
+  x_intercept_ = intercept;
+}
+void LinearTransformer::SetYSlope(real_t slope) { y_slope_ = slope; }
+void LinearTransformer::SetYIntercept(real_t intercept) {
+  y_intercept_ = intercept;
+}
+void LinearTransformer::SetYErrorLowSlope(real_t slope) {
+  y_error_low_slope_ = slope;
+}
+void LinearTransformer::SetYErrorLowIntercept(real_t intercept) {
+  y_error_low_intercept_ = intercept;
+}
+void LinearTransformer::SetYErrorHighSlope(real_t slope) {
+  y_error_high_slope_ = slope;
+}
+void LinearTransformer::SetYErrorHighIntercept(real_t intercept) {
+  y_error_high_intercept_ = intercept;
+}
+
+// -----------------------------------------------------------------------------
 TimeSeries::Data::Data() = default;
 
 // -----------------------------------------------------------------------------
@@ -264,6 +329,39 @@ void TimeSeries::AddCollector(const std::string& id,
                  ") exists already. Operation aborted.");
   }
   data_.emplace(id, Data(y_reducer_collector, xcollector));
+}
+
+// -----------------------------------------------------------------------------
+void TimeSeries::AddTransformedData(const std::string& old_id,
+                                    const std::string& transformed_id,
+                                    const DataTransformer& transformer) {
+  // Get previous data
+  auto previous_data = data_.find(old_id);
+  if (previous_data == data_.end()) {
+    Log::Warning("TimeSeries::AddTransformed", "TimeSeries with id (", old_id,
+                 ") does not exist. Operation aborted.");
+    return;
+  }
+  // Check if transformed data already exists
+  auto transformed_data = data_.find(transformed_id);
+  if (transformed_data != data_.end()) {
+    Log::Warning("TimeSeries::AddTransformed", "TimeSeries with id (",
+                 transformed_id, ") exists already. Operation aborted.");
+    return;
+  }
+
+  // Copy data to new object
+  Data data;
+
+  // Transform data
+  const auto& previous = previous_data->second;
+  transformer.TransformXValues(previous.x_values, data.x_values);
+  transformer.TransformYValues(previous.y_values, data.y_values);
+  transformer.TransformYErrorLow(previous.y_error_low, data.y_error_low);
+  transformer.TransformYErrorHigh(previous.y_error_high, data.y_error_high);
+
+  // Add data to map
+  data_.emplace(transformed_id, data);
 }
 
 // -----------------------------------------------------------------------------

@@ -48,7 +48,7 @@ class GrowthDivision : public Behavior {
     }
   }
 
-  /// Default event handler (exising behavior won't be modified on
+  /// Default event handler (existing behavior won't be modified on
   /// any event)
 
   void Run(Agent* agent) override {

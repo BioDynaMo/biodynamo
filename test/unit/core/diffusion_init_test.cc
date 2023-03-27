@@ -49,7 +49,7 @@ TEST(DiffusionInitTest, GaussianBand) {
                                        construct);
 
   // Define the substances in our simulation
-  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 26);
+  ModelInitializer::DefineSubstance(kSubstance, "Substance", 0.5, 0.1, 25);
 
   // Initialize the substance according to a GaussianBand along the x-axis
   ModelInitializer::InitializeSubstance(kSubstance,
@@ -64,29 +64,23 @@ TEST(DiffusionInitTest, GaussianBand) {
   // Initialize data structures with user-defined values
   dgrid->RunInitializers();
 
-  std::array<uint32_t, 3> a = {0, 0, 0};
-  std::array<uint32_t, 3> b = {25, 0, 0};
-  std::array<uint32_t, 3> c = {13, 0, 0};
-  std::array<uint32_t, 3> d = {0, 13, 0};
-  std::array<uint32_t, 3> e = {25, 0, 13};
-  std::array<uint32_t, 3> f = {13, 13, 13};
+  // Define points to evaluate the substance (coincides with the grid points)
+  Real3 a = {5, 0, 0};
+  Real3 b = {245, 0, 0};
+  Real3 c = {135, 0, 0};
+  Real3 d = {5, 135, 0};
+  Real3 e = {245, 0, 135};
+  Real3 f = {135, 135, 135};
 
   auto eps = abs_error<real_t>::value;
-  auto conc = dgrid->GetAllConcentrations();
 
-  EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(a)],
-              eps);
-  EXPECT_NEAR(ROOT::Math::normal_pdf(250, 50, 125), conc[dgrid->GetBoxIndex(b)],
-              eps);
-  EXPECT_NEAR(ROOT::Math::normal_pdf(130, 50, 125), conc[dgrid->GetBoxIndex(c)],
-              eps);
-  EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(d)],
-              eps);
+  EXPECT_NEAR(ROOT::Math::normal_pdf(a[0], 50, 125), dgrid->GetValue(a), eps);
+  EXPECT_NEAR(ROOT::Math::normal_pdf(b[0], 50, 125), dgrid->GetValue(b), eps);
+  EXPECT_NEAR(ROOT::Math::normal_pdf(c[0], 50, 125), dgrid->GetValue(c), eps);
+  EXPECT_NEAR(ROOT::Math::normal_pdf(d[0], 50, 125), dgrid->GetValue(d), eps);
   // Should be symmetric, so the two ends should have the same value
-  EXPECT_NEAR(ROOT::Math::normal_pdf(0, 50, 125), conc[dgrid->GetBoxIndex(e)],
-              eps);
-  EXPECT_NEAR(ROOT::Math::normal_pdf(130, 50, 125), conc[dgrid->GetBoxIndex(f)],
-              eps);
+  EXPECT_NEAR(ROOT::Math::normal_pdf(e[0], 50, 125), dgrid->GetValue(e), eps);
+  EXPECT_NEAR(ROOT::Math::normal_pdf(f[0], 50, 125), dgrid->GetValue(f), eps);
 }
 
 // Both internal arrays (c1_ and c2_) need to be initialized to avoid unphysical
@@ -94,6 +88,7 @@ TEST(DiffusionInitTest, GaussianBand) {
 TEST(DiffusionInitTest, InitBothArrays) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->diffusion_boundary_condition = "closed";
     param->min_bound = 0;
     param->max_bound = 250;
   };
@@ -126,6 +121,51 @@ TEST(DiffusionInitTest, InitBothArrays) {
   // in c1_.
   auto* test_grid = bdm_static_cast<TestGrid*>(d_grid);
   EXPECT_TRUE(test_grid->ComapareArrayWithValue(0.5));
+  EXPECT_TRUE(test_grid->CompareArrays());
+}
+
+TEST(DiffusionInitTest, InitDirichlet) {
+  auto set_param = [](auto* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = 0;
+    param->max_bound = 250;
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  auto* rm = simulation.GetResourceManager();
+  auto* param = simulation.GetParam();
+
+  // Create one cell at a random position
+  auto construct = [](const Real3& position) {
+    Cell* cell = new Cell(position);
+    cell->SetDiameter(10);
+    return cell;
+  };
+  ModelInitializer::CreateAgentsRandom(param->min_bound, param->max_bound, 1,
+                                       construct);
+
+  // Define the substances in our simulation
+  DiffusionGrid* d_grid = nullptr;
+  d_grid = new TestGrid(kSubstance, "Substance", 0.0, 0.0, 26);
+  rm->AddContinuum(d_grid);
+
+  // Set Dirichlet boundary conditions with value 0.25
+  ModelInitializer::AddBoundaryConditions(
+      kSubstance, BoundaryConditionType::kDirichlet,
+      std::make_unique<ConstantBoundaryCondition>(0.25));
+
+  // Initialize the substance to 0.5
+  auto SetValues = [&](real_t x, real_t y, real_t z) { return 0.5; };
+  ModelInitializer::InitializeSubstance(kSubstance, SetValues);
+
+  simulation.GetScheduler()->Simulate(1);
+
+  // Test if all values in c1_ are 0.5 (inner points) and 0 on the boundary.
+  // Test if all values in c2_ are the same as in c1_.
+  auto* test_grid = bdm_static_cast<TestGrid*>(d_grid);
+  EXPECT_FALSE(test_grid->ComapareArrayWithValue(0.5));
+  EXPECT_TRUE(test_grid->ComapareInnerArrayWithValue(0.5));
+  EXPECT_TRUE(test_grid->CompareBoundaryValues(0.25));
   EXPECT_TRUE(test_grid->CompareArrays());
 }
 }  // namespace bdm

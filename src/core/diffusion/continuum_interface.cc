@@ -21,7 +21,7 @@ namespace bdm {
 
 void Continuum::IntegrateTimeAsynchronously(real_t dt) {
   if (time_step_ != std::numeric_limits<real_t>::max()) {
-    // Uptdate the total time to simulate
+    // Update the total time to simulate
     time_to_simulate_ += dt;
     // Compute the number of time steps to simulate
     auto n_steps = static_cast<int>(std::floor(time_to_simulate_ / time_step_));

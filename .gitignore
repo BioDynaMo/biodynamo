@@ -17,6 +17,9 @@ demo/makefile_project/makefile_project
 .idea
 cx3d-cpp.iml
 
+#----------------- clangd -----------------
+.cache
+
 #----------------- eclipse ------------------
 .project
 .cproject

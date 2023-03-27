@@ -235,13 +235,13 @@ struct Param {
   ///     max_bound = 100
   real_t max_bound = 100;
 
-  /// Define the boundary condition of the diffusion grid [open, closed]\n
-  /// Default value: `"open"`\n
-  /// TOML config file:
+  /// Define the boundary condition of the diffusion grid [open, closed,
+  /// Neumann, Dirichlet]\n
+  /// Default value: `"Neumann"`\n TOML config file:
   ///
   ///     [simulation]
-  ///     diffusion_boundary_condition = "open"
-  std::string diffusion_boundary_condition = "open";
+  ///     diffusion_boundary_condition = "Neumann"
+  std::string diffusion_boundary_condition = "Neumann";
 
   /// A string for determining diffusion type within the simulation space.
   /// current inputs include "euler" and "runge-kutta".
@@ -456,7 +456,7 @@ struct Param {
 
   /// Calculation of the displacement (mechanical interaction) is an
   /// expensive operation. If agents do not move or grow,
-  /// displacement calculation is ommited if detect_static_agents is turned
+  /// displacement calculation is omitted if detect_static_agents is turned
   /// on. However, the detection mechanism introduces an overhead. For dynamic
   /// simulations where agents move and grow, the overhead outweighs the
   /// benefits.\n
@@ -536,9 +536,9 @@ struct Param {
   /// MappedDataArrayMode options:
   ///   `kZeroCopy`: access agent data directly only if it is
   ///                requested. \n
-  ///   `kCache`:    Like `kZeroCopy` but stores the results in contigous
+  ///   `kCache`:    Like `kZeroCopy` but stores the results in contiguous
   ///                array, to speed up access if it is used again.\n
-  ///   `kCopy`:     Copy all data elements to a contigous array at
+  ///   `kCopy`:     Copy all data elements to a contiguous array at
   ///                initialization time. Serves requests from the cache.
   enum MappedDataArrayMode { kZeroCopy = 0, kCopy, kCache };
 
@@ -604,6 +604,13 @@ struct Param {
   ///     use_progress_bar = false
   bool use_progress_bar = false;
 
+  /// Time unit of the progress bar. Possible values: "ms", "s", "min", "h"
+  /// Default value: `"s"`\n
+  /// TOML config file:
+  ///     [development]
+  ///     progress_bar_time_unit = "s"
+  std::string progress_bar_time_unit = "s";
+
   // ---------------------------------------------------------------------------
   // experimental group
 
@@ -623,12 +630,13 @@ struct Param {
   ///     opencl_debug = false
   bool opencl_debug = false;
 
-  /// Set the index of the preferred GPU you wish to use.
+  /// Set the index of the preferred GPU you wish to use. In GpuHelper we
+  /// set the default to whichever GPU supports double precision
   /// Default value: `0`\n
   /// TOML config file:
   ///     [experimental]
-  ///     preferred_gpu = 0
-  int preferred_gpu = 0;
+  ///     preferred_gpu = <GPU with double precision support>
+  int preferred_gpu = -1;
 
   /// Determines if agents' memory layout plots should be generated
   /// during load balancing.

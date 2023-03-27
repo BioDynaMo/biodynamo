@@ -119,9 +119,9 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
   Dissect(num_boxes[2], tinfo->GetMaxThreads());
   CalcPieceExtents(num_boxes);
   uint64_t xy_num_boxes = num_boxes[0] * num_boxes[1];
-  real_t origin_x = grid_dimensions[0];
-  real_t origin_y = grid_dimensions[2];
-  real_t origin_z = grid_dimensions[4];
+  real_t origin_x = grid_dimensions[0] + box_length / 2.;
+  real_t origin_y = grid_dimensions[2] + box_length / 2.;
+  real_t origin_z = grid_dimensions[4] + box_length / 2.;
 
   // do not partition data for insitu visualization
   if (data_.size() == 1) {

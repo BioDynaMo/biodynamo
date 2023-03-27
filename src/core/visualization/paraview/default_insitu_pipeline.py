@@ -299,7 +299,7 @@ def CreateCoProcessor():
 coprocessor = CreateCoProcessor()
 
 #-------------------------------------------------------------------------------
-#Enable Live - Visualizaton with ParaView
+#Enable Live - Visualization with ParaView
 coprocessor.EnableLiveVisualization(True, 1)
 
 #------------------------------- Data Selection method -------------------------

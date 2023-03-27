@@ -96,7 +96,7 @@ struct Param : public ParamGroup {
   ///     neurite_max_length = 15
   real_t neurite_max_length = 15;
 
-  /// Minumum bifurcation length of a neurite element.\n
+  /// Minimum bifurcation length of a neurite element.\n
   /// If the length is below this threshold, bifurcation is not permitted.\n
   /// Default value: `0`\n
   /// TOML config file:

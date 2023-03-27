@@ -131,7 +131,7 @@ struct BasalDendriteGrowth : public Behavior {
 inline void AddInitialNeuron(const Real3& position) {
   auto* soma = new neuroscience::NeuronSoma(position);
   soma->SetDiameter(10);
-  Simulation::GetActive()->GetResourceManager()->AddAgent(soma);
+  Simulation::GetActive()->GetExecutionContext()->AddAgent(soma);
 
   auto* apical_dendrite = soma->ExtendNewNeurite({0, 0, 1});
   auto* basal_dendrite1 = soma->ExtendNewNeurite({0, 0, -1});

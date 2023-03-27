@@ -12,7 +12,7 @@
 #
 # -----------------------------------------------------------------------------
 
-# To avoid the repitition of the --cxx-compiler and --build-type arguments, store it in
+# To avoid the repetition of the --cxx-compiler and --build-type arguments, store it in
 # a variable. These two options can be omitted: bdm-config will then use the default
 # compiler and the build type Release.
 #BUILD_TYPE=--opt

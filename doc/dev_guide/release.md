@@ -30,7 +30,7 @@ Development versions use odd minor version numbers.
 
 * Consider writing a blog post
 
-* Create a new commit (commit message: "Release v1.0") with these changes, run it trough CI and add it to the master branch if all lights are green.
+* Create a new commit (commit message: "Release v1.0") with these changes, run it through CI and add it to the master branch if all lights are green.
 
 * Go to BioDynaMo's github project and create a new release
   ```

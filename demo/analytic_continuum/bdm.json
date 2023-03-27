@@ -1,5 +1,6 @@
 {
   "bdm::Param": {
+    "progress_bar_time_unit": "s",
     "export_visualization": true,
     "remove_output_dir_contents": true,
     "statistics": true,

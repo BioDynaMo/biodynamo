@@ -37,6 +37,9 @@
     <class name="bdm::AgentPointer<bdm::neuroscience::NeuriteElement>" noStreamer="true" />
     <class name="bdm::neuroscience::Param" />
     <class name="bdm::EulerGrid" />
+    <class name="bdm::EulerDepletionGrid" />
+    <class name="bdm::BoundaryCondition" />
+    <class name="bdm::ConstantBoundaryCondition" />
     <class name="bdm::RungeKuttaGrid" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::ScalarField" />
@@ -85,6 +88,8 @@
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
     <class name="bdm::experimental::TimeSeries" />
+    <class name="bdm::experimental::DataTransformer" />
+    <class name="bdm::experimental::LinearTransformer" />
     <class name="bdm::experimental::TimeSeries::Data" />
     <class name="unordered_map<std::string, bdm::experimental::TimeSeries::Data>" />
     <class name="bdm::experimental::Reducer<uint64_t>" />

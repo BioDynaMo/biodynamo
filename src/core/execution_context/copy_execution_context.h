@@ -27,7 +27,7 @@ namespace experimental {
 /// the logic when agent updates will be visible to other agents.
 /// The remaining implementation is the same as in `InPlaceExecutionContext`.
 /// The `CopyExecutionContext` creates and updates a copy of an agent.
-/// The changes to this copy are commited at the end of the iteration. \n
+/// The changes to this copy are committed at the end of the iteration. \n
 /// Thus, all agents see the same agent state if they read attributes from their
 /// neighbors.
 /// The value of the neighbor attributes will be from the last iteration. \n
