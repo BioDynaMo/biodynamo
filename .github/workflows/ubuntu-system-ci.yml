@@ -17,7 +17,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -103,11 +103,8 @@ jobs:
     # Set floating point precision
     - name: Set floating-point-precision
       run: |
-        if [ "${{ env.OSVERS }}" = "ubuntu-18.04" ]; then
-          echo "REALT=float" >> $GITHUB_ENV
-        fi
         if [ "${{ env.OSVERS }}" = "ubuntu-20.04" ]; then
-          echo "REALT=double" >> $GITHUB_ENV
+          echo "REALT=float" >> $GITHUB_ENV
         fi
         if [ "${{ env.OSVERS }}" = "ubuntu-22.04" ]; then
           echo "REALT=double" >> $GITHUB_ENV
