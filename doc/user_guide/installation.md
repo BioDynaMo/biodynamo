@@ -59,7 +59,7 @@ curl https://biodynamo.org/install | bash
 
 ## Supported platforms
 
-*  Ubuntu 18.04, 20.04
+*  Ubuntu 20.04, 22.04
 *  CentOS 7
 *  MacOS 11.7 and 12.6 (Intel and ARM)
 
