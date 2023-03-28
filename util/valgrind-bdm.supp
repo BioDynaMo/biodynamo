@@ -279,12 +279,45 @@
 }
 
 {
-   root_6_28_02
+   root_6_28_02_unknown_1
    Memcheck:Addr8
    fun:strncmp
    fun:is_dst
    fun:_dl_dst_count
    fun:expand_dynamic_string_token
+   fun:fillin_rpath.isra.0
+   fun:decompose_rpath
+   fun:cache_rpath
+   fun:cache_rpath
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+   fun:_ZN5TROOT15InitInterpreterEv
+   fun:_ZN4ROOT8Internal8GetROOT2Ev
+   fun:_ZN10TDirectoryD1Ev
+   fun:_ZN3bdm10Simulation10InitializeEPNS_18CommandLineOptionsERKSt8functionIFvPNS_5ParamEEERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISG_EE
+   fun:_ZN3bdm10SimulationC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFvPNS_5ParamEEERKSt6vectorIS6_SaIS6_EE
+   fun:_ZN3bdm10SimulationC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt6vectorIS6_SaIS6_EE
+}
+
+{
+   root_6_28_02_unknown_2
+   Memcheck:Addr8
+   fun:strncmp
+   fun:is_dst
+   fun:_dl_dst_substitute
    fun:fillin_rpath.isra.0
    fun:decompose_rpath
    fun:cache_rpath
