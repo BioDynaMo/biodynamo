@@ -100,16 +100,31 @@ EOF'
     # Install dependencies to install Python with PyEnv
     sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev \
       libreadline-dev libsqlite3-dev wget curl llvm \
-      xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
+      xz-utils tk-dev libffi-dev liblzma-dev git
+
+    # Different versions of Ubuntu have different package names for 
+    # python-openssl
+    if [ `lsb_release -rs` = "22.04" ] || [ `lsb_release -rs` = "22.10" ]; then
+      sudo apt-get install -y python3-openssl
+    else 
+      sudo apt-get install -y python-openssl
+    fi
 
     sudo apt install -y libxt-dev freeglut3-dev
 
     # libroadrunner
-    sudo apt-get install -y llvm-7 llvm-7-dev llvm-7-runtime
-    sudo apt-get install -y libbz2-1.0 libbz2-dev zlibc libxml2-dev libz-dev
-    sudo apt-get install -y libncurses5-dev
-
-    export LLVM_CONFIG="/usr/bin/llvm-config-7"
+    # Different versions of Ubuntu have different LLVM packages
+    if [ `lsb_release -rs` = "22.04" ] || [ `lsb_release -rs` = "22.10" ]; then
+      sudo apt-get install -y llvm-7 llvm-7-dev llvm-7-runtime
+      sudo apt-get install -y libbz2-1.0 libbz2-dev zlibc libxml2-dev libz-dev
+      sudo apt-get install -y libncurses5-dev
+      export LLVM_CONFIG="/usr/bin/llvm-config-7"
+    else
+      sudo apt-get install -y llvm-14 llvm-14-dev llvm-14-runtime
+      sudo apt-get install -y libbz2-1.0 libbz2-dev zlib1g libxml2-dev libz-dev
+      sudo apt-get install -y libncurses5-dev
+      export LLVM_CONFIG="/usr/bin/llvm-config-14"
+    fi
   fi
   # update cmake to build ROOT
   URL="https://cmake.org/files/v3.19/cmake-3.19.3-Linux-x86_64.tar.gz"

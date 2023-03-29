@@ -26,7 +26,7 @@ if(APPLE)
   endif()
 else()
   if("${DETECTED_OS_VERS}" MATCHES "^ubuntu-22")
-    set(ROOT_TAR_FILE root_v6.26.10_python3.9_${DETECTED_OS_VERS}.tar.gz)
+    set(ROOT_TAR_FILE root_v6.28.02_python3.9_${DETECTED_OS_VERS}.tar.gz)
   endif()
 endif()
 

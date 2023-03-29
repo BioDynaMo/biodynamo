@@ -10,15 +10,24 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
 
     steps:
+    - name: Set python openssl package
+      run: |
+        if [ "${{ env.OSVERS }}" = "ubuntu-20.04" ]; then
+          echo "PYOPENSSL=python-openssl" >> $GITHUB_ENV
+        fi
+        if [ "${{ env.OSVERS }}" = "ubuntu-22.04" ]; then
+          echo "PYOPENSSL=python3-openssl" >> $GITHUB_ENV
+        fi
+        
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build libblas-dev liblapack-dev libgit2-dev
+          libreadline-dev libsqlite3-dev tk-dev ${{ env.PYOPENSSL }} ninja-build libblas-dev liblapack-dev libgit2-dev
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
         chmod +x cmake-3.19.3-Linux-x86_64.sh
         sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
