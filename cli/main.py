@@ -20,6 +20,7 @@ from demo_command import DemoCommand
 from new_command import NewCommand
 from run_command import RunCommand
 from test_command import TestCommand
+from view_command import ViewCommand
 from config_command import ConfigCommand
 from bdm_version import Version
 
@@ -50,6 +51,18 @@ def Main():
     config_sp = sp.add_parser("config", help="Prints the configuration of BDM.")
 
     demo_sp = sp.add_parser("demo", help="Creates pre-built demos.")
+
+    view_sp = sp.add_parser(
+        "view", help="If possible, opens the output in ParaView."
+    )
+
+    view_sp.add_argument(
+        "file_id",
+        type=int,
+        help="File to open in ParaView (1,2,3,..).",
+        nargs="?",
+        default=None,
+    )
 
     new_sp = sp.add_parser(
         "new",
@@ -100,6 +113,9 @@ def Main():
         RunCommand(args=unknown)
     elif args.cmd == "test":
         TestCommand()
+    elif args.cmd == "view":
+        # Get the file id from the command line
+        ViewCommand(args.file_id)
     elif args.version:
         print(Version.string())
         sys.exit()
