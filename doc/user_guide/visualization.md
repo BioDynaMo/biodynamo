@@ -69,6 +69,12 @@ Now we need to open ParaView:
 </a>
 <br/>
 
+Run 
+```bash
+bdm view
+```
+which wraps the following commands (we recommend doing this exercise
+at least once to better understand the process):
 ```bash
 paraview
 ```
