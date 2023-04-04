@@ -1,13 +1,13 @@
 ---
 title: "Contribute"
 date: "2019-01-01"
-path: "/docs/devguide/contribute/"
+path: "/doc/dev_guide/contribute/"
 meta_title: "BioDynaMo Dev Guide"
 meta_description: "This is the contribution page."
 toc: true
 image: ""
 next:
-    url:  "/docs/devguide/contribution/"
+    url:  "/doc/dev_guide/contribution/"
     title: "Contribute"
     description: "This is the contribution page."
 sidebar: "devguide"
@@ -30,8 +30,8 @@ Consequently, it will ensure that your code is accepted sooner :)
 
 #### 1. Get familiar with our coding convention
 
-Carefully read the [C++ style guide](https://google.github.io/styleguide/cppguide.html)
-and our page about [Code Quality](/docs/devguide/code_quality).
+Carefully read [Google's style guide for C++ code](https://google.github.io/styleguide/cppguide.html)
+and our guidelines about [code quality](https://github.com/BioDynaMo/biodynamo/blob/master/doc/dev_guide/code_quality.md) for BioDynaMo.
 
 #### 2. Clone the repository
 
@@ -62,8 +62,7 @@ git checkout -b my-feature-branch
 You can make intermediate commits without performing all subsequent steps.
 However, for your final submission these steps are essential.
 
-Also for intermediate commit messages: have a look at
-[how to write good commit messages](/docs/devguide/code_quality/#git-commit-message)!
+Also for intermediate commit messages, you are advised to have a look about [how to write good commit messages](https://github.com/BioDynaMo/biodynamo/blob/master/doc/dev_guide/code_quality.md#git-commit-message)!
 
 #### 7. Compile and run tests
 
@@ -102,7 +101,7 @@ Check if
 *  it is consistent with code (copy-paste errors)
 *  it sufficiently describes the functionality
 
-Please pay attention to warnings from doxygen generation. Here an example of an inconsistent documentation:
+Please pay attention to warnings from doxygen generation. Here is an example of an inconsistent documentation:
 ```
 # make doc output:
 ...
@@ -125,7 +124,8 @@ Point GetSAHSplitPoint();
 ``` bash
 make check-submission
 ```
-This command will execute all tests, check code formatting, styleguide rules, build the documentation and coverage report ([more info](/docs/devguide/contribute/#make-check-submission-explained)).
+This command will execute all tests, check code formatting, styleguide rules, build the documentation and coverage report.
+More info about this are provided [here](https://github.com/BioDynaMo/biodynamo/blob/master/doc/dev_guide/contribute.md#make-check-submission-explained).
 
 False positives from `clang-tidy` can be silenced by adding `// NOLINT` at the end of the line.
 Disabling `clang-format` for a certain part can be done by encapsulating it with the following comments:
@@ -135,7 +135,10 @@ code here is not changed by clang-format
 // clang-format on
 ```
 
-If there are no false positives and you are fine with the changes suggested by `clang-format` and `clang-tidy` run: `make fix-submission`. However, failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually. Also some `clang-tidy` issues cannot be resolved automatically. After running `make fix-submission` please execute `make check-submission` to see if all issues have been resolved.
+If there are no false positives and you are fine with the changes suggested by `clang-format` and `clang-tidy` then run: `make fix-submission`.
+However, failing build, tests, compiler warnings, issues from cpplint and warnings from doxygen must be fixed manually.
+Also some `clang-tidy` issues cannot be resolved automatically.
+After running `make fix-submission` please execute `make check-submission` to see if all issues have been resolved.
 
 Please verify that:
 
@@ -150,7 +153,8 @@ Please verify that:
 #### 12. Commit
 
 Once `make check-submission` does not report any issues, the final commit can be done.
-Have a look at [how to write good commit messages](/docs/devguide/code_quality/#git-commit-message)!
+Have a look at [how to write good commit messages](https://github.com/BioDynaMo/biodynamo/blob/master/doc/dev_guide/code_quality.md#git-commit-message)!
+
 ``` bash
 git add -i
 git commit
@@ -158,30 +162,30 @@ git commit
 
 #### 13. Create pull request
 
-Please create a [pull request](https://help.github.com/articles/creating-a-pull-request/)
+Please create a [pull request](https://help.github.com/articles/creating-a-pull-request/).
 
 #### 14. Verify if Github Actions CI builds are OK
 
-Open the Github Actions build for Linux and OSX and go through the checklist from point 11 for each of them.
-Unlike compilation and test suite execution, problems caused by formatting, code style and documentation will not fail the build. However, they need to be fixed!
+Open the [Github Actions](https://github.com/features/actions) build for Linux and OSX and go through the checklist from point 11 for each of them.
+Unlike compilation and test suite execution, problems caused by formatting, code style and documentation will not fail the build.
+However, they need to be fixed!
 
 #### 15. If everything is OK contact one of the code reviewers on GitHub / Discord
 
-We usually get back to you quickly but if, for some reason, we do not react
-to your PR within a few days, please consider pinging our developers by either
-mentioning some of them on GitHub (e.g., `@Developer1`) or contacting us
-directly via Discord.
+We usually get back to you quickly but if, for some reason, we do not react to your PR within a few days, please consider pinging our developers by either
+mentioning some of them on GitHub (e.g., `@Developer1`) or contacting us directly via Discord.
 
 #### 16. Discuss suggested changes with the code reviewer
 
-If code changes are necessary, go back to step 6
+If code changes are necessary, go back to step 6.
 
 #### 17. Congratulations, your code has been merged into the `master` branch
 
 Many thanks for your contribution, rigor and patience!
 
 ## 98% Finished Projects
-In the open source world sometimes it happens that people work on a feature for weeks or month and leave after it has been finished for 98%. Although this 2% don't look like a big issue, usually that means that all your work doesn't make it into the production code. Normally, other developers are busy and don't have the time to dive into your work and find the pieces that are missing or not working yet. This situation would be a waste of your precious time. We bet that it is way more satisfying if your contribution makes it into production and will be used by scientists around the world.
+
+In the open-source world sometimes it happens that people work on a feature for weeks or month and leave after it has been finished for 98%. Although this 2% don't look like a big issue, usually that means that all your work doesn't make it into the production code. Normally, other developers are busy and don't have the time to dive into your work and find the pieces that are missing or not working yet. This situation would be a waste of your precious time. We bet that it is way more satisfying if your contribution makes it into production and will be used by scientists around the world.
 
 For a contribution to be considered 100% complete, it must (be)
 * comply to our coding guidelines,
@@ -201,7 +205,7 @@ Although, many issues are caught, it has its limitations. Thus, it cannot fully 
 
 Since it possibly outputs a lot of information, this page explains how to interpret the results.
 
-[Here](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233559945) an example how the output should look like if all checks are OK
+[Here](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233559945) is an example how the output should look like if all checks are OK.
 
   * [Successful build without compiler warnings](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233559945#L930-L1015)
   * [All tests pass](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233559945#L1017-L1026)
@@ -210,7 +214,7 @@ Since it possibly outputs a lot of information, this page explains how to interp
   * [`cpplint` does not report issues](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233559945#L1145)
   * [doxygen does not report issues](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233559945#L1150)
 
-[Here](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233636836) an example of a **passing build**, but with issues in many categories -- these issues must be fixed as well:
+[Here](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233636836) is another example of a **passing build**, but with issues in many categories -- these issues must be fixed as well:
 
   * [Compiler warning](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233636836#L936-L940)
   * [`clang-format` reports issues](https://travis-ci.org/BioDynaMo/biodynamo/jobs/233636836#L1047-L1051)
