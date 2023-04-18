@@ -32,7 +32,7 @@ namespace bdm {
   (central difference of second-order). The method derives its name, Euler, from
   the time step length of the integration.
 
-  Further infomation:
+  Further information:
     - <a href="https://biodynamo.org/docs/userguide/diffusion/">
       BioDynaMo User Guide </a>
     - <a
@@ -44,13 +44,14 @@ class EulerGrid : public DiffusionGrid {
  public:
   EulerGrid() = default;
   EulerGrid(int substance_id, std::string substance_name, real_t dc, real_t mu,
-            int resolution = 11)
+            int resolution = 10)
       : DiffusionGrid(substance_id, std::move(substance_name), dc, mu,
                       resolution) {}
 
   void DiffuseWithClosedEdge(real_t dt) override;
-
   void DiffuseWithOpenEdge(real_t dt) override;
+  void DiffuseWithDirichlet(real_t dt) override;
+  void DiffuseWithNeumann(real_t dt) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(EulerGrid, 1);

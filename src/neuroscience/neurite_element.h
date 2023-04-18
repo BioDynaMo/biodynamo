@@ -173,7 +173,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// \see NeuriteBranchingEvent
   NeuriteElement* Branch();
 
-  /// Returns true if a bifurcation is physicaly possible. That is if the
+  /// Returns true if a bifurcation is physically possible. That is if the
   /// neurite element has no daughter and the actual length is bigger than the
   /// minimum required.
   bool BifurcationPermitted() const;
@@ -313,7 +313,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// Polar :    cylindrical coordinates [h,theta,r] with
   ///        h = first local coord (along xAxis),
   ///        theta = angle from yAxis,
-  ///        r euclidian distance from xAxis;
+  ///        r euclidean distance from xAxis;
   ///        with origin at proximal end
   ///
   ///  Note: The methods below transform POSITIONS and not DIRECTIONS !!!
@@ -423,7 +423,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   /// @return is it a terminal branch
   bool IsTerminal() const { return daughter_left_ == nullptr; }
 
-  /// retuns the position of the proximal end, ie the position minus the spring
+  /// returns the position of the proximal end, ie the position minus the spring
   /// axis.
   /// Is mainly used for paint
   Real3 ProximalEnd() const { return mass_location_ - spring_axis_; }

@@ -1,30 +1,28 @@
 <p align="center">
-  <a href="http://biodynamo.org">
-    <img src="https://biodynamo.org/images/bdm_logo_large.png" alt="BioDynaMo logo" width="72" height="72">
+  <a href="https://www.biodynamo.org/">
+    <img src="https://github.com/BioDynaMo/biodynamo.github.io/blob/master/images/bdm_logo_large.png" alt="BioDynaMo logo" width="72" height="72">
   </a>
 </p>
 
-<h3 align="center">BioDynaMo</h3>
+<h3 align="center">
+  <a href="http://www.biodynamo.org/">BioDynaMo</a>
+</h3>
 
 <p align="center">
-  Biology Dynamics Modeller
-  <br>
-  <a href="http://biodynamo.org/"><strong>Visit our website »</strong></a>
+  The open-source Biology Dynamics Modeller
   <br>
   <br>
-  <a href="https://github.com/BioDynaMo/biodynamo/issues/new">Report bug</a>
-  ·
-  <a href="https://github.com/BioDynaMo/biodynamo/issues/new">Request feature</a>
-  ·
-  <a href="https://biodynamo.org/docs/userguide/">User's guide</a>
-  ·
-  <a href="https://biodynamo.org/docs/devguide/">Developer's guide</a>
+  <a href="https://www.biodynamo.org/user-guide/">User's guide</a>
+  |
+  <a href="https://www.biodynamo.org/developer-guide/">Developer's guide</a>
+  |
+  <a href="https://github.com/BioDynaMo/biodynamo/issues/new">Report an issue or bug</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22Ubuntu+CI%22"><img src="https://github.com/BioDynaMo/biodynamo/workflows/Ubuntu%20CI/badge.svg?branch=github-actions"/></a>
-  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22CentOS+CI%22"><img src="https://github.com/BioDynaMo/biodynamo//workflows/CentOS%20CI/badge.svg?branch=github-actions"/></a>
-  <a href="https://github.com/BioDynaMo/biodynamo/actions?query=workflow%3A%22macOS+CI%22"><img src="https://github.com/BioDynaMo/biodynamo//workflows/macOS%20CI/badge.svg?branch=github-actions"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions/workflows/ubuntu-system-ci.yml"><img src="https://github.com/BioDynaMo/biodynamo/actions/workflows/ubuntu-system-ci.yml/badge.svg"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions/workflows/centos-system-ci.yml"><img src="https://github.com/BioDynaMo/biodynamo/actions/workflows/centos-system-ci.yml/badge.svg"/></a>
+  <a href="https://github.com/BioDynaMo/biodynamo/actions/workflows/macos-system-ci.yml"><img src="https://github.com/BioDynaMo/biodynamo/actions/workflows/macos-system-ci.yml/badge.svg"/></a>
   <a href="https://sonarcloud.io/project/overview?id=BioDynaMo_biodynamo"><img src="https://sonarcloud.io/api/project_badges/measure?project=BioDynaMo_biodynamo&metric=alert_status"/></a>
   <a href="https://discord.gg/9hNCbNYwcT"><img src="https://img.shields.io/discord/1029690454574370816"/></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
@@ -45,18 +43,16 @@ Simply run the following command:
 curl https://biodynamo.org/install | bash
 ```
 
-For more information, check out our [user's guide](https://biodynamo.org/docs/userguide/).
+For more information, check out our [user's guide](https://www.biodynamo.org/user-guide) documentation that is designed for people who will use BioDynaMo on a day-to-day basis, and aims at providing users with all essential info to make full use of BioDynaMo.
 
 <!-- ## Examples
 -- Show some nice visualizations here, with a one-liner explanation -->
 
 ## Contributing
 
-The main purpose of this repository is to evolve BioDynaMo, making it faster and
-easier to use. Development of BioDynaMo happens in the open on Github, and we are
-grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://biodynamo.org/docs/devguide/contribute/) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
+The main purpose of this repository is to evolve BioDynaMo, making it faster and easier to use. Development of BioDynaMo happens in the open on Github, and we are grateful to the community for contributing bugfixes and improvements. Please read our [contribution guide](https://github.com/BioDynaMo/biodynamo/blob/master/doc/dev_guide/contribute.md) and learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to BioDynaMo.
 
-We expect contributors to adhere to our [Contributor Covenant](https://github.com/BioDynaMo/biodynamo/blob/master/CODE_OF_CONDUCT.md).
+We pledge to act and interact in ways that contribute to an open, welcoming, diverse, inclusive, and healthy community in BioDynaMo. Thus, we expect all contributors to adhere to our [covenant for contributors](https://www.biodynamo.org/developer-guide/contributor-covenant).
 
 ## Cite
 

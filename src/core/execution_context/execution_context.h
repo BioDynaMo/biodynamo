@@ -79,6 +79,23 @@ class ExecutionContext {
                                const Real3& query_position,
                                real_t squared_radius) = 0;
 
+  /// @brief  Adds the agent to the simulation (threadsafe, takes ownership).
+  ///         Note that we avoid the use of smart pointers for the agents to
+  ///         avoid unnecessary overhead during construction of the agent
+  ///         (performance argument).
+  /// `usage example`:
+  /// \code
+  ///   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+  ///   ctxt->AddAgent(new Agent());
+  /// \endcode
+  /// or
+  /// \code
+  ///   auto* ctxt = Simulation::GetActive()->GetExecutionContext();
+  ///   auto* agent = new Agent();
+  ///   // modify agent
+  ///   ctxt->AddAgent(agent);
+  /// \endcode
+  /// @param new_agent The agent to be added to the simulation
   virtual void AddAgent(Agent* new_agent) = 0;
 
   virtual void RemoveAgent(const AgentUid& uid) = 0;

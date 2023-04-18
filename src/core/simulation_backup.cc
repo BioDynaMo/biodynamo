@@ -27,7 +27,7 @@ SimulationBackup::SimulationBackup(const std::string& backup_file,
   } else if (backup_file == restore_file) {
     Log::Warning(
         "SimulationBackup",
-        "Backup file is identical to restore file. Will be overriden after "
+        "Backup file is identical to restore file. Will be overridden after "
         "restore.");
   }
 
@@ -39,7 +39,7 @@ SimulationBackup::SimulationBackup(const std::string& backup_file,
   }
 }
 
-size_t SimulationBackup::GetSimulationStepsFromBackup() {
+size_t SimulationBackup::GetSimulationStepsFromBackup() const {
   if (restore_) {
     IntegralTypeWrapper<size_t>* wrapper = nullptr;
     bdm::GetPersistentObject(restore_file.c_str(), kSimulationStepName.c_str(),
@@ -57,9 +57,9 @@ size_t SimulationBackup::GetSimulationStepsFromBackup() {
   }
 }
 
-bool SimulationBackup::BackupEnabled() { return backup_; }
+bool SimulationBackup::BackupEnabled() const { return backup_; }
 
-bool SimulationBackup::RestoreEnabled() { return restore_; }
+bool SimulationBackup::RestoreEnabled() const { return restore_; }
 
 const std::string SimulationBackup::kSimulationName = "simulation";
 const std::string SimulationBackup::kSimulationStepName =

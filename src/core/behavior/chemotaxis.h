@@ -28,23 +28,19 @@ class Chemotaxis : public Behavior {
 
  public:
   Chemotaxis() = default;
-  Chemotaxis(const std::string& substance, real_t speed)
-      : substance_(substance), speed_(speed) {
+  Chemotaxis(const std::string& substance, real_t speed) : speed_(speed) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);
   }
 
   explicit Chemotaxis(DiffusionGrid* dgrid, real_t speed)
-      : dgrid_(dgrid), speed_(speed) {
-    substance_ = dgrid->GetContinuumName();
-  }
+      : dgrid_(dgrid), speed_(speed) {}
 
   virtual ~Chemotaxis() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
     auto* other = bdm_static_cast<Chemotaxis*>(event.existing_behavior);
-    substance_ = other->substance_;
     dgrid_ = other->dgrid_;
     speed_ = other->speed_;
   }
@@ -58,7 +54,6 @@ class Chemotaxis : public Behavior {
   }
 
  private:
-  std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
   real_t speed_;
 };

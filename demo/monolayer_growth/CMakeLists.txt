@@ -14,7 +14,7 @@
 cmake_minimum_required(VERSION 3.19.3)
 project(monolayer_growth)
 
-# BioDynaMo curretly uses the C++14 standard.
+# BioDynaMo currently uses the C++14 standard.
 set(CMAKE_CXX_STANDARD 14)
 
 # Use BioDynaMo in this project.

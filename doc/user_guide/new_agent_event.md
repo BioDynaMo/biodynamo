@@ -141,7 +141,7 @@ class MyCell : public Cell {
     </div>
 </a>
 
-You can ommit the implementaiont of `Initialize` and/or `Update` if your
+You can omit the implementaiont of `Initialize` and/or `Update` if your
 new data member, doesn't need this type of initialization.
 <!-- TODO explain default event handler and ctors -->
 

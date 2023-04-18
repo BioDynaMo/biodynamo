@@ -344,22 +344,22 @@ class Random {
 
   /// Returns a random number generator that draws samples from a
   /// uniform distribution with given parameters.
-  UniformRng GetUniformRng(real_t min = 0, real_t max = 1);
+  UniformRng GetUniformRng(real_t min = 0, real_t max = 1) const;
   /// Returns a random number generator that draws samples from a
   /// gaus distribution with given parameters.
-  GausRng GetGausRng(real_t mean = 0, real_t sigma = 1);
+  GausRng GetGausRng(real_t mean = 0, real_t sigma = 1) const;
   /// Returns a random number generator that draws samples from a
   /// exp distribution with given parameters.
-  ExpRng GetExpRng(real_t tau);
+  ExpRng GetExpRng(real_t tau) const;
   /// Returns a random number generator that draws samples from a
   /// Landau distribution with given parameters.
-  LandauRng GetLandauRng(real_t mean = 0, real_t sigma = 1);
+  LandauRng GetLandauRng(real_t mean = 0, real_t sigma = 1) const;
   /// Returns a random number generator that draws samples from a
   /// PoissonD distribution with given parameters.
-  PoissonDRng GetPoissonDRng(real_t mean);
+  PoissonDRng GetPoissonDRng(real_t mean) const;
   /// Returns a random number generator that draws samples from a
   /// BreitWigner distribution with given parameters.
-  BreitWignerRng GetBreitWignerRng(real_t mean = 0, real_t gamma = 1);
+  BreitWignerRng GetBreitWignerRng(real_t mean = 0, real_t gamma = 1) const;
 
   /// Returns a random number generator that draws samples from a
   /// user-defined distribution specified by parameter `function` between min
@@ -413,10 +413,10 @@ class Random {
 
   /// Returns a random number generator that draws samples from a
   /// Binomial distribution with given parameters.
-  BinomialRng GetBinomialRng(int ntot, real_t prob);
+  BinomialRng GetBinomialRng(int ntot, real_t prob) const;
   /// Returns a random number generator that draws samples from a
   /// Poisson distribution with given parameters.
-  PoissonRng GetPoissonRng(real_t mean);
+  PoissonRng GetPoissonRng(real_t mean) const;
 
  private:
   friend class DistributionRng<real_t>;

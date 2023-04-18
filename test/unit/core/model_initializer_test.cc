@@ -44,6 +44,46 @@ void Verify(Simulation* sim, uint64_t num_agents,
   }
 }
 
+// -----------------------------------------------------------------------------
+// check that the ResourceManager contains a diffusion grid with matching
+// boundaries
+void VerifyDiffusionGrid(Simulation* sim, uint64_t substance_id,
+                         double diffusion_coefficient, double decay_constant,
+                         int resolution, BoundaryConditionType bct,
+                         real_t boundary_value) {
+  sim->GetExecutionContext()->SetupIterationAll(sim->GetAllExecCtxts());
+  auto* rm = sim->GetResourceManager();
+
+  // Get the diffusion grid
+  auto* cm = rm->GetContinuum(substance_id);
+  auto* dg = dynamic_cast<DiffusionGrid*>(cm);
+
+  if (!dg) {
+    Log::Fatal("ModelInitializerTest", "No diffusion grid found");
+  }
+
+  // Check the diffusion coefficient
+  auto my_dc = dg->GetDiffusionCoefficients()[0];
+  EXPECT_FLOAT_EQ(diffusion_coefficient, 1 - my_dc);
+
+  // Check the decay constant
+  auto my_decay = dg->GetDecayConstant();
+  EXPECT_FLOAT_EQ(decay_constant, my_decay);
+
+  // Check the resolution
+  auto my_resolution = dg->GetResolution();
+  EXPECT_EQ(resolution, my_resolution);
+
+  // Check the boundary conditions
+  auto my_bct = dg->GetBoundaryConditionType();
+  EXPECT_EQ(bct, my_bct);
+
+  // Check the boundary values
+  auto* my_boudary = dg->GetBoundaryCondition();
+  auto my_boundary_value = my_boudary->Evaluate(0, 0, 0, 0);
+  EXPECT_FLOAT_EQ(boundary_value, my_boundary_value);
+}
+
 // Tests if pos_0 cubic 3D grid of cells is correctly initialized
 TEST(ModelInitializerTest, Grid3DCube) {
   Simulation simulation(TEST_NAME);
@@ -156,6 +196,44 @@ TEST(ModelInitializerTest, CreateAgentsInSphereRndm) {
     auto shift = cell->GetPosition() - center;
     EXPECT_LE(shift.Norm(), radius);
   });
+}
+
+TEST(ModelInitializerTest, DGandBoundaries) {
+  Simulation simulation(TEST_NAME);
+  auto* rm = simulation.GetResourceManager();
+  rm->AddAgent(new Cell({0, 0, 0}));
+
+  real_t diffusion_coefficient_0 = 1.0;
+  real_t diffusion_coefficient_1 = 2.0;
+  real_t decay_constant_0 = 0.1;
+  real_t decay_constant_1 = 0.2;
+  int resolution_0 = 10;
+  int resolution_1 = 20;
+  real_t boundary_value_0 = 1.0;
+  real_t boundary_value_1 = -1.0;
+  auto boundary_condition_0 =
+      std::make_unique<ConstantBoundaryCondition>(boundary_value_0);
+  auto boundary_condition_1 =
+      std::make_unique<ConstantBoundaryCondition>(boundary_value_1);
+
+  ModelInitializer::DefineSubstance(0, "substance_0", diffusion_coefficient_0,
+                                    decay_constant_0, resolution_0);
+  ModelInitializer::DefineSubstance(1, "substance_1", diffusion_coefficient_1,
+                                    decay_constant_1, resolution_1);
+
+  ModelInitializer::AddBoundaryConditions(0, BoundaryConditionType::kDirichlet,
+                                          std::move(boundary_condition_0));
+  ModelInitializer::AddBoundaryConditions(1, BoundaryConditionType::kNeumann,
+                                          std::move(boundary_condition_1));
+
+  VerifyDiffusionGrid(&simulation, 0, diffusion_coefficient_0, decay_constant_0,
+                      resolution_0, BoundaryConditionType::kDirichlet, 1.0);
+  VerifyDiffusionGrid(&simulation, 1, diffusion_coefficient_1, decay_constant_1,
+                      resolution_1, BoundaryConditionType::kNeumann, -1.0);
+
+  // Check that the boundary conditions are now set to nullptr
+  EXPECT_EQ(nullptr, boundary_condition_0.get());
+  EXPECT_EQ(nullptr, boundary_condition_0.get());
 }
 
 }  // namespace model_initializer_test_internal

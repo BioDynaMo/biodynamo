@@ -130,7 +130,7 @@ class UniformGridEnvironment : public Environment {
         }
       }
 
-      bool IsAtEnd() { return countdown_ <= 0; }
+      bool IsAtEnd() const { return countdown_ <= 0; }
 
       Iterator& operator++() {
         countdown_--;
@@ -273,9 +273,9 @@ class UniformGridEnvironment : public Environment {
 
   void SetDetermineSimSize(bool value) { determine_sim_size_ = value; }
 
-  int32_t GetBoxLength() { return box_length_; }
+  int32_t GetBoxLength() const { return box_length_; }
 
-  /// @brief      Calculates the squared euclidian distance between two points
+  /// @brief      Calculates the squared euclidean distance between two points
   ///             in 3D
   ///
   /// @param[in]  pos1  Position of the first point
@@ -324,7 +324,7 @@ class UniformGridEnvironment : public Environment {
   /// @return     The box index.
   ///
   size_t GetBoxIndex(const Real3& position) const {
-    // Check if conversion can be done without loosing information
+    // Check if conversion can be done without losing information
     assert(floor(position[0]) <= std::numeric_limits<int32_t>::max());
     assert(floor(position[1]) <= std::numeric_limits<int32_t>::max());
     assert(floor(position[2]) <= std::numeric_limits<int32_t>::max());
@@ -369,7 +369,7 @@ class UniformGridEnvironment : public Environment {
   }
 
   void GetNumBoxesAxis(uint32_t* nba) {
-    // Check if conversion can be done without loosing information
+    // Check if conversion can be done without losing information
     assert(num_boxes_axis_[0] <= std::numeric_limits<uint32_t>::max());
     assert(num_boxes_axis_[1] <= std::numeric_limits<uint32_t>::max());
     assert(num_boxes_axis_[2] <= std::numeric_limits<uint32_t>::max());
@@ -457,7 +457,7 @@ class UniformGridEnvironment : public Environment {
     // the neighbors of an agent.
     if (idx == std::numeric_limits<uint32_t>::max()) {
       size_t idx_tmp = GetBoxIndex(position);
-      // Check if conversion can be done without loosing information
+      // Check if conversion can be done without losing information
       assert(idx_tmp <= std::numeric_limits<uint32_t>::max());
       idx = static_cast<uint32_t>(idx_tmp);
     }
@@ -544,7 +544,7 @@ class UniformGridEnvironment : public Environment {
       GridNeighborMutex(const FixedSizeVector<uint64_t, 27>& mutex_indices,
                         GridNeighborMutexBuilder* mutex_builder)
           : mutex_indices_(mutex_indices), mutex_builder_(mutex_builder) {
-        // Deadlocks occur if mutliple threads try to acquire the same locks,
+        // Deadlocks occur if multiple threads try to acquire the same locks,
         // but in different order.
         // -> sort to avoid deadlocks - see lock ordering
         std::sort(mutex_indices_.begin(), mutex_indices_.end());
@@ -713,7 +713,7 @@ class UniformGridEnvironment : public Environment {
   }
 
   void RoundOffGridDimensions(const std::array<real_t, 6>& grid_dimensions) {
-    // Check if conversion can be done without loosing information
+    // Check if conversion can be done without losing information
     assert(floor(grid_dimensions_[0]) >= std::numeric_limits<int32_t>::min());
     assert(floor(grid_dimensions_[2]) >= std::numeric_limits<int32_t>::min());
     assert(floor(grid_dimensions_[4]) >= std::numeric_limits<int32_t>::min());

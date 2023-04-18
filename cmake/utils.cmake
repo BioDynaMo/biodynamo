@@ -197,7 +197,7 @@ function(install_inside_build)
 
     set(artifact_files_builddir)
 
-    # Install the enviroment source script
+    # Install the environment source script
 
     # Copy biodynamo.py and make it executable.
     add_custom_command(

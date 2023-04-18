@@ -570,7 +570,7 @@ void Simulation::InitializeOutputDir() {
       // unintentionally.
       Log::Fatal(
           "Simulation::InitializeOutputDir", "Output dir (", output_dir_,
-          ") is not empty. Previous result files would be overriden. Abort."
+          ") is not empty. Previous result files would be overridden. Abort."
           "Please set Param::remove_output_dir_contents to true to remove "
           "files"
           " automatically or clear the output directory by hand.");

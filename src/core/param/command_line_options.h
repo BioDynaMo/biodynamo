@@ -50,7 +50,7 @@ class CommandLineOptions {
   }
 
   /// Return the simulation name that was parsed from argv[0]
-  std::string GetSimulationName();
+  std::string GetSimulationName() const;
 
   /// Check if the argument for the specified option was set
   bool IsSet(std::string option);

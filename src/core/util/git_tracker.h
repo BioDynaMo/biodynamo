@@ -69,7 +69,7 @@ class GitTracker {
   void SetCwd(const std::string& path) { cwd_ = GetAbsolutePath(path); }
 
  private:
-  /// Returns the absolute path of the given path (via experimantal/filesystem).
+  /// Returns the absolute path of the given path (via experimental/filesystem).
   std::string GetAbsolutePath(const std::string& path) const;
 
   /// Constructs the folder names for the bdm_installation_ and the cwd_.

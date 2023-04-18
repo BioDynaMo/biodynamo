@@ -36,7 +36,7 @@ class AnalyticContinuum : public ScalarField {
   /// BioDynaMo core. It is used to compute update the state of the continuum
   /// model. Typically, this involves a numeric scheme that computes the
   /// solution of a differential equation. Here, the time dependence is
-  /// completley characterized by the parameter `t` in f(x,y,z,t). Thus, we only
+  /// completely characterized by the parameter `t` in f(x,y,z,t). Thus, we only
   /// need to make sure that `t` (`time_`) is updated..
   void Step(real_t dt) final { time_ += dt; }
 

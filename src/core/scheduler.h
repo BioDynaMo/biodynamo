@@ -70,9 +70,9 @@ class Scheduler {
   /// `Simulate` calls.\n
   /// All `Simulate` calls do this automatically, but sometimes
   /// it is useful to do it manually (e.g.for tutorials).
-  void FinalizeInitialization();
+  void FinalizeInitialization() const;
 
-  /// This function returns the numer of simulated steps (=iterations).
+  /// This function returns the number of simulated steps (=iterations).
   uint64_t GetSimulatedSteps() const;
 
   /// This function returns the time that has been simulated until this
@@ -109,7 +109,7 @@ class Scheduler {
   /// Additionally, the output shows a column "frequency" with values \f$n_i\f$
   /// indicating that a certain operation \f$i\f$ is only executed every
   /// \f$n_i\f$-th time.
-  void PrintInfo(std::ostream& out);
+  void PrintInfo(std::ostream& out) const;
 
  protected:
   uint64_t total_steps_ = 0;
@@ -176,7 +176,7 @@ class Scheduler {
   /// Runs a lambda for each operation in the specified list of operations
   template <typename Lambda>
   void ForEachOperationInList(const std::vector<Operation*>& operations,
-                              Lambda lambda) {
+                              Lambda lambda) const {
     for (auto* op : operations) {
       lambda(op);
     }
@@ -212,12 +212,12 @@ class Scheduler {
   void RunScheduledOps();
 
   // Run the operations in pre_scheduled_ops_ (executed before RunScheduledOps)
-  void RunPreScheduledOps();
+  void RunPreScheduledOps() const;
 
-  void RunAgentOps(Functor<bool, Agent*>* filter);
+  void RunAgentOps(Functor<bool, Agent*>* filter) const;
 
   // Run the operations in post_scheduled_ops_ (executed after RunScheduledOps)
-  void RunPostScheduledOps();
+  void RunPostScheduledOps() const;
 
   void ScheduleOps();
 };

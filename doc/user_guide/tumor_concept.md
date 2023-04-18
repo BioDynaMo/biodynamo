@@ -70,7 +70,7 @@ Afterwards, we obtain a reference to a few important objects.
   * `Param` holds our simulation parameters.
 
 ```cpp
-auto* rm = simulation.GetResourceManager();
+auto* ctxt = simulation.GetExecutionContext();
 auto* random = simulation.GetRandom();
 auto* param = simulation.GetParam();
 ```
@@ -95,7 +95,7 @@ for (size_t i = 0; i < nb_of_cells; ++i) {
   // set cell parameters
   cell->SetDiameter(7.5);
 
-  rm->AddAgent(cell);  // put the created cell in our cells structure
+  ctxt->AddAgent(cell);  // put the created cell in our cells structure
 }
 ```
 
@@ -137,7 +137,7 @@ Of course, we need to create at least one new cell that contains our `Growth` be
 Cell* cell = new Cell({20, 50, 50});
 cell->SetDiameter(6);
 cell->AddBehavior(new Growth());
-rm->AddAgent(cell);  // put the created cell in our cells structure
+ctxt->AddAgent(cell);  // put the created cell in our cells structure
 ```
 
 Run running it using `biodynamo run`. This code is now able to create and simulate 2 400 normal cells and 1 cancerous cell that will grow and divide! Complete code can be found in `demo/tumor_concept`.

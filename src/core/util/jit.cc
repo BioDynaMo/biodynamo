@@ -122,13 +122,13 @@ JitForEachDataMemberFunctor::JitForEachDataMemberFunctor(
                  "Could not find data member ", dm);
     } else {
       Log::Fatal("JitForEachDataMemberFunctor::JitForEachDataMemberFunctor",
-                 "Data member name (", dm, ") is ambigous");
+                 "Data member name (", dm, ") is ambiguous");
     }
   }
 }
 
 // -----------------------------------------------------------------------------
-void JitForEachDataMemberFunctor::Compile() {
+void JitForEachDataMemberFunctor::Compile() const {
   JitHeaders::IncludeIntoCling();
   gInterpreter->Declare(code_generator_(functor_name_, data_members_).c_str());
 }

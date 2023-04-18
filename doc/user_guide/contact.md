@@ -17,4 +17,4 @@ keywords:
   -information
 ---
 
-Please contact us at: [contact@biodynamo.org](mailto:contact@biodynamo.org)
+Please contact us at: [biodynamo-forum@googlegroups.com](mailto:biodynamo-forum@googlegroups.com)

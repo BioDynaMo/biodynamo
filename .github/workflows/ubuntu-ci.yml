@@ -10,15 +10,24 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
     runs-on: ${{ matrix.os }}
 
     steps:
+    - name: Set python openssl package
+      run: |
+        if [ "${{ env.OSVERS }}" = "ubuntu-20.04" ]; then
+          echo "PYOPENSSL=python-openssl" >> $GITHUB_ENV
+        fi
+        if [ "${{ env.OSVERS }}" = "ubuntu-22.04" ]; then
+          echo "PYOPENSSL=python3-openssl" >> $GITHUB_ENV
+        fi
+        
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
-          libreadline-dev libsqlite3-dev tk-dev python-openssl ninja-build libblas-dev liblapack-dev libgit2-dev
+          libreadline-dev libsqlite3-dev tk-dev ${{ env.PYOPENSSL }} ninja-build libblas-dev liblapack-dev libgit2-dev
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
         chmod +x cmake-3.19.3-Linux-x86_64.sh
         sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
@@ -113,27 +122,3 @@ jobs:
         cmake --build . --target show-tidy || true
         cmake --build . --target check-cpplint || true
       if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
-
-    - name: Notify Slack
-      uses: 8398a7/action-slack@v3
-      with:
-        status: custom
-        fields: workflow,job,commit,repo,ref,author,took,message
-        custom_payload: |
-          {
-            username: 'GitHub CI',
-            icon_emoji: ':octocat:',
-            attachments: [{
-              color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-              text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}\n${process.env.AS_MESSAGE}`
-            }]
-          }
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        MATRIX_CONTEXT: ${{ toJson(matrix) }} # Required when using matrix
-      # Notify Slack step should run when the following holds true:
-      #   * One of the previous steps 1) succeeded, 2) failed, or 3) was cancelled
-      #   * This workflow is triggered from our base repository (i.e. forked PRs don't
-      #     have the right to push Slack message to our channel)
-      if: ${{ ( failure() || success() || cancelled() ) && ( github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name ) }}

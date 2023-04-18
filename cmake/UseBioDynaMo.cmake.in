@@ -129,7 +129,7 @@ if (tcmalloc)
   if(NOT TCMALLOC_FOUND)
     message(FATAL_ERROR "TCMalloc not found.")
   endif()
-  message("Tcmalloc libarary found: ${TCMALLOC_LIBRARY_PATH}")
+  message("Tcmalloc library found: ${TCMALLOC_LIBRARY_PATH}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ltcmalloc -L ${TCMALLOC_LIBRARY_PATH}")
 endif()
@@ -138,7 +138,7 @@ if (jemalloc)
   if(NOT JEMALLOC_FOUND)
     message(FATAL_ERROR "jemalloc not found.")
   endif()
-  message("jemalloc libarary found: ${JEMALLOC_LIBRARY_DIR}")
+  message("jemalloc library found: ${JEMALLOC_LIBRARY_DIR}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -ljemalloc -L ${JEMALLOC_LIBRARY_DIR}")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ljemalloc -L ${JEMALLOC_LIBRARY_DIR}")
 endif()
@@ -150,8 +150,8 @@ endif()
 
 # In order to correctly compile and link the multi simulation manager with MPI,
 # you need to set CMAKE_[CXX|C]_COMPILER to [mpic++|mpicc]
-# We still however need to explicitely add the mpi.h include path to our include_directories
-# because rootcling will complaing about missing mpi.h
+# We still however need to explicitly add the mpi.h include path to our include_directories
+# because rootcling will complain about missing mpi.h
 find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
   set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
@@ -169,7 +169,7 @@ if(APPLE)
                       OUTPUT_STRIP_TRAILING_WHITESPACE)
   # After migrating to libomp 15.0.3, libomp does no longer symlink into 
   # $(brew --prefix)/opt/lib/libomp.dylib. Instead, it is located in 
-  # $(brew --prefix)/opt/libomp/.. . This fix should work accross all platforms.
+  # $(brew --prefix)/opt/libomp/.. . This fix should work across all platforms.
   # find_package(OpenMP) can be guieded with OpenMP_<lang>_INCLUDE_DIR.
   set(OpenMP_C_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")
   set(OpenMP_CXX_INCLUDE_DIR "${BREW_PREFIX}/opt/libomp/include")

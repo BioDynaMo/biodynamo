@@ -1,13 +1,13 @@
 ---
 title: "Building Biodynamo"
 date: "2019-01-01"
-path: "/docs/devguide/build/"
+path: "/docs/dev_guide/build/"
 meta_title: "BioDynaMo Dev Guide"
 meta_description: "This is the how to build page."
 toc: true
 image: ""
 next:
-    url:  "/docs/devguide/build/"
+    url:  "/docs/dev_guide/build/"
     title: "Building Biodynamo"
     description: "This is the how to build page."
 sidebar: "devguide"
@@ -17,16 +17,13 @@ keywords:
   -create
 ---
 
+## First build of BioDynaMo
+
 To build BioDynaMo from source execute the following commands:
 
-<a class="sbox" href= "/docs/userguide/installation/" target="_blank" rel="noopener">
-    <div class="sbox-content">
-    	<h4><b>Note</b></h4>
-        <p>If you are a user please follow the installation instructions in our <font color="blue"><u>User Guide</u></font>.
-        </p>
-    </div>
-</a>
-<br>
+<h4><b>Note</b></h4>
+
+If you are a new BioDynaMo user please follow the [installation](https://biodynamo.org/docs/userguide/installation/) instructions in our user guide.
 
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
@@ -51,15 +48,11 @@ The script `prerequisites.sh` is used to install all the dependencies needed by 
 to run it once before actually calling `cmake`. It will choose the specific dependencies depending on the used operating system.
 Run `./prerequisites.sh --help` to see how to use it.
 
-<a class="sbox" href= "/docs/userguide/prerequisites/" target="_blank" rel="noopener">
-    <div class="sbox-content">
-    	<h4><b>Note</b></h4>
-    	<p>On macOS the prerequisites script will use `brew` to install the needed packages.
-    If you do not have `brew` on your system, do yourself a favour and install it.
-    Please have a look to the <font color="blue"><u>prerequisites</u></font> page for more details.
-        </p>
-    </div>
-</a>
+<h4><b>Note</b></h4>
+
+On macOS the prerequisites script will use `brew` to install the needed packages.
+If you do not have `brew` on your system, do yourself a favour and install it.
+Please have a look in the [prerequisites](https://biodynamo.org/docs/userguide/prerequisites/) page for more details.
 
 ## Rebuilding BioDynaMo
 
@@ -90,11 +83,15 @@ export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
 ``` 
 
-Once finished, we hope that you want to contribute your code changes back to the BioDynaMo project. For more on how to contribute see the page on [Contributing your code](/docs/devguide/contribute).
+Once finished, we hope that you want to contribute your code changes back to the BioDynaMo project. 
+For more info on how to contribute with your code, please consult out guidelines from [here](https://github.com/BioDynaMo/biodynamo/blob/master/doc/dev_guide/contribute.md).
 
 ## CentOS 7
 
-In case of CentOS 7, you will need to run the following commands before actually calling `cmake`. This is because CentOS do not provide by default the correct C++ compilers and the correct python interpreter. Moerover, we will need to load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. You will not need them in order to run the program.
+For CentOS 7, you will need to run the following commands before actually calling `cmake`. 
+This is because CentOS do not provide by default the correct C++ compilers and the correct python interpreter. 
+Moerover, we will need to load the OpenMPI module. You will need to run these instructions only before building BioDynaMo. 
+You will not need them in order to run the program.
 
 ```bash
 export MESA_GL_VERSION_OVERRIDE=3.3
@@ -106,7 +103,8 @@ module load mpi
 
 ## CMake Build Options
 
-Our CMake build script uses a few options to influence the build process. They can be set as follows:
+Our CMake build script uses a few options to influence the build process. 
+They can be set as follows:
 
 ``` bash
 cmake -Doption=value ..
@@ -184,9 +182,10 @@ Build targets indicated with `*` always come in three different flavors.
 ## Advanced Build Options
 
 #### Use a Custom Compiler
-If you need to user a custom compilers (instead of the one automatically detected by BioDynaMo) you will need
-to set the variables: `CXX` for the C++ compiler and `CC` for the C compiler. Please not that your custom compiler
-must support the C++14 standard and must be compatible with OpenMP. The complete procedure will become:
+If you need to user a custom compilers (instead of the one automatically detected by BioDynaMo) you will need to set the variables: `CXX` for the C++ compiler and `CC` for the C compiler. 
+Please not that your custom compiler must support the C++14 standard and must be compatible with OpenMP. 
+The complete procedure will become:
+
 ```bash
 git clone https://github.com/BioDynaMo/biodynamo.git
 cd biodynamo
@@ -217,15 +216,10 @@ export Qt5_DIR=<qt5_installation_dir>/lib/cmake/Qt5
 ./install.sh
 ```
 
-<a class="sbox" target="_blank" rel="noopener">
-    <div class="sbox-content">
-    	<h4><b>Note</b></h4>
-    	<p>If you specify ParaView_DIR, then you will need to provide also the Qt5_DIR variable.
-    This is because ParaView implicitly relies on the Qt5 installation.
-        </p>
-    </div>
-</a>
-<br>
+<h4><b>Note</b></h4>
+
+If you specify `ParaView_DIR`, then you will need to provide also the `Qt5_DIR` variable as well.
+This is because ParaView implicitly relies on the Qt5 installation.
 
 
 #### Speed Up Installation Tests with a Local BioDynaMo-LFS Copy
@@ -246,12 +240,8 @@ If you want to download the files from remote LFS again execute:
 unset BDM_LOCAL_LFS
 ```
 
-<br>
-<a class="sbox" target="_blank" rel="noopener">
-    <div class="sbox-content">
-    	<h4><b>Warning</b><h4>
-    	<p>At the moment there is no check if the local copy is in synch with
-    remote. You have to ensure that yourself!
-        </p>
-    </div>
-</a>
+
+<h4><b>Warning</b><h4>
+
+At the moment there is no check if the local copy is in synch with remote. 
+You have to ensure that yourself!

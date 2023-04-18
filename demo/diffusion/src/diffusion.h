@@ -36,6 +36,12 @@ inline int Simulate(int argc, const char** argv) {
   // Define the substances that cells may secrete
   ModelInitializer::DefineSubstance(kKalium, "Kalium", 0.4, 0, 25);
 
+  // Define homogeneous Neumann boundary conditions for the substance (this is
+  // in fact the default, so this line is not necessary)
+  ModelInitializer::AddBoundaryConditions(
+      kKalium, BoundaryConditionType::kNeumann,
+      std::make_unique<ConstantBoundaryCondition>(0));
+
   // Create 8 cells in a 2x2x2 grid setup
   auto construct = [&](const Real3& position) {
     Cell* cell = new Cell(position);
@@ -49,7 +55,7 @@ inline int Simulate(int argc, const char** argv) {
   // The cell responsible for secretion
   auto* secreting_cell = new Cell({50, 50, 50});
   secreting_cell->AddBehavior(new Secretion("Kalium", 4));
-  simulation.GetResourceManager()->AddAgent(secreting_cell);
+  simulation.GetExecutionContext()->AddAgent(secreting_cell);
 
   // Run simulation for N timesteps
   simulation.GetScheduler()->Simulate(300);

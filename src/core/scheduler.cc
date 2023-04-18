@@ -150,7 +150,7 @@ void Scheduler::SimulateUntil(const std::function<bool()>& exit_condition) {
   }
 }
 
-void Scheduler::FinalizeInitialization() {
+void Scheduler::FinalizeInitialization() const {
   auto* sim = Simulation::GetActive();
   sim->GetExecutionContext()->SetupIterationAll(sim->GetAllExecCtxts());
 }
@@ -276,7 +276,7 @@ void Scheduler::TearDownOps() {
   });
 }
 
-void Scheduler::RunPreScheduledOps() {
+void Scheduler::RunPreScheduledOps() const {
   for (auto* pre_op : pre_scheduled_ops_) {
     if (pre_op->frequency_ != 0 && total_steps_ % pre_op->frequency_ == 0) {
       Timing::Time(pre_op->name_, [&]() { (*pre_op)(); });
@@ -285,7 +285,7 @@ void Scheduler::RunPreScheduledOps() {
 }
 
 // -----------------------------------------------------------------------------
-void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) {
+void Scheduler::RunAgentOps(Functor<bool, Agent*>* filter) const {
   auto* sim = Simulation::GetActive();
   auto* rm = sim->GetResourceManager();
   auto* param = sim->GetParam();
@@ -343,7 +343,7 @@ void Scheduler::RunScheduledOps() {
   TearDownOps();
 }
 
-void Scheduler::RunPostScheduledOps() {
+void Scheduler::RunPostScheduledOps() const {
   for (auto* post_op : post_scheduled_ops_) {
     if (post_op->frequency_ != 0 && total_steps_ % post_op->frequency_ == 0) {
       Timing::Time(post_op->name_, [&]() { (*post_op)(); });
@@ -368,7 +368,7 @@ void Scheduler::Execute() {
   RunPostScheduledOps();
 }
 
-void Scheduler::PrintInfo(std::ostream& out) {
+void Scheduler::PrintInfo(std::ostream& out) const {
   out << "\n" << std::string(80, '-') << "\n\n";
   out << "Scheduler information:\n";
   out << std::setw(80) << "frequency"
@@ -436,7 +436,7 @@ bool Scheduler::Restore(uint64_t* steps) {
   if (backup_->RestoreEnabled() && restore_point_ > total_steps_ + *steps) {
     total_steps_ += *steps;
     // restore requested, but not last backup was not done during this call to
-    // Simualte. Therefore, we skip it.
+    // Simulate. Therefore, we skip it.
     return true;
   } else if (backup_->RestoreEnabled() && restore_point_ > total_steps_ &&
              restore_point_ < total_steps_ + *steps) {
@@ -476,6 +476,7 @@ void Scheduler::Initialize(uint64_t steps) {
     delete progress_bar_;
     progress_bar_ = nullptr;
     progress_bar_ = new ProgressBar(steps);
+    progress_bar_->SetTimeUnit(param->progress_bar_time_unit);
   }
 
   // Update the uid generator in case the number of threads has changed.

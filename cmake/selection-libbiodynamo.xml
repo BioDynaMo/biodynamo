@@ -11,6 +11,9 @@
     <class name="bdm::ScalarField" />
     <class name="bdm::Continuum" />
     <class name="bdm::EulerGrid" />
+    <class name="bdm::EulerDepletionGrid" />
+    <class name="bdm::BoundaryCondition" />
+    <class name="bdm::ConstantBoundaryCondition" />
     <class name="bdm::RungeKuttaGrid" />
     <class name="bdm::DiffusionGrid" />
     <class name="bdm::Simulation" />
@@ -78,6 +81,8 @@
     <class name="bdm::VectorTypeWrapper<bdm::Agent*>" />
     <class name="bdm::VectorTypeWrapper<int>" />
     <class name="bdm::experimental::TimeSeries" />
+    <class name="bdm::experimental::DataTransformer" />
+    <class name="bdm::experimental::LinearTransformer" />
     <class name="bdm::experimental::TimeSeries::Data" noStreamer="true" />
     <class name="bdm::experimental::Reducer<uint64_t>" />
     <class name="bdm::experimental::Reducer<float>" />

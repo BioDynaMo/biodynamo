@@ -32,23 +32,20 @@ class Secretion : public Behavior {
   Secretion() = default;
   explicit Secretion(const std::string& substance, real_t quantity = 1,
                      InteractionMode mode = InteractionMode::kAdditive)
-      : substance_(substance), quantity_(quantity), mode_(mode) {
+      : quantity_(quantity), mode_(mode) {
     dgrid_ = Simulation::GetActive()->GetResourceManager()->GetDiffusionGrid(
         substance);
   }
 
   explicit Secretion(DiffusionGrid* dgrid, real_t quantity = 1,
                      InteractionMode mode = InteractionMode::kAdditive)
-      : dgrid_(dgrid), quantity_(quantity), mode_(mode) {
-    substance_ = dgrid->GetContinuumName();
-  }
+      : dgrid_(dgrid), quantity_(quantity), mode_(mode) {}
 
   virtual ~Secretion() = default;
 
   void Initialize(const NewAgentEvent& event) override {
     Base::Initialize(event);
     auto* other = bdm_static_cast<Secretion*>(event.existing_behavior);
-    substance_ = other->substance_;
     dgrid_ = other->dgrid_;
     quantity_ = other->quantity_;
   }
@@ -59,7 +56,6 @@ class Secretion : public Behavior {
   }
 
  private:
-  std::string substance_;
   DiffusionGrid* dgrid_ = nullptr;
   real_t quantity_ = 1;
   InteractionMode mode_ = InteractionMode::kAdditive;

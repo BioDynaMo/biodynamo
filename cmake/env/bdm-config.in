@@ -129,7 +129,7 @@ while test $# -gt 0; do
 
   case $1 in
     --arch)
-      ### Output the arcitecture (compiler/OS combination)
+      ### Output the architecture (compiler/OS combination)
       out="$out $arch"
       ;;
     --platform)

@@ -69,7 +69,7 @@ void ExclusivePrefixSum(T* v, uint64_t n) {
 }
 
 // -----------------------------------------------------------------------------
-// if search_val is found in container, return right-most occurence.
+// if search_val is found in container, return right-most occurrence.
 // If not return the index of the right-most element that is smaller.
 // If no smaller element exists, return element at index 0
 template <typename TSearch, typename TContainer>

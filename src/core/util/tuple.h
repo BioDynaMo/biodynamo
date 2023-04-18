@@ -90,7 +90,7 @@ void Apply(TTuple* t, size_t index, TFunction&& f) {
                 std::make_index_sequence<std::tuple_size<TTuple>::value>());
 }
 
-/// Return the index of the first occurence of type T within the variadic
+/// Return the index of the first occurrence of type T within the variadic
 /// template parameter Types.
 template <typename T, typename... Types>
 inline constexpr int GetIndex() {

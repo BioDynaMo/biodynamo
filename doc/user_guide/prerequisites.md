@@ -24,7 +24,7 @@ keywords:
 This page lists the prerequisite packages that need to be installed in order to build correctly BioDynaMo.
 BioDynaMo provides also an automated procedure to install all the needed libraries.
 
-## Ubuntu 18.04 and 20.04
+## Ubuntu 20.04 and 22.04
 
 ### Required Packages
 
@@ -54,7 +54,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
   * **tk-dev**: Toolkit for Tcl and X11 (default version) - development files
   * **libffi-dev**: Foreign Function Interface library (development files)
   * **liblzma-dev**: XZ-format compression library - development files
-  * **python-openssl**: Python wrapper around the OpenSSL library
+  * **python(3)-openssl**: Python wrapper around the OpenSSL library
 
 ### Optional Packages
 
@@ -85,12 +85,19 @@ sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
 We install pyenv as the Python Version Management tool to be able to switch
 to a supported Python environment for BioDynaMo. This will not interfere with
-your system's Python installation.
-
+your system's Python installation. On Ubuntu 20.04, run
 ```bash
 sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
   libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
-
+```
+On Ubuntu 22.04, run
+```bash
+sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+  libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python3-openssl
+```
+Afterwards, run the following command independent of the specific Ubuntu
+version.
+```bash
 curl https://pyenv.run | bash
 export PATH="$HOME/.pyenv/bin:$PATH"
 eval "$(pyenv init --path)"
@@ -215,7 +222,7 @@ Requirements to build on macOS are:
  * macOS Catalina (10.15) or higher
  * [Xcode](https://itunes.apple.com/us/app/xcode/id497799835) and the Command Line Tools (CLT) for Xcode: `xcode-select --install`  
     (or from [developer.apple.com/downloads](https://developer.apple.com/downloads))
- * An up to date [Homebrew](https://brew.sh) instalation (MacPorts and Fink are not supported)
+ * An up to date [Homebrew](https://brew.sh) installation (MacPorts and Fink are not supported)
  * A Bourne-compatible shell for installation (e.g. `bash` or `zsh`)
 
 ### Required Packages
