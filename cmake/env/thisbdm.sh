@@ -368,7 +368,7 @@ _source_thisbdm()
       eval "$(pyenv init --path)" || return 1
       eval "$(pyenv init -)" || return 1
     fi
-    pyenv shell 3.9.1 || return 1
+    pyenv shell @pythonvers@ || return 1
 
     # Location of jupyter executable (installed with `pip install` command)
     export PATH="$PYENV_ROOT/versions/@pythonvers@/bin:$PATH"
