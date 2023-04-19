@@ -1,5 +1,5 @@
 Bootstrap:docker
-From:ubuntu:18.04
+From:ubuntu:20.04
 
 %environment
 
@@ -7,6 +7,15 @@ From:ubuntu:18.04
 
   export DEBIAN_FRONTEND=noninteractive 
   export TZ=Europe/Berlin
+  unset Qt5_DIR
+  unset ParaView_DIR
+  unset ROOT_INCLUDE_PATH
+  unset CMAKE_PREFIX_PATH
+  unset PYENV_ROOT
+  unset BDMSYS
+  unset CC
+  unset CXX
+
 
   apt-get -y update &&
   apt-get -y install python &&
@@ -63,7 +72,10 @@ From:ubuntu:18.04
   apt-get -y install xz-utils &&
   apt-get -y install zlib1g-dev &&
   apt-get -y install sudo &&
-  apt-get -y install software-properties-common
+  apt-get -y install software-properties-common &&
+  apt-get -y install libblas-dev &&
+  apt-get -y install liblapack-dev &&
+  apt-get -y install nano
 
   apt-get -y install locales locales-all
   dpkg-reconfigure locales
@@ -78,19 +90,17 @@ From:ubuntu:18.04
   conda update -y --all
   apt -y install git
   apt -y install curl
-  sudo  rm -rf ~/.pyenv
-  curl https://pyenv.run | bash
-  export PATH="$HOME/.pyenv/bin:$PATH"
-  eval "$(pyenv init --path)"
-  eval "$(pyenv virtualenv-init -)"
-  eval "$(pyenv init -)"
 
-  export PYENV_ROOT="/opt/pyenv"
-  export PATH="/opt/pyenv/bin:$PATH" 
+  export PYENV_ROOT="/opt/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH" 
   curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+  eval "$(pyenv init --path)"
+  eval "$(pyenv init -)"
   PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
-  export PATH="/opt/pyenv/versions/3.9.1/bin:$PATH"
-  export PATH="/opt/pyenv/versions/3.9.1/bin/:$PATH"
+  echo 'export PATH="/opt/.pyenv/versions/3.9.1/bin/:$PATH"' >> $SINGULARITY_ENVIRONMENT
+  export PATH="/opt/.pyenv/versions/3.9.1/bin/:$PATH"
+
+  pyenv shell 3.9.1
 
   wget https://bootstrap.pypa.io/get-pip.py
   python3 get-pip.py
@@ -107,15 +117,14 @@ From:ubuntu:18.04
   sudo apt-get -y install ninja-build
 
   git clone https://github.com/BioDynaMo/biodynamo.git
-  cd biodynamo 
-  export SILENT_INSTALL=1
-  ./prerequisites.sh all
+  cd biodynamo
 
-  cmake -G Ninja \
-  -Dparaview=OFF \
-  -DCMAKE_BUILD_TYPE=Release \
-  -B build
+  mkdir build
+  cd build
+
+  cmake -G Ninja -Dparaview=OFF -DCMAKE_BUILD_TYPE=Release ..
   
-  cmake --build build --parallel 
+  ninja -j $(($(nproc) - 1)) 
+  
 
 %runscript

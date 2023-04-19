@@ -247,6 +247,14 @@ function source_thisbdm
 
         pyenv init --path | source; or return 1
         pyenv init - | source; or return 1
+
+        if test -n "$SINGULARITY_CONTAINER"
+            pyenv init --path --no-rehash | source; or return 1
+            pyenv init - --no-rehash | source; or return 1        
+        else
+            pyenv init --path | source; or return 1
+            pyenv init - | source; or return 1
+        fi
         pyenv shell @pythonvers@; or return 1
 
         # Location of jupyter executable (installed with `pip install` command)

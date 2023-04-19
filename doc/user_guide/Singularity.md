@@ -48,8 +48,9 @@ sudo singularity build Singularity.sif Singularity
 ```
 Then simply run the BioDynaMo singularity container using:
 ```bash
-singularity run Singularity.sif
+singularity run --cleanenv Singularity.sif
 ```
+where the ``--cleanenv`` option clears out all the environment variables set in the host machine to avoid conflicts.
 ## Method 2, Export image from local PC to HPC.
 If you cannot utilise either sudo or fakeroot on the HPC, we can instead build the BioDynaMo image on our local PC and export the image.
 This works similar to method 1 but with a change in order. Firstly, we must build our image on the local PC with sudo rights:
@@ -66,8 +67,9 @@ scp [user@]SRC_LOCALPC/SingularityFileLocation:]Singularity.sif ~/
 ```
 Finally we once again run the Singularity image on the HPC:
 ```bash
-singularity run Singularity.sif
+singularity run --cleanenv Singularity.sif
 ```
+where the ``--cleanenv`` option clears out all the environment variables set in the host machine to avoid conflicts.
 
 If you wish to read further about Singularity, you can find a substantial amount of information on the 
 singularity home website: https://sylabs.io/guides/3.5/user-guide/introduction.html. Including many tutorials and more 
