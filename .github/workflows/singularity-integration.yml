@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build singularity image...
         run: |
-          singularity build --fakeroot Singularity.sif Singularity
+          singularity build Singularity.sif Singularity
           
       - name: Source Biodynamo and run demo...
         run: |
