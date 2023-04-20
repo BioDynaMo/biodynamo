@@ -54,6 +54,9 @@ From:ubuntu:20.04
   pip install cmake --upgrade
   pyenv global 3.9.1
   
+  git config --system user.name "Test User"
+  git config --system user.email user@test.com
+
   export BDM_BRANCH="master"
   git clone https://github.com/BioDynaMo/biodynamo.git
   cd biodynamo
