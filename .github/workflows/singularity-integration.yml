@@ -19,7 +19,7 @@ jobs:
       - name: Set correct branch...
         run: |
           export GITHUB_BRANCH_NAME=${{ github.head_ref || github.ref_name }}
-          sed -i "s|BDM_BRANCH=\"master\"|BDM_BRANCH=\"$GITHUB_BRANCH_NAME/\"|" Singularity
+          sed -i "s|BDM_BRANCH=\"master\"|BDM_BRANCH=\"$GITHUB_BRANCH_NAME\"|" Singularity
 
       - name: Build singularity image...
         run: |

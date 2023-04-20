@@ -18,66 +18,11 @@ From:ubuntu:20.04
 
 
   apt-get -y update &&
-  apt-get -y install python &&
-  apt-get -y install python3 &&
-  apt-get -y install git &&
-  apt-get -y install curl &&
-  apt-get -y install make &&
-  apt-get -y install gcc &&
-  apt-get -y install g++ &&
-  apt-get -y install wget &&
-  apt-get -y install wamerican && 
-  apt-get -y install libffi-dev &&
-  apt-get -y install libncurses5-dev &&
-  apt-get -y install zlib1g &&
-  apt-get -y install zlib1g-dev &&
-  apt-get -y install bzip2 &&
-  apt-get -y install zlib1g-dev && 
-  apt-get -y install aptitude &&
-  aptitude -y install libreadline-dev &&
-  apt-get -y install libssl-dev &&
-  apt-get -y install libsqlite3-dev &&
-  apt-get -y install apt-utils &&
-  apt-get -y install openmpi-bin &&
-  apt-get -y install libopenmpi-dev &&
-  apt-get -y install libxkbcommon-x11-dev &&
-  apt-get -y install bsdmainutils &&
-  apt-get -y install clang &&
-  apt-get -y install clang-format &&
-  apt-get -y install clang-tidy &&
-  apt-get -y install doxygen &&
-  apt-get -y install graphviz &&
-  apt-get -y install libxml2-dev &&
-  apt-get -y install llvm-7 &&
-  apt-get -y install llvm-7-dev &&
-  apt-get -y install llvm-7-runtime &&
-  apt-get -y install valgrind &&
-  apt-get -y install libgsl-dev &&
-  apt-get -y install freeglut3-dev &&
-  apt-get -y install libbz2-dev &&
-  apt-get -y install libnuma-dev &&
-  apt-get -y install libomp5 &&
-  apt-get -y install libomp-dev &&
-  apt-get -y install libopenmpi-dev &&
-  apt-get -y install libpthread-stubs0-dev &&
-  apt-get -y install zlib1g-dev &&
-  apt-get -y install libbz2-dev &&
-  apt-get -y install libffi-dev &&
-  apt-get -y install liblzma-dev &&
-  apt-get -y install libreadline-dev &&
-  apt-get -y install libsqlite3-dev &&
-  apt-get -y install libssl-dev &&
-  apt-get -y install python-openssl &&
-  apt-get -y install tk-dev &&
-  apt-get -y install xz-utils &&
-  apt-get -y install zlib1g-dev &&
-  apt-get -y install sudo &&
-  apt-get -y install software-properties-common &&
-  apt-get -y install libblas-dev &&
-  apt-get -y install liblapack-dev &&
-  apt-get -y install nano
-
-  apt-get -y install locales locales-all
+  apt-get -y install python python3 git curl make gcc g++ wget wamerican wget wamerican libffi-dev libncurses5-dev zlib1g zlib1g-dev bzip2 aptitude libreadline-dev libssl-dev libsqlite3-dev apt-utils \
+    openmpi-bin libopenmpi-dev libxkbcommon-x11-dev bsdmainutils clang clang-format clang-tidy doxygen graphviz libxml2-dev llvm-7 llvm-7-dev llvm-7-runtime valgrind libgsl-dev freeglut3-dev \
+    libbz2-dev libnuma-dev libomp5 libomp-dev libopenmpi-dev libpthread-stubs0-dev zlib1g-dev libbz2-dev libffi-dev liblzma-dev libreadline-dev libsqlite3-dev libssl-dev python-openssl tk-dev \
+    xz-utils zlib1g-dev sudo software-properties-common libblas-dev liblapack-dev nano locales locales-all ninja-build python3-pip freeglut3-dev valgrind
+  
   dpkg-reconfigure locales
   locale-gen
   
@@ -88,8 +33,6 @@ From:ubuntu:20.04
   export PATH="/miniconda3/bin:$PATH"
   conda install -y -c conda-forge pip numpy 
   conda update -y --all
-  apt -y install git
-  apt -y install curl
 
   export PYENV_ROOT="/opt/.pyenv"
   export PATH="$PYENV_ROOT/bin:$PATH" 
@@ -107,15 +50,10 @@ From:ubuntu:20.04
   python3 -m pip install -U pip
   python3 -m pip install --upgrade pip
   python3 -m pip install numpy
-  apt-get install -y python3-pip
-  apt-get install -y freeglut3-dev valgrind
 
   pip install cmake --upgrade
   pyenv global 3.9.1
   
-  apt-get -y dist-upgrade   
-  sudo apt-get -y install ninja-build
-
   export BDM_BRANCH="master"
   git clone https://github.com/BioDynaMo/biodynamo.git
   cd biodynamo
