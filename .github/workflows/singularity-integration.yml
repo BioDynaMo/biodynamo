@@ -16,6 +16,11 @@ jobs:
       options: "--privileged --workdir /data"
     steps:
       - uses: actions/checkout@v2
+      - name: Set correct branch...
+        run: |
+          export GITHUB_BRANCH_NAME=${{ github.ref_name }}
+          sed -i "s|BDM_BRANCH=\"master\"|BDM_BRANCH=\"$GITHUB_BRANCH_NAME/\"|" Singularity
+
       - name: Build singularity image...
         run: |
           singularity build Singularity.sif Singularity

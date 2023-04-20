@@ -116,8 +116,10 @@ From:ubuntu:20.04
   apt-get -y dist-upgrade   
   sudo apt-get -y install ninja-build
 
+  export BDM_BRANCH="master"
   git clone https://github.com/BioDynaMo/biodynamo.git
   cd biodynamo
+  git checkout $BDM_BRANCH
 
   mkdir build
   cd build
