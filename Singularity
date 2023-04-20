@@ -122,7 +122,7 @@ From:ubuntu:20.04
   mkdir build
   cd build
 
-  cmake -G Ninja -Dparaview=OFF -DCMAKE_BUILD_TYPE=Release ..
+  cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
   
   ninja -j $(($(nproc) - 1)) 
   
