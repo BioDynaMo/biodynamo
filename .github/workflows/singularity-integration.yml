@@ -24,9 +24,7 @@ jobs:
           echo exampleuser:100000:65536 >> /etc/subuid
           echo exampleuser:100000:65536 >> /etc/subgid
           su - exampleuser
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+          echo $USER
 
       - name: Set correct branch...
         run: |
@@ -35,6 +33,8 @@ jobs:
 
       - name: Build singularity image...
         run: |
+          su - exampleuser
+          echo $USER
           singularity build --fakeroot Singularity.sif Singularity
           
       - name: Source Biodynamo and run demo...
