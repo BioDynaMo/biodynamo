@@ -17,15 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Create non-root user...
         run: |
+          set -xT
           adduser --disabled-password --gecos "" exampleuser
           echo exampleuser:100000:65536 >> /etc/subuid
           echo exampleuser:100000:65536 >> /etc/subgid
-          su exampleuser
+          su - exampleuser
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Set correct branch...
         run: |
