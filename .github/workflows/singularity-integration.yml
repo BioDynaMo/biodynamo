@@ -28,4 +28,4 @@ jobs:
       - name: Source Biodynamo and run demo...
         run: |
           singularity exec --cleanenv -i Singularity.sif bash -c "source /biodynamo/build/third_party/root/bin/thisroot.sh && source /biodynamo/build/bin/thisbdm.sh && \
-            cd $(mktemp -d) && bdm demo tumor_concept && cd tumor_concept && bdm clean && bdm run"
+            export DISPLAY=:99.0 && /biodynamo/util/xvfb-initd.sh start && cd $(mktemp -d) && bdm demo tumor_concept && cd tumor_concept && bdm clean && bdm run"
