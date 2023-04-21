@@ -19,11 +19,11 @@ jobs:
 
       - name: Create non-root user...
         run: |
-         apk update
-         adduser --disabled-password --gecos "" exampleuser
-         echo exampleuser:100000:65536 >> /etc/subuid
-         echo exampleuser:100000:65536 >> /etc/subgid
-         su exampleuser
+          apk update
+          adduser --disabled-password --gecos "" exampleuser
+          echo exampleuser:100000:65536 >> /etc/subuid
+          echo exampleuser:100000:65536 >> /etc/subgid
+          su exampleuser
 
       - name: Set correct branch...
         run: |
