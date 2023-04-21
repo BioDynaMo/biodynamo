@@ -19,7 +19,7 @@ jobs:
 
       - name: Create non-root user...
         run: |
-          set -xT
+          set -x
           adduser --disabled-password --gecos "" exampleuser
           echo exampleuser:100000:65536 >> /etc/subuid
           echo exampleuser:100000:65536 >> /etc/subgid
