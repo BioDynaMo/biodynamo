@@ -15,13 +15,12 @@ jobs:
       image: quay.io/singularity/singularity:v3.9.0
       options: "--privileged --workdir /data"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Create non-root user...
+      - name: Add root user to subuid and subgid...
         run: |
-          adduser --disabled-password --gecos "" exampleuser
-          echo exampleuser:100000:65536 >> /etc/subuid
-          echo exampleuser:100000:65536 >> /etc/subgid
+          echo root:100000:65536 >> /etc/subuid
+          echo root:100000:65536 >> /etc/subgid
 
       - name: Set correct branch...
         run: |
@@ -30,12 +29,8 @@ jobs:
 
       - name: Build singularity image...
         run: |
-          su -s /bin/bash -c 'singularity build --fakeroot Singularity.sif Singularity' exampleuser
+          singularity build --fakeroot Singularity.sif Singularity
           
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Source Biodynamo and run demo...
         run: |
           singularity exec --cleanenv -i Singularity.sif bash -c "source /biodynamo/build/third_party/root/bin/thisroot.sh && source /biodynamo/build/bin/thisbdm.sh && \
