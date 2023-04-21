@@ -16,6 +16,9 @@ jobs:
       options: "--privileged --workdir /data"
     steps:
       - uses: actions/checkout@v2
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v2
+
       - name: Set correct branch...
         run: |
           export GITHUB_BRANCH_NAME=${{ github.head_ref || github.ref_name }}
