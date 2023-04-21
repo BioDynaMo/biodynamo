@@ -15,11 +15,13 @@ jobs:
       image: quay.io/singularity/singularity:v3.9.0
       options: "--privileged --workdir /data"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v2
 
       - name: Create non-root user...
         run: |
-          apk update
           adduser --disabled-password --gecos "" exampleuser
           echo exampleuser:100000:65536 >> /etc/subuid
           echo exampleuser:100000:65536 >> /etc/subgid
