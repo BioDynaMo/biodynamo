@@ -15,7 +15,7 @@ jobs:
       image: quay.io/singularity/singularity:v3.9.0
       options: "--privileged --workdir /data"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Add root user to subuid and subgid...
         run: |
@@ -26,6 +26,9 @@ jobs:
         run: |
           export GITHUB_BRANCH_NAME=${{ github.head_ref || github.ref_name }}
           sed -i "s|BDM_BRANCH=\"master\"|BDM_BRANCH=\"$GITHUB_BRANCH_NAME\"|" Singularity
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Build singularity image...
         run: |
