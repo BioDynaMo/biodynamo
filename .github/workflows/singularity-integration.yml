@@ -19,8 +19,8 @@ jobs:
 
       - name: Add root user to subuid and subgid...
         run: |
-          echo root:0:10000000 >> /etc/subuid
-          echo root:0:10000000 >> /etc/subgid
+          echo root:100000:65536 >> /etc/subuid
+          echo root:100000:65536 >> /etc/subgid
 
       - name: Set correct branch...
         run: |
