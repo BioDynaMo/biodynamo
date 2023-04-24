@@ -13,11 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/proc.h"
+#include "core/stdfilesystem.h"
 #include <unistd.h>
-#include <experimental/filesystem>
 #include "core/util/log.h"
-
-namespace fs = std::experimental::filesystem;
 
 #ifdef LINUX
 

@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <experimental/filesystem>
 #include <fstream>
 #include <memory>
 #include <ostream>
@@ -29,6 +28,7 @@
 #include <vector>
 
 #include "bdm_version.h"
+#include "core/stdfilesystem.h"
 #include "core/agent/agent_uid_generator.h"
 #include "core/analysis/time_series.h"
 #include "core/environment/environment.h"
@@ -55,8 +55,6 @@
 
 #include <TEnv.h>
 #include <TROOT.h>
-
-namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 

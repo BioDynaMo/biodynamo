@@ -11,23 +11,20 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
+#ifndef CORE_STDFILESYSTEM_H_
+#define CORE_STDFILESYSTEM_H_
 
-#include "core/stdfilesystem.h"
-#include "core/util/filesystem.h"
-#include <string>
+#ifdef __APPLE__
+#ifdef _LIBCPP_DEPRECATED_EXPERIMENTAL_FILESYSTEM
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::__fs::filesystem;
+#endif
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
 
-namespace bdm {
-
-uint64_t RemoveDirectoryContents(const std::string& directory) {
-  fs::path dir = directory;
-  if (!fs::is_directory(dir) || fs::is_empty(dir)) {
-    return 0;
-  }
-  auto files_removed = fs::remove_all(directory);
-  fs::create_directory(directory);
-  // subtract 1 because we don't count the removal of `directory`
-  // itself.
-  return files_removed - 1;
-}
-
-}  // namespace bdm
+#endif  // CORE_STDFILESYSTEM_H_
