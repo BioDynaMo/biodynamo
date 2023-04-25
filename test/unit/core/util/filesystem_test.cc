@@ -13,9 +13,9 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/filesystem.h"
-#include "core/stdfilesystem.h"
 #include <gtest/gtest.h>
 #include <fstream>
+#include "core/stdfilesystem.h"
 
 namespace bdm {
 

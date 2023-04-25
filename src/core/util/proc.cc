@@ -13,8 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/proc.h"
-#include "core/stdfilesystem.h"
 #include <unistd.h>
+#include "core/stdfilesystem.h"
 #include "core/util/log.h"
 
 #ifdef LINUX

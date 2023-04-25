@@ -16,8 +16,8 @@
 #include <gtest/gtest.h>
 
 #include "biodynamo.h"
-#include "core/visualization/visualization_adaptor.h"
 #include "core/stdfilesystem.h"
+#include "core/visualization/visualization_adaptor.h"
 #include "neuroscience/neuroscience.h"
 #include "unit/test_util/test_util.h"
 
