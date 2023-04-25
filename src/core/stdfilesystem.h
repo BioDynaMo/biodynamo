@@ -14,6 +14,11 @@
 #ifndef CORE_STDFILESYSTEM_H_
 #define CORE_STDFILESYSTEM_H_
 
+// Use this header only in source files, not other headers
+
+// Hide headers from Cling
+#if (!defined(__CLING__) && !defined(__ROOTCLING__))
+
 #ifdef __APPLE__
 #ifdef _LIBCPP_DEPRECATED_EXPERIMENTAL_FILESYSTEM
 #include <experimental/filesystem>
@@ -26,5 +31,7 @@ namespace fs = std::__fs::filesystem;
 #include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
 #endif
+
+#endif  // (!defined(__CLING__) && !defined(__ROOTCLING__))
 
 #endif  // CORE_STDFILESYSTEM_H_
