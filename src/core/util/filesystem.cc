@@ -13,10 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/filesystem.h"
-#include <experimental/filesystem>
 #include <string>
-
-namespace fs = std::experimental::filesystem;
+#include "core/stdfilesystem.h"
 
 namespace bdm {
 

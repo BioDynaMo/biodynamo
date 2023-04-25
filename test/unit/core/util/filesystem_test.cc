@@ -14,10 +14,8 @@
 
 #include "core/util/filesystem.h"
 #include <gtest/gtest.h>
-#include <experimental/filesystem>
 #include <fstream>
-
-namespace fs = std::experimental::filesystem;
+#include "core/stdfilesystem.h"
 
 namespace bdm {
 

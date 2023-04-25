@@ -15,7 +15,7 @@ jobs:
         sudo apt install clang-format
 
     - name: Checkout BioDynaMo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Run clang-format code style check
       run: |
