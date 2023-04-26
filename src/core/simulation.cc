@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <experimental/filesystem>
 #include <fstream>
 #include <memory>
 #include <ostream>
@@ -41,6 +40,7 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
+#include "core/stdfilesystem.h"
 #include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
@@ -55,8 +55,6 @@
 
 #include <TEnv.h>
 #include <TROOT.h>
-
-namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 

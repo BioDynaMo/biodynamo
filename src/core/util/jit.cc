@@ -12,7 +12,6 @@
 //
 // -----------------------------------------------------------------------------
 
-#include <experimental/filesystem>
 #include <stack>
 
 #include <TClass.h>
@@ -21,11 +20,10 @@
 #include <TInterpreter.h>
 #include <TList.h>
 
+#include "core/stdfilesystem.h"
 #include "core/util/jit.h"
 #include "core/util/log.h"
 #include "core/util/string.h"
-
-namespace fs = std::experimental::filesystem;
 
 namespace bdm {
 
