@@ -16,6 +16,23 @@ jobs:
       options: "--privileged --workdir /data"
     steps:
       - uses: actions/checkout@v3
+
+      - name: Add root user to subuid and subgid...
+        run: |
+          echo root:100000:65536 >> /etc/subuid
+          echo root:100000:65536 >> /etc/subgid
+
+      - name: Set correct branch...
+        run: |
+          export GITHUB_BRANCH_NAME=${{ github.head_ref || github.ref_name }}
+          sed -i "s|BDM_BRANCH=\"master\"|BDM_BRANCH=\"$GITHUB_BRANCH_NAME\"|" Singularity
+
       - name: Build singularity image...
         run: |
-          singularity build Singularity.sif Singularity
+          chmod 777 .
+          singularity build --fakeroot Singularity.sif Singularity
+          
+      - name: Source Biodynamo and run demo...
+        run: |
+          singularity exec --cleanenv -i Singularity.sif bash -c "source /biodynamo/build/third_party/root/bin/thisroot.sh && source /biodynamo/build/bin/thisbdm.sh && \
+            export DISPLAY=:99.0 && /biodynamo/util/xvfb-initd.sh start && cd $(mktemp -d) && bdm demo tumor_concept && cd tumor_concept && bdm clean && bdm run"

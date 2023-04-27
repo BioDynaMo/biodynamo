@@ -361,8 +361,14 @@ _source_thisbdm()
     fi
     export PATH="$PYENV_ROOT/bin:$PATH"
 
-    eval "$(pyenv init --path)" || return 1
-    eval "$(pyenv init -)" || return 1
+    # Rehashing is not possible within a read-only Singularity container
+    # and will cause sourcing of thisbdm to get stuck
+    if [ -n "$SINGULARITY_CONTAINER" ]; then
+      PYENV_NO_REHASH="--no-rehash"
+    fi
+
+    eval "$(pyenv init --path $PYENV_NO_REHASH)" || return 1
+    eval "$(pyenv init - $PYENV_NO_REHASH)" || return 1
     pyenv shell @pythonvers@ || return 1
 
     # Location of jupyter executable (installed with `pip install` command)
