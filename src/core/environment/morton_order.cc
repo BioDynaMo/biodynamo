@@ -22,7 +22,7 @@ namespace bdm {
 template <typename T>
 class Stack {
  public:
-  Stack(uint64_t max_elements) { data_.resize(max_elements); }
+  explicit Stack(uint64_t max_elements) { data_.resize(max_elements); }
 
   void Push(const T& el) {
     data_[++top_] = el;
