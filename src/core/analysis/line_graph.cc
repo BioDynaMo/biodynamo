@@ -32,7 +32,15 @@ LineGraph::LineGraph(const TimeSeries* ts, const std::string& title,
                      const std::string& xaxis_title,
                      const std::string& yaxis_title, bool legend,
                      const Style* style, int width, int height)
-    : ts_(ts), s_(style->GetTStyle()) {
+    : ts_(ts) {
+  if (!ts_) {
+    Log::Fatal("LineGraph::LineGraph",
+               "The provided TimeSeries is a nullptr. Operation aborted.");
+    return;
+  }
+  if (style) {
+    s_ = style->GetTStyle();
+  }
   if (s_) {
     s_->cd();
   }
