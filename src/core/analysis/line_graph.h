@@ -17,6 +17,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "core/analysis/style.h"
 #include "core/real_t.h"
 #include "core/util/root.h"
 
@@ -39,7 +40,7 @@ class LineGraph {
   LineGraph(const TimeSeries* ts, const std::string& title = "",
             const std::string& xaxis_title = "",
             const std::string& yaxis_title = "", bool legend = true,
-            TStyle* style = nullptr, int width = 700, int height = 500);
+            const Style* style = nullptr, int width = 700, int height = 500);
 
   ~LineGraph();
 
