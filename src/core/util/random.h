@@ -33,7 +33,7 @@ template <typename TSample>
 class DistributionRng {
  public:
   DistributionRng() = default;
-  DistributionRng(TRootIOCtor*) {}
+  explicit DistributionRng(TRootIOCtor*) {}
   virtual ~DistributionRng() = default;
   /// Draws a sample from the distribution
   TSample Sample();
@@ -89,7 +89,7 @@ class GausRng : public DistributionRng<real_t> {
 // -----------------------------------------------------------------------------
 class ExpRng : public DistributionRng<real_t> {
  public:
-  ExpRng(real_t tau);
+  explicit ExpRng(real_t tau);
   virtual ~ExpRng();
 
  private:
@@ -113,7 +113,7 @@ class LandauRng : public DistributionRng<real_t> {
 // -----------------------------------------------------------------------------
 class PoissonDRng : public DistributionRng<real_t> {
  public:
-  PoissonDRng(real_t mean);
+  explicit PoissonDRng(real_t mean);
   virtual ~PoissonDRng();
 
  private:
@@ -137,7 +137,8 @@ class BreitWignerRng : public DistributionRng<real_t> {
 // -----------------------------------------------------------------------------
 class UserDefinedDistRng1D : public DistributionRng<real_t> {
  public:
-  UserDefinedDistRng1D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
+  explicit UserDefinedDistRng1D(TRootIOCtor* ioctor)
+      : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng1D(TF1* function, const char* option);
   virtual ~UserDefinedDistRng1D();
   void Draw(const char* option = "");
@@ -154,7 +155,8 @@ class UserDefinedDistRng1D : public DistributionRng<real_t> {
 // -----------------------------------------------------------------------------
 class UserDefinedDistRng2D : public DistributionRng<real_t> {
  public:
-  UserDefinedDistRng2D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
+  explicit UserDefinedDistRng2D(TRootIOCtor* ioctor)
+      : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng2D(TF2* function, const char* option);
   virtual ~UserDefinedDistRng2D();
   void Draw(const char* option = "");
@@ -172,7 +174,8 @@ class UserDefinedDistRng2D : public DistributionRng<real_t> {
 // -----------------------------------------------------------------------------
 class UserDefinedDistRng3D : public DistributionRng<real_t> {
  public:
-  UserDefinedDistRng3D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
+  explicit UserDefinedDistRng3D(TRootIOCtor* ioctor)
+      : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng3D(TF3* function, const char* option);
   virtual ~UserDefinedDistRng3D();
   void Draw(const char* option = "");
@@ -246,7 +249,7 @@ class BinomialRng : public DistributionRng<int> {
 // -----------------------------------------------------------------------------
 class PoissonRng : public DistributionRng<int> {
  public:
-  PoissonRng(real_t mean);
+  explicit PoissonRng(real_t mean);
   virtual ~PoissonRng();
 
  private:
