@@ -41,7 +41,8 @@ TEST(ResourceManagerTest, ForEachAgentFilter) {
   rm->ForEachAgent(
       [&](Agent* a) {  // NOLINT
         counter++;
-        switch (a->GetUid() - ref_uid) {
+        switch (static_cast<uint64_t>(a->GetUid()) -
+                static_cast<uint64_t>(ref_uid)) {
           case 0:
             EXPECT_EQ(0, dynamic_cast<TestAgent*>(a)->GetData());
             break;
@@ -63,7 +64,8 @@ TEST(ResourceManagerTest, ForEachAgentFilter) {
   rm->ForEachAgent(
       [&](Agent* a) {  // NOLINT
         counter++;
-        switch (a->GetUid() - ref_uid) {
+        switch (static_cast<uint64_t>(a->GetUid()) -
+                static_cast<uint64_t>(ref_uid)) {
           case 1:
             EXPECT_EQ(1, dynamic_cast<TestAgent*>(a)->GetData());
             break;

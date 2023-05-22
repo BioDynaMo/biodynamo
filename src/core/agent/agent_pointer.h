@@ -90,12 +90,12 @@ class AgentPointer {
 
   uint64_t GetUidAsUint64() const {
     if (*this == nullptr) {
-      return AgentUid();
+      return static_cast<uint64_t>(AgentUid());
     }
     if (gAgentPointerMode == AgentPointerMode::kIndirect) {
-      return d_.uid;
+      return static_cast<uint64_t>(d_.uid);
     } else {
-      return d_.agent->GetUid();
+      return static_cast<uint64_t>(d_.agent->GetUid());
     }
   }
 

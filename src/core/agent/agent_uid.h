@@ -90,7 +90,7 @@ class AgentUid {
     return *this;
   }
 
-  operator uint64_t() const {
+  explicit operator uint64_t() const {
     return (static_cast<uint64_t>(reused_) << 32) |
            static_cast<uint64_t>(index_);
   }

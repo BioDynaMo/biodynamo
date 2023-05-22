@@ -91,13 +91,13 @@ TEST(AgentUidTest, MinusOperator) {
 
 TEST(AgentUidTest, uint64_tOperator) {
   AgentUid uid(123, 0);
-  uint64_t idx = uid;
+  uint64_t idx = static_cast<uint64_t>(uid);
   EXPECT_EQ(idx, 123u);
 }
 
 TEST(AgentUidTest, uint64_tOperator2) {
   AgentUid uid(123, 2);
-  uint64_t idx = uid;
+  uint64_t idx = static_cast<uint64_t>(uid);
   EXPECT_EQ(idx, 8589934715u);  // (2 << 32) | 123u);
 }
 

@@ -72,7 +72,8 @@ inline void RunForEachAgentTest() {
   uint64_t counter = 0;
   rm->ForEachAgent([&](Agent* element) {  // NOLINT
     counter++;
-    switch (element->GetUid() - ref_uid) {
+    switch (static_cast<uint64_t>(element->GetUid()) -
+            static_cast<uint64_t>(ref_uid)) {
       case 0:
         EXPECT_EQ(12, dynamic_cast<A*>(element)->GetData());
         break;

@@ -407,7 +407,7 @@ struct ZOrderCallback : Functor<void, const AgentHandle&> {
       box_cnt++;
     }
     auto* agent = rm->GetAgent(ah);
-    zorder[box_cnt].insert(agent->GetUid() - ref_uid);
+    zorder[box_cnt].insert(agent->GetUid() - static_cast<uint64_t>(ref_uid));
     cnt++;
   }
 };
