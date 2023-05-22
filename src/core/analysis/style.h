@@ -31,7 +31,7 @@ class Style : public TNamed,
  public:
   Style();
   ~Style();
-  operator TStyle*() const;
+  explicit operator TStyle*() const;
   TStyle* GetTStyle() const;
 
  private:

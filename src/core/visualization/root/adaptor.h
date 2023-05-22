@@ -139,7 +139,8 @@ class RootAdaptor {
 
   /// Adds a sphere object to the volume
   void AddSphere(const Agent *agent, TGeoVolume *container) {
-    std::string name = agent->GetTypeName() + std::to_string(agent->GetUid());
+    std::string name = agent->GetTypeName() +
+                       std::to_string(static_cast<uint64_t>(agent->GetUid()));
     auto radius = agent->GetDiameter() / 2;
     auto massLocation = agent->GetPosition();
     auto x = massLocation[0];
@@ -154,7 +155,8 @@ class RootAdaptor {
   /// Adds a cylinder object to the volume
   void AddCylinder(const Agent *agent, TGeoVolume *container) {
     if (auto neurite = dynamic_cast<const NeuriteElement *>(agent)) {
-      std::string name = agent->GetTypeName() + std::to_string(agent->GetUid());
+      std::string name = agent->GetTypeName() +
+                         std::to_string(static_cast<uint64_t>(agent->GetUid()));
       auto radius = neurite->GetDiameter() / 2;
       auto half_length = neurite->GetLength() / 2;
       auto massLocation = neurite->GetPosition();

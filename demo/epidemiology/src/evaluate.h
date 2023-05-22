@@ -62,7 +62,7 @@ inline void PlotResults(const TimeSeries* analytical, const TimeSeries* mean,
     allts.Add(ind_ts, Concat("i", i++));
   }
   LineGraph lg(&allts, "", "Time [h]", "Population Fraction", plot_legend,
-               style, 350, 250);
+               &style, 350, 250);
   if (analytical) {
     lg.Add("susceptible-analytical", " ", "L", kBlue, 1.0, kDashed, 2, kBlue,
            1.0, 1, 1, 0, 1.0, 0);

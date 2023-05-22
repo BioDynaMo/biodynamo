@@ -614,7 +614,7 @@ class UniformGridEnvironment : public Environment {
  private:
   class LoadBalanceInfoUG : public LoadBalanceInfo {
    public:
-    LoadBalanceInfoUG(UniformGridEnvironment* grid);
+    explicit LoadBalanceInfoUG(UniformGridEnvironment* grid);
     virtual ~LoadBalanceInfoUG();
     void Update();
     void CallHandleIteratorConsumer(

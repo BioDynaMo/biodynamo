@@ -93,7 +93,7 @@ struct GetDataMemberForVis {
     auto* casted_agent = static_cast<TClass*>(agent);
     auto* data = reinterpret_cast<TDataMember*>(
         reinterpret_cast<char*>(casted_agent) + dm_offset_);
-    uint64_t uid = *data;
+    uint64_t uid = static_cast<uint64_t>(*data);
     auto tid = ThreadInfo::GetInstance()->GetUniversalThreadId();
     assert(temp_values_.size() > tid);
     temp_values_[tid][0] = uid;

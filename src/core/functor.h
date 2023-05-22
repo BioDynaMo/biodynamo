@@ -42,7 +42,7 @@ struct LambdaFunctor<TReturn (TLambda::*)(TArgs...) const> final
     : public Functor<TReturn, TArgs...> {
   TLambda lambda;
 
-  LambdaFunctor(const TLambda& lambda) : lambda(lambda) {}
+  explicit LambdaFunctor(const TLambda& lambda) : lambda(lambda) {}
   LambdaFunctor(const LambdaFunctor& other) : lambda(other.lambda) {}
   virtual ~LambdaFunctor() = default;
 
@@ -57,7 +57,7 @@ struct LambdaFunctor<TReturn (TLambda::*)(TArgs...)> final
     : public Functor<TReturn, TArgs...> {
   TLambda lambda;
 
-  LambdaFunctor(const TLambda& lambda) : lambda(lambda) {}
+  explicit LambdaFunctor(const TLambda& lambda) : lambda(lambda) {}
   LambdaFunctor(const LambdaFunctor& other) : lambda(other.lambda) {}
   virtual ~LambdaFunctor() = default;
 
