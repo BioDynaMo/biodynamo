@@ -211,6 +211,9 @@ class AgentPointer {
 
   const TAgent& operator*() const { return *(this->operator->()); }
 
+  // Note: allow for implicit conversion to bool
+  /// Allows to use `if (agent_ptr) { ... }`. Returns true if the pointer is not
+  /// nullptr.
   operator bool() const { return *this != nullptr; }  // NOLINT
 
   operator AgentPointer<Agent>() const {
