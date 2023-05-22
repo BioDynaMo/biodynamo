@@ -31,7 +31,7 @@ class Style : public TNamed,
  public:
   Style();
   ~Style();
-  operator TStyle*() const;
+  explicit operator TStyle*() const;
   TStyle* GetTStyle() const;
 
  private:
@@ -39,24 +39,24 @@ class Style : public TNamed,
 
   // The following attributes were copied from TStyle
 
-  TAttAxis fXaxis;         ///< X axis attributes
-  TAttAxis fYaxis;         ///< Y axis attributes
-  TAttAxis fZaxis;         ///< Z axis attributes
-  Float_t fBarWidth;       ///< Width of bar for graphs
-  Float_t fBarOffset;      ///< Offset of bar for graphs
-  Int_t fColorModelPS;     ///< PostScript color model: 0 = RGB, 1 = CMYK
-  Int_t fDrawBorder;       ///< Flag to draw border(=1) or not (0)
-  Int_t fOptLogx;          ///< True if log scale in X
-  Int_t fOptLogy;          ///< True if log scale in y
-  Int_t fOptLogz;          ///< True if log scale in z
-  Int_t fOptDate;          ///< True if date option is selected
-  Int_t fOptStat;          ///< True if option Stat is selected
-  Int_t fOptTitle;         ///< True if option Title is selected
-  Int_t fOptFile;          ///< True if option File is selected
-  Int_t fOptFit;           ///< True if option Fit is selected
-  Int_t fShowEventStatus;  ///< Show event status panel
-  Int_t fShowEditor;       ///< Show pad editor
-  Int_t fShowToolBar;      ///< Show toolbar
+  TAttAxis fXaxis;            ///< X axis attributes
+  TAttAxis fYaxis;            ///< Y axis attributes
+  TAttAxis fZaxis;            ///< Z axis attributes
+  Float_t fBarWidth;          ///< Width of bar for graphs
+  Float_t fBarOffset;         ///< Offset of bar for graphs
+  Int_t fColorModelPS;        ///< PostScript color model: 0 = RGB, 1 = CMYK
+  Int_t fDrawBorder;          ///< Flag to draw border(=1) or not (0)
+  Int_t fOptLogx;             ///< True if log scale in X
+  Int_t fOptLogy;             ///< True if log scale in y
+  Int_t fOptLogz;             ///< True if log scale in z
+  Int_t fOptDate;             ///< True if date option is selected
+  Int_t fOptStat;             ///< True if option Stat is selected
+  Int_t fOptTitle;            ///< True if option Title is selected
+  Int_t fOptFile;             ///< True if option File is selected
+  Int_t fOptFit;              ///< True if option Fit is selected
+  Int_t fShowEventStatus;     ///< Show event status panel
+  Int_t fShowEditor;          ///< Show pad editor
+  Int_t fShowToolBar;         ///< Show toolbar
 
   Int_t fNumberContours;      ///< Default number of contours for 2-d plots
   TAttText fAttDate;          ///< Canvas date attribute
