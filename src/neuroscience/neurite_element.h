@@ -114,7 +114,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   /// Returns StructureIdentifierSWC:kAxon if NeuriteElement is an Axon and
   /// StructureIdentifierSWC::kApicalDendrite for all other cases.
-  virtual StructureIdentifierSWC GetIdentifierSWC() const override;
+  StructureIdentifierSWC GetIdentifierSWC() const override;
 
   // TODO(neurites) arrange in order end
 

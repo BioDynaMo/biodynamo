@@ -46,7 +46,7 @@ class OctreeEnvironment : public Environment {
 
   OctreeEnvironment();
 
-  ~OctreeEnvironment();
+  ~OctreeEnvironment() override;
 
   std::array<int32_t, 6> GetDimensions() const override;
 

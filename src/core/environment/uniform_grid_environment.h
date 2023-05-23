@@ -233,7 +233,7 @@ class UniformGridEnvironment : public Environment {
   UniformGridEnvironment(UniformGridEnvironment const&) = delete;
   void operator=(UniformGridEnvironment const&) = delete;
 
-  virtual ~UniformGridEnvironment() = default;
+  ~UniformGridEnvironment() override = default;
 
   /// Clears the grid
   void Clear() override {
@@ -615,7 +615,7 @@ class UniformGridEnvironment : public Environment {
   class LoadBalanceInfoUG : public LoadBalanceInfo {
    public:
     LoadBalanceInfoUG(UniformGridEnvironment* grid);
-    virtual ~LoadBalanceInfoUG();
+    ~LoadBalanceInfoUG() override;
     void Update();
     void CallHandleIteratorConsumer(
         uint64_t start, uint64_t end,
@@ -636,7 +636,7 @@ class UniformGridEnvironment : public Environment {
       InitializeVectorFunctor(UniformGridEnvironment* grid, uint64_t start,
                               decltype(sorted_boxes) sorted_boxes,
                               decltype(cummulated_agents) cummulated_agents);
-      virtual ~InitializeVectorFunctor();
+      ~InitializeVectorFunctor() override;
 
       void operator()(Iterator<uint64_t>* it) override;
     };

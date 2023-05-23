@@ -73,7 +73,7 @@ class KDTreeEnvironment : public Environment {
 
   KDTreeEnvironment();
 
-  ~KDTreeEnvironment();
+  ~KDTreeEnvironment() override;
 
   std::array<int32_t, 6> GetDimensions() const override;
 

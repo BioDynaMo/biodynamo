@@ -43,7 +43,7 @@ class CopyExecutionContext : public InPlaceExecutionContext {
       const std::shared_ptr<ThreadSafeAgentUidMap>& map,
       std::shared_ptr<std::vector<std::vector<Agent*>>> agents);
 
-  virtual ~CopyExecutionContext();
+  ~CopyExecutionContext() override;
 
   void SetupIterationAll(
       const std::vector<ExecutionContext*>& all_exec_ctxts) override;

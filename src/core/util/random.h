@@ -66,7 +66,7 @@ class DistributionRng {
 class UniformRng : public DistributionRng<real_t> {
  public:
   UniformRng(real_t min, real_t max);
-  virtual ~UniformRng();
+  ~UniformRng() override;
 
  private:
   real_t min_, max_;
@@ -78,7 +78,7 @@ class UniformRng : public DistributionRng<real_t> {
 class GausRng : public DistributionRng<real_t> {
  public:
   GausRng(real_t mean, real_t sigma);
-  virtual ~GausRng();
+  virtual ~GausRng() override;
 
  private:
   real_t mean_, sigma_;
@@ -90,7 +90,7 @@ class GausRng : public DistributionRng<real_t> {
 class ExpRng : public DistributionRng<real_t> {
  public:
   ExpRng(real_t tau);
-  virtual ~ExpRng();
+  ~ExpRng() override;
 
  private:
   real_t tau_;
@@ -102,7 +102,7 @@ class ExpRng : public DistributionRng<real_t> {
 class LandauRng : public DistributionRng<real_t> {
  public:
   LandauRng(real_t mean, real_t sigma);
-  virtual ~LandauRng();
+  ~LandauRng() override;
 
  private:
   real_t mean_, sigma_;
@@ -114,7 +114,7 @@ class LandauRng : public DistributionRng<real_t> {
 class PoissonDRng : public DistributionRng<real_t> {
  public:
   PoissonDRng(real_t mean);
-  virtual ~PoissonDRng();
+  ~PoissonDRng() override;
 
  private:
   real_t mean_;
@@ -126,7 +126,7 @@ class PoissonDRng : public DistributionRng<real_t> {
 class BreitWignerRng : public DistributionRng<real_t> {
  public:
   BreitWignerRng(real_t mean, real_t gamma);
-  virtual ~BreitWignerRng();
+  ~BreitWignerRng() override;
 
  private:
   real_t mean_, gamma_;
@@ -139,7 +139,7 @@ class UserDefinedDistRng1D : public DistributionRng<real_t> {
  public:
   UserDefinedDistRng1D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng1D(TF1* function, const char* option);
-  virtual ~UserDefinedDistRng1D();
+  ~UserDefinedDistRng1D() override;
   void Draw(const char* option = "");
   TF1* GetTF1();
 
@@ -156,7 +156,7 @@ class UserDefinedDistRng2D : public DistributionRng<real_t> {
  public:
   UserDefinedDistRng2D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng2D(TF2* function, const char* option);
-  virtual ~UserDefinedDistRng2D();
+  ~UserDefinedDistRng2D() override;
   void Draw(const char* option = "");
   TF2* GetTF2();
 
@@ -174,7 +174,7 @@ class UserDefinedDistRng3D : public DistributionRng<real_t> {
  public:
   UserDefinedDistRng3D(TRootIOCtor* ioctor) : DistributionRng<real_t>(ioctor) {}
   UserDefinedDistRng3D(TF3* function, const char* option);
-  virtual ~UserDefinedDistRng3D();
+  ~UserDefinedDistRng3D() override;
   void Draw(const char* option = "");
   TF3* GetTF3();
 
@@ -234,7 +234,7 @@ namespace bdm {
 class BinomialRng : public DistributionRng<int> {
  public:
   BinomialRng(int ntot, real_t prob);
-  virtual ~BinomialRng();
+  ~BinomialRng() override;
 
  private:
   int ntot_;
@@ -247,7 +247,7 @@ class BinomialRng : public DistributionRng<int> {
 class PoissonRng : public DistributionRng<int> {
  public:
   PoissonRng(real_t mean);
-  virtual ~PoissonRng();
+  ~PoissonRng() override;
 
  private:
   real_t mean_;

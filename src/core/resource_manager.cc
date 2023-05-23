@@ -86,7 +86,7 @@ template <typename TFunctor>
 struct ForEachAgentParallelFunctor : public Functor<void, Agent*, AgentHandle> {
   TFunctor& functor_;
   explicit ForEachAgentParallelFunctor(TFunctor& f) : functor_(f) {}
-  void operator()(Agent* agent, AgentHandle) { functor_(agent); }
+  void operator()(Agent* agent, AgentHandle) override { functor_(agent); }
 };
 
 void ResourceManager::ForEachAgentParallel(Functor<void, Agent*>& function,
@@ -218,7 +218,7 @@ struct LoadBalanceFunctor : public Functor<void, Iterator<AgentHandle>*> {
         uid_ah_map(uid_ah_map),
         type_index(type_index) {}
 
-  void operator()(Iterator<AgentHandle>* it) {
+  void operator()(Iterator<AgentHandle>* it) override {
     while (it->HasNext()) {
       auto handle = it->Next();
       auto* agent = agents[handle.GetNumaNode()][handle.GetElementIdx()];

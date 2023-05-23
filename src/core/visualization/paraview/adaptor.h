@@ -42,10 +42,10 @@ class ParaviewAdaptor : private VisualizationAdaptor {
   /// for the VTK grid structures
   ParaviewAdaptor();
 
-  ~ParaviewAdaptor();
+  ~ParaviewAdaptor() override;
 
   /// Visualize one timestep based on the configuration in `Param`
-  void Visualize();
+  void Visualize() override;
 
   struct ParaviewImpl;
 

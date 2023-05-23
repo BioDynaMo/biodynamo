@@ -75,7 +75,7 @@ class InPlaceExecutionContext : public ExecutionContext {
   explicit InPlaceExecutionContext(
       const std::shared_ptr<ThreadSafeAgentUidMap>& map);
 
-  virtual ~InPlaceExecutionContext();
+  ~InPlaceExecutionContext() override;
 
   /// This function is called at the beginning of each iteration to setup all
   /// execution contexts.
