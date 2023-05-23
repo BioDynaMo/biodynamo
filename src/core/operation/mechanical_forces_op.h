@@ -57,7 +57,7 @@ class MechanicalForcesOp : public AgentOperationImpl {
     }
   }
 
-  virtual ~MechanicalForcesOp() {
+  ~MechanicalForcesOp() override {
     if (force_) {
       delete force_;
     }

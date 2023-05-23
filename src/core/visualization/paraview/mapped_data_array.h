@@ -197,7 +197,7 @@ class MappedDataArray : public vtkMappedDataArray<TScalar>,
 
  protected:
   MappedDataArray();
-  ~MappedDataArray();
+  ~MappedDataArray() override;
 
   /// Access agent data member functor.
   GetDataMemberForVis<TScalar*, TClass, TDataMember> get_dm_;

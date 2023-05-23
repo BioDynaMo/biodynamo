@@ -68,7 +68,7 @@ struct InitializeGPUData : public Functor<void, Agent*, AgentHandle> {
 
   InitializeGPUData();
 
-  virtual ~InitializeGPUData();
+  ~InitializeGPUData() override;
 
   void Initialize(uint64_t num_agents, uint64_t num_boxes,
                   const std::vector<AgentHandle::ElementIdx_t>& offs,
@@ -202,7 +202,7 @@ struct UpdateCPUResults : public Functor<void, Agent*, AgentHandle> {
 
   UpdateCPUResults(real_t* cm,
                    const std::vector<AgentHandle::ElementIdx_t>& offs);
-  virtual ~UpdateCPUResults();
+  ~UpdateCPUResults() override;
 
   void operator()(Agent* agent, AgentHandle ah) override;
 };

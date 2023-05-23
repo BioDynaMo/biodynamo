@@ -31,7 +31,7 @@ struct SplitNeuriteElementEvent : public NewAgentEvent {
   explicit SplitNeuriteElementEvent(real_t distal_portion)
       : distal_portion(distal_portion) {}
 
-  virtual ~SplitNeuriteElementEvent() = default;
+  ~SplitNeuriteElementEvent() override = default;
 
   NewAgentEventUid GetUid() const override { return kUid; }
 

@@ -36,7 +36,7 @@ namespace experimental {
 /// can be combined to avoid iterating over all agents multiple times.\n
 template <typename TResult>
 struct Reducer : public Functor<void, Agent*> {
-  virtual ~Reducer() = default;
+  ~Reducer() override = default;
   virtual TResult GetResult() = 0;
   /// Resets the internal state between calculations.
   virtual void Reset() = 0;
