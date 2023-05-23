@@ -39,11 +39,11 @@ namespace experimental {
 class MPIObject : public TMessage {
  public:
   MPIObject() = default;
-  ~MPIObject() = default;
+  ~MPIObject() override = default;
   MPIObject(void* buf, Int_t len) : TMessage(buf, len) {}
 
  private:
-  BDM_CLASS_DEF(MPIObject, 1);
+  BDM_CLASS_DEF_OVERRIDE(MPIObject, 1);
 };
 
 // Hide MPI functions from Cling
