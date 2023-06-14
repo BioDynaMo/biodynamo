@@ -145,27 +145,87 @@ struct PropagateStaticnessOp : public StandaloneOperationImpl {
 BDM_REGISTER_OP(PropagateStaticnessOp, "propagate staticness", kCpu);
 
 
-struct yeet_yeet : public StandaloneOperationImpl {
-  BDM_OP_HEADER(yeet_yeet);
+//struct export_mass : public StandaloneOperationImpl {
+//  BDM_OP_HEADER(export_mass);
+//
+//  void operator()() override {
+//    auto* sim = Simulation::GetActive();
+//    auto* rm = sim->GetResourceManager();
+//
+//    real_t total_HET = 0.0;
+//    real_t total_EPS = 0.0;
+//
+//    rm->ForEachAgent([&](Agent* agent) {
+//        auto* cell = dynamic_cast<Cell*>(agent);
+//        real_t mass = cell->GetMass();
+//	if (cell->GetCellType() == "HET") {
+//	    auto* HET = dynamic_cast<HET*>(agent);
+//	    total_HET += mass;
+//	}
+//	if (cell->GetCellType() == "EPS") {
+//	    auto* EPS = dynamic_cast<EPS*>(agent);
+//            total_EPS += mass;
+//        }
+//    });
+//
+//    real_t total = total_HET + total_EPS;
+//
+//    int t = sim->GetScheduler()->GetSimulatedSteps();
+//    std::ofstream outdata;
+//
+//    outdata.open("export_measurements/mass/mass_" + std::to_string(t) + ".txt");
+//    outdata << total << std::endl;
+//    outdata << total_HET << std::endl;
+//    outdata << total_EPS << std::endl;
+//    outdata.close();
+//  }
+//};
+//
+//BDM_REGISTER_OP(export_mass, "export mass", kCpu);
+//
+//
+//
+//struct export_conc : public StandaloneOperationImpl {
+//  BDM_OP_HEADER(export_conc);
+//
+//  void operator()() override {
+//    auto* sim = Simulation::GetActive();
+//    
+//    auto* dgrid_o2 = sim->GetResourceManager()->GetDiffusionGrid( "Oxygen" );
+//    real_t conc_o2 = 0.0;
+//    int box_num_o2 = dgrid_o2->GetNumBoxes();
+//    for (int i=0; i<box_num_o2; i++) {
+//	    conc_o2 += dgrid_o2->GetValue(i);
+//    }
+//
+//    auto* dgrid_s = sim->GetResourceManager()->GetDiffusionGrid( "Substrate" );
+//    real_t conc_s = 0.0;
+//    int box_num_s = dgrid_s->GetNumBoxes();
+//    for (int i=0; i<box_num_s; i++) {
+//            conc_s += dgrid_s->GetValue(i);
+//    }
+//
+//    auto* dgrid_co2 = sim->GetResourceManager()->GetDiffusionGrid( "CO2" );
+//    real_t conc_co2 = 0.0;
+//    int box_num_co2 = dgrid_co2->GetNumBoxes();
+//    for (int i=0; i<box_num_co2; i++) {
+//            conc_co2 += dgrid_co2->GetValue(i);
+//    }
+//
+//    int t = sim->GetScheduler()->GetSimulatedSteps();
+//    std::ofstream outdata;
+//
+//    outdata.open("export_measurements/conc/conc_" + std::to_string(t) + ".txt");
+//    outdata << conc_o2 << std::endl;
+//    outdata << conc_s << std::endl;
+//    outdata << conc_co2 << std::endl;
+//    outdata.close();
+//
+//  }
+//};
+//
+//BDM_REGISTER_OP(export_conc, "export conc", kCpu);
 
-  void operator()() override {
-    auto* sim = Simulation::GetActive();
-    auto* rm = sim->GetResourceManager();
-    real_t total = 0.0;
-    rm->ForEachAgent([&](Agent* agent) {
-        auto* cell = dynamic_cast<Cell*>(agent);
-        real_t mass = cell->GetMass();
-        total += mass;
-    });
-    int t = sim->GetScheduler()->GetSimulatedSteps();
-    std::ofstream outdata;
-    std::string file = "yeet/mass_" + std::to_string(t) + ".txt";
-    outdata.open(file);
-    outdata << total << std::endl;
-    outdata.close();
-  }
-};
 
-BDM_REGISTER_OP(yeet_yeet, "yeet_yeet", kCpu);
 
 }  // namespace bdm

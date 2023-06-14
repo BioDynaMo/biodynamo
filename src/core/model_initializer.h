@@ -223,9 +223,9 @@ struct ModelInitializer {
       auto* ctxt = sim->GetExecutionContext();
 
       auto xiterations =
-          static_cast<uint64_t>(std::floor((xmax - xmin) / deltax));
+          static_cast<uint64_t>(std::floor((xmax - xmin) / deltax) + 1);
       auto yiterations =
-          static_cast<uint64_t>(std::floor((ymax - ymin) / deltay));
+          static_cast<uint64_t>(std::floor((ymax - ymin) / deltay) + 1);
 
 #pragma omp for
       for (uint64_t xit = 0; xit < xiterations; ++xit) {

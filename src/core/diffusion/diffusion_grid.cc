@@ -296,9 +296,9 @@ void DiffusionGrid::ChangeConcentrationBy(const Real3& position, real_t amount,
 void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
                                           InteractionMode mode) {
   if (idx >= total_num_boxes_) {
-    Log::Error("DiffusionGrid::ChangeConcentrationBy",
-               "You tried to change the concentration outside the bounds of "
-               "the diffusion grid! The change was ignored.");
+    //Log::Error("DiffusionGrid::ChangeConcentrationBy",
+    //           "You tried to change the concentration outside the bounds of "
+    //           "the diffusion grid! The change was ignored.");
     return;
   }
   std::lock_guard<Spinlock> guard(locks_[idx]);
@@ -330,13 +330,21 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
   }
 }
 
-/// Get the concentration at specified position
+
 real_t DiffusionGrid::GetValue(const Real3& position) const {
+
   auto idx = GetBoxIndex(position);
+  return GetValue(idx);
+}
+
+/// Get the concentration at specified position
+//real_t DiffusionGrid::GetValue(const Real3& position) const {
+real_t DiffusionGrid::GetValue(size_t idx) const {
+  //auto idx = GetBoxIndex(position);
   if (idx >= total_num_boxes_) {
-    Log::Error("DiffusionGrid::ChangeConcentrationBy",
-               "You tried to get the concentration outside the bounds of "
-               "the diffusion grid!");
+    //Log::Error("DiffusionGrid::ChangeConcentrationBy",
+    //           "You tried to get the concentration outside the bounds of "
+    //           "the diffusion grid!");
     return 0;
   }
   assert(idx < locks_.size());
@@ -387,6 +395,9 @@ size_t DiffusionGrid::GetBoxIndex(const Real3& position) const {
 void DiffusionGrid::ParametersCheck(real_t dt) {
   if ((((1 - dc_[0]) * dt) / (box_length_ * box_length_) >= (1.0 / 6)) ||
       ((mu_ * dt) > 1.0)) {
+    std::cout << 1 - dc_[0] << std::endl;
+    std::cout << dt << std::endl;
+    std::cout << box_length_ << std::endl;
     Log::Fatal(
         "DiffusionGrid",
         "The specified parameters of the diffusion grid with substance [",

@@ -13,10 +13,15 @@
 // -----------------------------------------------------------------------------
 
 #include "core/agent/cell_division_event.h"
+#include "core/agent/eps_production_event.h"
+
 
 namespace bdm {
 
 const NewAgentEventUid CellDivisionEvent::kUid =
+    NewAgentEventUidGenerator::GetInstance()->GenerateUid();
+
+const NewAgentEventUid EpsProductionEvent::kUid =
     NewAgentEventUidGenerator::GetInstance()->GenerateUid();
 
 }  // namespace bdm

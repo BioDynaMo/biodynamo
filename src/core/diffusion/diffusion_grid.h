@@ -98,6 +98,12 @@ class DiffusionGrid : public ScalarField {
     return GetValue(position);
   };
 
+  real_t GetValue(size_t idx) const;
+  [[deprecated("Use GetValue instead")]] real_t GetConcentration(
+      size_t idx) const {
+    return GetValue(idx);
+  };
+
   // NOTE: virtual because of test
   /// Get the gradient at a specified position. By default, the obtained
   /// gradient is scaled to norm 1, but with `normalize = false` one can obtain

@@ -25,6 +25,7 @@
 
 #include "core/agent/agent.h"
 #include "core/agent/cell_division_event.h"
+#include "core/agent/eps_production_event.h"
 #include "core/agent/new_agent_event.h"
 #include "core/container/inline_vector.h"
 #include "core/container/math_array.h"
@@ -120,6 +121,7 @@ class Cell : public Agent {
 
       daughter->SetAdherence(mother_cell->GetAdherence());
       daughter->SetDensity(mother_cell->GetDensity());
+      daughter->SetCellType(mother_cell->GetCellType());
       // G) TODO(lukas) Copy the intracellular and membrane bound Substances
     }
   }
@@ -177,6 +179,7 @@ class Cell : public Agent {
     return bdm_static_cast<Cell*>(event.new_agents[0]);
   }
 
+
   real_t GetAdherence() const { return adherence_; }
 
   real_t GetDiameter() const override { return diameter_; }
@@ -190,6 +193,8 @@ class Cell : public Agent {
   const Real3& GetTractorForce() const { return tractor_force_; }
 
   real_t GetVolume() const { return volume_; }
+
+  std::string GetCellType() const { return cell_type_; }
 
   void SetAdherence(real_t adherence) {
     if (adherence < adherence_) {
@@ -229,14 +234,16 @@ class Cell : public Agent {
     tractor_force_ = tractor_force;
   }
 
+  void SetCellType(std::string cell_type) { cell_type_ = cell_type; }
+
   void ChangeVolume(real_t speed) {
     // scaling for integration step
     auto* param = Simulation::GetActive()->GetParam();
     real_t delta = speed * param->simulation_time_step;
     volume_ += delta;
-    if (volume_ < real_t(5.2359877E-7)) {
-      volume_ = real_t(5.2359877E-7);
-    }
+    //if (volume_ < real_t(5.2359877E-7)) {
+    //  volume_ = real_t(5.2359877E-7);
+    //}
     UpdateDiameter();
   }
 
@@ -377,6 +384,8 @@ class Cell : public Agent {
   real_t adherence_ = 0;
   /// NB: Use setter and don't assign values directly
   real_t density_ = 0;
+  /// NB: Use setter and don't assign values directly
+  std::string cell_type_ = "cell";
 };
 
 }  // namespace bdm
