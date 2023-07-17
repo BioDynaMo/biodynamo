@@ -347,7 +347,6 @@ class DiffusionGrid : public ScalarField {
   void TurnOffGradientCalculation() { precompute_gradients_ = false; }
 
  private:
-  friend class RungeKuttaGrid;
   friend class EulerGrid;
   friend class EulerDepletionGrid;
   friend class TestGrid;  // class used for testing (e.g. initialization)
