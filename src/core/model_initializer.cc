@@ -16,7 +16,6 @@
 #include "core/diffusion/diffusion_grid.h"
 #include "core/diffusion/euler_depletion_grid.h"
 #include "core/diffusion/euler_grid.h"
-#include "core/diffusion/runge_kutta_grid.h"
 #include "core/util/log.h"
 
 namespace bdm {
@@ -57,19 +56,6 @@ void ModelInitializer::DefineSubstance(
       dgrid = new EulerGrid(substance_id, substance_name, diffusion_coeff,
                             decay_constant, resolution);
     }
-  } else if (param->diffusion_method == "runge-kutta") {
-    if (decay_constant != 0) {
-      Log::Warning(
-          "ModelInitializer::DefineSubstance",
-          "RungeKuttaGrid does not support a decay constant. Using 0.");
-    }
-    if (!binding_substances.empty()) {
-      Log::Warning("ModelInitializer::DefineSubstance",
-                   "RungeKuttaGrid does not support depletion. Depleting "
-                   "substances removed.");
-    }
-    dgrid = new RungeKuttaGrid(substance_id, substance_name, diffusion_coeff,
-                               resolution);
   } else {
     Log::Error("ModelInitializer::DefineSubstance", "Diffusion method '",
                param->diffusion_method,
