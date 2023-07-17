@@ -27,7 +27,7 @@ class VisualizationOp : public StandaloneOperationImpl {
   BDM_OP_HEADER(VisualizationOp);
 
  public:
-  virtual ~VisualizationOp() {
+  ~VisualizationOp() override {
     if (visualization_) {
       delete visualization_;
     }

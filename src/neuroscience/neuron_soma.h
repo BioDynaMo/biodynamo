@@ -32,7 +32,7 @@ class NeuronSoma : public Cell, public NeuronOrNeurite {
 
  public:
   NeuronSoma();
-  virtual ~NeuronSoma();
+  ~NeuronSoma() override;
 
   explicit NeuronSoma(const Real3& position);
 

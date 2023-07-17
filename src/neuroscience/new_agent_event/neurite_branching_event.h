@@ -38,7 +38,7 @@ struct NeuriteBranchingEvent : public NewAgentEvent {
         diameter(diameter),
         direction(direction) {}
 
-  virtual ~NeuriteBranchingEvent() = default;
+  ~NeuriteBranchingEvent() override = default;
 
   NewAgentEventUid GetUid() const override { return kUid; }
 

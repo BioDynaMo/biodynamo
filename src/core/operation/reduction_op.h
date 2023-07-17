@@ -39,7 +39,7 @@ class ReductionOp : public AgentOperationImpl {
     tl_results_.resize(ThreadInfo::GetInstance()->GetMaxThreads());
   }
 
-  ~ReductionOp() {
+  ~ReductionOp() override {
     delete agent_functor_;
     delete reduce_functor_;
   }

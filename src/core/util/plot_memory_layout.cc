@@ -109,7 +109,7 @@ struct Fen : public Functor<void, Agent*, real_t> {
   Agent* query;
   Fen(std::vector<int64_t>& diffs, Agent* query) : diffs(diffs), query(query) {}
 
-  void operator()(Agent* neighbor, real_t) {
+  void operator()(Agent* neighbor, real_t) override {
     if (neighbor == query) {
       return;
     }
@@ -124,7 +124,7 @@ struct Fea : public Functor<void, Agent*, AgentHandle> {
   std::vector<int64_t>& diffs;
   explicit Fea(std::vector<int64_t>& diffs) : diffs(diffs) {}
 
-  void operator()(Agent* agent, AgentHandle) {
+  void operator()(Agent* agent, AgentHandle) override {
     Fen fen(diffs, agent);
     auto* sim = Simulation::GetActive();
     auto* env = sim->GetEnvironment();

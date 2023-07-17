@@ -19,7 +19,7 @@ keywords:
 To install and update BioDynaMo execute the following command.
 
 ```bash
-curl https://biodynamo.org/install | bash
+curl https://biodynamo.github.io/install | bash
 ```
 
 This will also install all prerequisites, including ROOT, ParaView and Qt5.
@@ -43,7 +43,7 @@ If you want to install the latest development version with all experimental feat
 
 ```bash
 export BDM_INSTALL=master
-curl https://biodynamo.org/install | bash
+curl https://biodynamo.github.io/install | bash
 ```
 
 ## Install specific version
@@ -54,7 +54,7 @@ To install the exact same version on your system, use the following commands.
 
 ```bash
 export BDM_INSTALL=e1088d4a
-curl https://biodynamo.org/install | bash
+curl https://biodynamo.github.io/install | bash
 ```
 
 ## Supported platforms
