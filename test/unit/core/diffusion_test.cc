@@ -18,7 +18,6 @@
 #include "core/diffusion/diffusion_grid.h"
 #include "core/diffusion/euler_depletion_grid.h"
 #include "core/diffusion/euler_grid.h"
-#include "core/diffusion/runge_kutta_grid.h"
 #include "core/environment/environment.h"
 #include "core/model_initializer.h"
 #include "core/substance_initializers.h"
@@ -1193,80 +1192,6 @@ TEST(DiffusionTest, DynamicTimeStepping) {
   EXPECT_FLOAT_EQ(0.2, dgrid->GetLastTimestep());
   scheduler->Simulate(3);
   EXPECT_FLOAT_EQ(0.3, dgrid->GetLastTimestep());
-}
-
-TEST(DISABLED_DiffusionTest, RungeKuttaConvergence) {
-  auto set_param = [](auto* param) {
-    param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -100;
-    param->max_bound = 100;
-    param->diffusion_method = "runge-kutta";
-  };
-  Simulation simulation(TEST_NAME, set_param);
-  real_t diff_coef = 0.5;
-  DiffusionGrid* dgrid2 = new RungeKuttaGrid(0, "Kalium1", diff_coef, 20);
-  DiffusionGrid* dgrid4 = new RungeKuttaGrid(1, "Kalium4", diff_coef, 40);
-  DiffusionGrid* dgrid8 = new RungeKuttaGrid(2, "Kalium8", diff_coef, 80);
-
-  dgrid2->Initialize();
-  dgrid4->Initialize();
-  dgrid8->Initialize();
-
-  dgrid2->SetUpperThreshold(1e15);
-  dgrid4->SetUpperThreshold(1e15);
-  dgrid8->SetUpperThreshold(1e15);
-
-  // instantaneous point source
-  int init = 1e5;
-  Real3 source = {{0, 0, 0}};
-  dgrid2->ChangeConcentrationBy(source, init / pow(dgrid2->GetBoxLength(), 3));
-  dgrid4->ChangeConcentrationBy(source, init / pow(dgrid4->GetBoxLength(), 3));
-  dgrid8->ChangeConcentrationBy(source, init / pow(dgrid8->GetBoxLength(), 3));
-
-  auto conc2 = dgrid2->GetAllConcentrations();
-  auto conc4 = dgrid4->GetAllConcentrations();
-  auto conc8 = dgrid8->GetAllConcentrations();
-
-  Real3 marker = {10.0, 10.0, 10.0};
-
-  int tot = 100;
-  for (int t = 0; t < tot; t++) {
-    dgrid2->DiffuseWithClosedEdge(1.0);
-    dgrid4->DiffuseWithClosedEdge(1.0);
-    dgrid8->DiffuseWithClosedEdge(1.0);
-  }
-
-  auto rc2 = GetRealCoordinates(dgrid2->GetBoxCoordinates(source),
-                                dgrid2->GetBoxCoordinates(marker),
-                                dgrid2->GetBoxLength());
-  auto rc4 = GetRealCoordinates(dgrid4->GetBoxCoordinates(source),
-                                dgrid4->GetBoxCoordinates(marker),
-                                dgrid4->GetBoxLength());
-  auto rc8 = GetRealCoordinates(dgrid8->GetBoxCoordinates(source),
-                                dgrid8->GetBoxCoordinates(marker),
-                                dgrid8->GetBoxLength());
-
-  auto real_val2 =
-      CalculateAnalyticalSolution(init, rc2[0], rc2[1], rc2[2], diff_coef, tot);
-  auto real_val4 =
-      CalculateAnalyticalSolution(init, rc4[0], rc4[1], rc4[2], diff_coef, tot);
-  auto real_val8 =
-      CalculateAnalyticalSolution(init, rc8[0], rc8[1], rc8[2], diff_coef, tot);
-
-  auto error2 = std::abs(real_val2 - conc2[dgrid2->GetBoxIndex(marker)]) /
-                std::abs(real_val2);
-  auto error4 = std::abs(real_val4 - conc4[dgrid4->GetBoxIndex(marker)]) /
-                std::abs(real_val4);
-  auto error8 = std::abs(real_val8 - conc8[dgrid8->GetBoxIndex(marker)]) /
-                std::abs(real_val8);
-
-  EXPECT_TRUE(error4 < error2);
-  EXPECT_TRUE(error8 < error4);
-  EXPECT_NEAR(error8, 0.01, 0.005);
-
-  delete dgrid2;
-  delete dgrid4;
-  delete dgrid8;
 }
 
 TEST(DiffusionTest, GradientComputation) {
