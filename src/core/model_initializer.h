@@ -28,7 +28,6 @@
 #include "core/util/random.h"
 
 class EulerGrid;
-class RungeKuttaGrid;
 class EulerDepletionGrid;
 
 namespace bdm {
