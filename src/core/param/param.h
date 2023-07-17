@@ -244,9 +244,11 @@ struct Param {
   std::string diffusion_boundary_condition = "Neumann";
 
   /// A string for determining diffusion type within the simulation space.
-  /// current inputs include "euler" and "runge-kutta".
-  /// Default value: `"euler"`\n
-  /// TOML config file:
+  /// Currently, only the method "euler" implementing a FTCS scheme is
+  /// supported. See for instance here:
+  /// https://en.wikipedia.org/wiki/FTCS_scheme (accessed 2023-07-17)
+  /// Default value: `"euler"`\n TOML
+  /// config file:
   ///
   ///        [simulation]
   ///        diffusion_method = <diffusion method>
