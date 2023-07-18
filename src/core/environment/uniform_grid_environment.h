@@ -109,7 +109,11 @@ class UniformGridEnvironment : public Environment {
     void AddObject(AgentHandle ah, AgentVector<AgentHandle>* successors,
                    UniformGridEnvironment* grid) {
       std::lock_guard<Spinlock> lock_guard(lock_);
-
+      if (length_ == std::numeric_limits<uint16_t>::max()) {
+        Log::Fatal(
+            "UniformGridEnvironment::Box::AddObject",
+            "Box overflow. You have added too many agents to a single Box.");
+      }
       if (timestamp_ != grid->timestamp_) {
         timestamp_ = grid->timestamp_;
         length_ = 1;

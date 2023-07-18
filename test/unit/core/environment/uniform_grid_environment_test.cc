@@ -389,6 +389,36 @@ TEST(UniformGridEnvironmentDeathTest, CustomBoxLength) {
       "");
 }
 
+// The UniformGridEnvironment environment uses a data structure based on boxes.
+// A single box can only hold a limited number of agents. This test checks if
+// the program fails when this limit is exceeded.
+TEST(UniformGridEnvironmentDeathTest, TooManyAgents) {
+  ASSERT_DEATH(
+      {
+        // Define Parameters
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -10;
+          param->max_bound = 10;
+        };
+
+        // Simulation set up
+        Simulation simulation(TEST_NAME, set_param);
+        auto* rm = simulation.GetResourceManager();
+        auto* env =
+            dynamic_cast<UniformGridEnvironment*>(simulation.GetEnvironment());
+        env->ForcedUpdate();
+
+        // run code that makes program fail by putting in too many agents at one
+        // set position
+        for (size_t i = 0; i < std::numeric_limits<uint16_t>::max() + 1; ++i) {
+          rm->AddAgent(new Cell(20));
+        }
+        Simulation::GetActive()->GetScheduler()->Simulate(1);
+      },
+      ".*Box overflow.*");
+}
+
 struct ZOrderCallback : Functor<void, const AgentHandle&> {
   std::vector<std::set<AgentUid>> zorder;
   uint64_t box_cnt = 0;
