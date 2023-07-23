@@ -227,6 +227,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // simulation parameters group
   BDM_ASSIGN_CONFIG_VALUE(random_seed, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir, "simulation.output_dir");
+  BDM_ASSIGN_CONFIG_VALUE(remove_output_dir_contents,
+                          "simulation.remove_output_dir");
   BDM_ASSIGN_CONFIG_VALUE(environment, "simulation.environment");
   BDM_ASSIGN_CONFIG_VALUE(nanoflann_depth, "simulation.nanoflann_depth");
   BDM_ASSIGN_CONFIG_VALUE(unibn_bucketsize, "simulation.unibn_bucketsize");
@@ -250,17 +252,21 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // visualization parameters group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(insitu_visualization, "visualization.insitu");
-  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline,
-                          "visualization.pv_insitu_pipeline");
-  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipelinearguments,
-                          "visualization.pv_insitu_pipelinearguments");
+  if ("paraview"==visualization_engine) {
+    BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline,
+                            "visualization.pv_insitu_pipeline");
+    BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipelinearguments,
+                            "visualization.pv_insitu_pipelinearguments");
+  }
   BDM_ASSIGN_CONFIG_VALUE(root_visualization, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization, "visualization.export");
   BDM_ASSIGN_CONFIG_VALUE(visualization_interval, "visualization.interval");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm,
-                          "visualization.export_generate_pvsm");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
-                          "visualization.compress_pv_files");
+  if ("paraview"==visualization_engine) {
+    BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm,
+                            "visualization.export_generate_pvsm");
+    BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
+                            "visualization.compress_pv_files");
+  }
 
   // visualization parameters group (for agents)
   auto visualize_agentstarr = config->get_table_array("visualize_agent");
@@ -361,11 +367,16 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step,
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(use_progress_bar, "development.use_progress_bar");
+  if (use_progress_bar) {
+    BDM_ASSIGN_CONFIG_VALUE(progress_bar_time_unit,
+                            "development.progress_bar_time_unit");
+  }
 
   // experimental parameters group
   BDM_ASSIGN_CONFIG_VALUE(compute_target, "experimental.compute_target");
   BDM_ASSIGN_CONFIG_VALUE(opencl_debug, "experimental.opencl_debug");
   BDM_ASSIGN_CONFIG_VALUE(preferred_gpu, "experimental.preferred_gpu");
+  BDM_ASSIGN_CONFIG_VALUE(plot_memory_layout, "experimental.plot_memory_layout");
 }
 
 }  // namespace bdm

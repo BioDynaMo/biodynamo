@@ -156,6 +156,11 @@ struct Param {
   /// organizes your simulation outputs in additional subfolders labelled with
   /// the date-time of your simulation `YYYY-MM-DD-HH:MM:SS`. Note that you will
   /// inevitably use more disk space with this option.
+  /// Default value: `true`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     remove_output_dir = true
   bool remove_output_dir_contents = true;
 
   /// Backup file name for full simulation backups. The path is relative
@@ -696,6 +701,11 @@ struct Param {
 
   /// Determines if agents' memory layout plots should be generated
   /// during load balancing.
+  /// Default value: `false`\n
+  /// TOML config file:
+  ///
+  ///     [experimental]
+  ///     plot_memory_layout = false
   bool plot_memory_layout = false;
 
   // ---------------------------------------------------------------------------
