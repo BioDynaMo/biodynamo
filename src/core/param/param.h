@@ -191,15 +191,6 @@ struct Param {
   ///     backup_interval = 1800
   uint32_t backup_interval = 1800;
 
-  /// Maximum jump that a point mass can do in one time step. Useful to
-  /// stabilize the simulation\n
-  /// Default value: `3.0`\n
-  /// TOML config file:
-  ///
-  ///     [simulation]
-  ///     max_displacement = 3.0
-  real_t simulation_max_displacement = 3.0;
-
   /// Enumarator to define about the simulation (off-lattice) domain
   /// where agents will reside.
   ///   `kOpen` : the simulation space grows to encapsulate all
@@ -229,22 +220,31 @@ struct Param {
   BoundSpaceMode bound_space = kOpen;
 
   /// Minimum allowed value for x-, y- and z-position if simulation space is
-  /// bound (@see `bound_space`).\n
-  /// Default value: `0`\n
+  /// bound (@see `bound_space`). Dimensionless parameter!
+  /// Default value: `-50`\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     min_bound = 0
-  real_t min_bound = 0;
+  ///     min_bound = -50.0
+  real_t min_bound = -50.0;
 
   /// Maximum allowed value for x-, y- and z-position if simulation space is
-  /// bound (@see `bound_space`).\n
-  /// Default value: `100`\n
+  /// bound (@see `bound_space`). Dimensionless parameter!
+  /// Default value: `+50.`\n
   /// TOML config file:
   ///
   ///     [simulation]
-  ///     max_bound = 100
-  real_t max_bound = 100;
+  ///     max_bound = +50.0
+  real_t max_bound = +50.0;
+
+  /// Maximum jump that a point mass can do in one time step. Useful to
+  /// stabilize the simulation. Dimensionless parameter!
+  /// Default value: `1.`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     max_displacement = 1.0
+  real_t simulation_max_displacement = (max_bound-min_bound)/100;
 
   /// Time between two simulation steps. Dimensionless parameter!
   /// Default value: `1.`\n
