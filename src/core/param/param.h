@@ -191,14 +191,6 @@ struct Param {
   ///     backup_interval = 1800
   uint32_t backup_interval = 1800;
 
-  /// Time between two simulation steps, in hours.
-  /// Default value: `0.01`\n
-  /// TOML config file:
-  ///
-  ///     [simulation]
-  ///     time_step = 0.0125
-  real_t simulation_time_step = 0.01;
-
   /// Maximum jump that a point mass can do in one time step. Useful to
   /// stabilize the simulation\n
   /// Default value: `3.0`\n
@@ -254,6 +246,13 @@ struct Param {
   ///     max_bound = 100
   real_t max_bound = 100;
 
+  /// Time between two simulation steps. Dimensionless parameter!
+  /// Default value: `1.`\n
+  /// TOML config file:
+  ///
+  ///     [simulation]
+  ///     time_step = 1.0
+  real_t simulation_time_step = 1.0;
 
   /// Define the boundary condition for the boundary-value problem of
   /// the diffusion grid. Permissible values are: `"open"`, `"closed"`,
