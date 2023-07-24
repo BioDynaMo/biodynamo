@@ -30,6 +30,9 @@ struct TestScheduler : public Scheduler {
 TEST(GeneRegulationTest, EulerTest) {
   auto set_param = [](auto* param) {
     param->numerical_ode_solver = Param::NumericalODESolver::kEuler;
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
   };
   Simulation simulation(TEST_NAME, set_param);
   auto* scheduler = new TestScheduler();

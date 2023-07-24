@@ -22,7 +22,12 @@
 namespace bdm {
 namespace mechanical_forces_op_test_internal {
 inline void RunTest(const std::string& environment) {
-  auto set_param = [&](auto* param) { param->environment = environment; };
+  auto set_param = [&](auto* param) {
+    param->environment = environment;
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
+  };
   Simulation simulation("mechanical_forces_op_test_RunTest", set_param);
   auto* rm = simulation.GetResourceManager();
 
@@ -94,7 +99,12 @@ inline void RunTest(const std::string& environment) {
 }
 
 inline void RunTest2(const std::string& environment) {
-  auto set_param = [&](auto* param) { param->environment = environment; };
+  auto set_param = [&](auto* param) {
+    param->environment = environment;
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
+  };
   Simulation simulation("mechanical_forces_op_test_RunTest", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* env = simulation.GetEnvironment();
