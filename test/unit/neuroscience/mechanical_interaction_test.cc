@@ -107,7 +107,7 @@ void RunTest2(const char* test_name, bool detect_static_agents) {
 
   Real3 direction = {1, 0, 0};
   for (int i = 0; i < 100; i++) {
-    ne->ElongateTerminalEnd(100, direction);
+    ne->ElongateTerminalEnd(1, direction);
     scheduler->Simulate(1);
     if (i % 10 == 0) {
       ne_axis = ne->GetSpringAxis();
