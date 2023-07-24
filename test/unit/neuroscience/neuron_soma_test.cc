@@ -247,7 +247,12 @@ TEST(NeuriteElementTest, PartialRetraction) {
 
 TEST(NeuriteElementTest, TotalRetraction) {
   neuroscience::InitModule();
-  Simulation simulation(TEST_NAME);
+  auto set_param = [&](bdm::Param* param) {
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
+  };
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -300,7 +305,7 @@ TEST(NeuriteElementTest, Branch) {
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, 0.5, 0.5});
+    neurite_element->ElongateTerminalEnd(0.1, {0, 0.5, 0.5});
     neurite_element->RunDiscretization();
   }
 
@@ -402,16 +407,16 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, 0.5, 0.5});
+    neurite_element->ElongateTerminalEnd(0.1, {0, 0.5, 0.5});
     neurite_element->RunDiscretization();
   }
 
   auto* branch = neurite_element->Branch({0, 1, 0});
 
   for (int i = 0; i < 100; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, -0.5, 1});
+    neurite_element->ElongateTerminalEnd(0.1, {0, -0.5, 1});
     neurite_element->RunDiscretization();
-    branch->ElongateTerminalEnd(10, {0, 1, 0.5});
+    branch->ElongateTerminalEnd(0.1, {0, 1, 0.5});
     branch->RunDiscretization();
   }
 
@@ -422,7 +427,7 @@ TEST(NeuriteElementTest, RightDaughterRetraction) {
       dynamic_cast<NeuriteElement*>(neurite_element->GetMother().Get());
   auto right_daughter_pe = proximal_element->GetDaughterRight();
   for (int i = 0; i < 40; ++i) {
-    right_daughter_pe->RetractTerminalEnd(10);
+    right_daughter_pe->RetractTerminalEnd(0.1);
     right_daughter_pe->RunDiscretization();
   }
 
@@ -477,16 +482,16 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, 0.5, 0.5});
+    neurite_element->ElongateTerminalEnd(0.1, {0, 0.5, 0.5});
     neurite_element->RunDiscretization();
   }
 
   auto* branch = neurite_element->Branch({0, 1, 0});
 
   for (int i = 0; i < 100; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, -0.5, 1});
+    neurite_element->ElongateTerminalEnd(0.1, {0, -0.5, 1});
     neurite_element->RunDiscretization();
-    branch->ElongateTerminalEnd(10, {0, 1, 0.5});
+    branch->ElongateTerminalEnd(0.1, {0, 1, 0.5});
     branch->RunDiscretization();
   }
 
@@ -498,7 +503,7 @@ TEST(NeuriteElementTest, RightDaughterTotalRetraction) {
   auto right_daughter_pe = proximal_element->GetDaughterRight();
   // right_daughter_ps == branch
   while (proximal_element->GetDaughterRight() != nullptr) {
-    right_daughter_pe->RetractTerminalEnd(10);
+    right_daughter_pe->RetractTerminalEnd(0.1);
     right_daughter_pe->RunDiscretization();
   }
 
@@ -529,16 +534,16 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, 0.5, 0.5});
+    neurite_element->ElongateTerminalEnd(0.1, {0, 0.5, 0.5});
     neurite_element->RunDiscretization();
   }
 
   auto* branch = neurite_element->Branch({0, 1, 0});
 
   for (int i = 0; i < 100; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {-0.5, 0.5, 1});
+    neurite_element->ElongateTerminalEnd(0.1, {-0.5, 0.5, 1});
     neurite_element->RunDiscretization();
-    branch->ElongateTerminalEnd(10, {0, 1, 0.5});
+    branch->ElongateTerminalEnd(0.1, {0, 1, 0.5});
     branch->RunDiscretization();
   }
 
@@ -549,7 +554,7 @@ TEST(NeuriteElementTest, LeftDaughterRetraction) {
       dynamic_cast<NeuriteElement*>(neurite_element->GetMother().Get());
   auto left_daughter_pe = proximal_element->GetDaughterLeft();
   for (int i = 0; i < 10; ++i) {
-    left_daughter_pe->RetractTerminalEnd(10);
+    left_daughter_pe->RetractTerminalEnd(0.1);
     left_daughter_pe->RunDiscretization();
   }
 

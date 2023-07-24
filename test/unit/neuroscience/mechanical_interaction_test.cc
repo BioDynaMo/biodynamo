@@ -256,7 +256,7 @@ void RunTest5(const char* test_name, bool detect_static_agents) {
   Real3 direction = {2, 1, 1};
 
   for (int i = 0; i < 98; i++) {
-    ne->ElongateTerminalEnd(300, direction);
+    ne->ElongateTerminalEnd(3, direction);
     ne->RunDiscretization();
     scheduler->Simulate(1);
 
@@ -425,7 +425,7 @@ void RunTest7(const char* test_name, bool detect_static_agents) {
   Real3 direction2 = {0.5, 0, 1};
 
   for (int i = 0; i < 10; i++) {
-    ne->ElongateTerminalEnd(100, {0, 0, 1});
+    ne->ElongateTerminalEnd(1, {0, 0, 1});
     ne->RunDiscretization();
     scheduler->Simulate(1);
   }
@@ -435,9 +435,9 @@ void RunTest7(const char* test_name, bool detect_static_agents) {
   auto branch_r = branches[1]->GetAgentPtr<NeuriteElement>();
 
   for (int i = 0; i < 200; i++) {
-    branch_r->ElongateTerminalEnd(100, direction);
+    branch_r->ElongateTerminalEnd(1, direction);
     branch_r->RunDiscretization();
-    branch_l->ElongateTerminalEnd(100, direction2);
+    branch_l->ElongateTerminalEnd(1, direction2);
     branch_l->RunDiscretization();
     scheduler->Simulate(1);
   }
@@ -632,8 +632,8 @@ void RunTest10(const char* test_name, bool detect_static_agents) {
   Real3 ne2_axis;
 
   for (int i = 0; i < 220; i++) {
-    ne1->ElongateTerminalEnd(10, direction1);
-    ne2->ElongateTerminalEnd(10, direction2);
+    ne1->ElongateTerminalEnd(0.1, direction1);
+    ne2->ElongateTerminalEnd(0.1, direction2);
     ne1->RunDiscretization();
     ne2->RunDiscretization();
     scheduler->Simulate(1);
@@ -646,8 +646,8 @@ void RunTest10(const char* test_name, bool detect_static_agents) {
   }
 
   for (int i = 0; i < 100; i++) {
-    ne1->ElongateTerminalEnd(10, direction1);
-    ne2->ElongateTerminalEnd(10, direction2);
+    ne1->ElongateTerminalEnd(0.1, direction1);
+    ne2->ElongateTerminalEnd(0.1, direction2);
     ne1->RunDiscretization();
     ne2->RunDiscretization();
     scheduler->Simulate(1);
@@ -675,6 +675,9 @@ void RunTest11(const char* test_name, bool detect_static_agents) {
   neuroscience::InitModule();
   auto set_param = [&](bdm::Param* param) {
     param->detect_static_agents = detect_static_agents;
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
   };
   Simulation simulation(test_name, set_param);
   auto* rm = simulation.GetResourceManager();
