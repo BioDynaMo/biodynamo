@@ -145,7 +145,7 @@ TEST(NeuronSomaTest, ExtendNeuriteAndElongate) {
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, 0, 1});
+    neurite_element->ElongateTerminalEnd(0.1, {0, 0, 1});
     neurite_element->RunDiscretization();
   }
 
@@ -212,14 +212,14 @@ TEST(NeuriteElementTest, PartialRetraction) {
 
   // will create a new neurite segment at iteration 139
   for (int i = 0; i < 200; ++i) {
-    neurite_element->ElongateTerminalEnd(10, {0, 0, 1});
+    neurite_element->ElongateTerminalEnd(0.1, {0, 0, 1});
     neurite_element->RunDiscretization();
   }
 
   // will remove the proximal segment
   for (int i = 0; i < 140; ++i) {
     ctxt->SetupIterationAll(simulation.GetAllExecCtxts());
-    neurite_element->RetractTerminalEnd(10);
+    neurite_element->RetractTerminalEnd(0.1);
     neurite_element->RunDiscretization();
     ctxt->TearDownIterationAll(simulation.GetAllExecCtxts());
   }
