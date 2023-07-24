@@ -101,10 +101,7 @@ struct Param {
   std::vector<std::string> unschedule_default_operations;
 
   ///
-  enum NumericalODESolver {
-    kEuler = 1,
-    kRK4 = 2
-  };
+  enum NumericalODESolver { kEuler = 1, kRK4 = 2 };
 
   /// Numerical method used to solve tha partial differential equation of
   /// the diffusion grid. Permissible values are: `"Euler"`, `"RK4"`.
@@ -205,11 +202,7 @@ struct Param {
   ///              determined by parameters `min_bound` and
   ///              `max_bound`, where if an agent moves outside the
   ///              cube then it is inserted on the opposite side.
-  enum BoundSpaceMode {
-    kOpen = 0,
-    kClosed,
-    kTorus
-  };
+  enum BoundSpaceMode { kOpen = 0, kClosed, kTorus };
 
   /// For this parameter definition \see `BoundSpaceMode`.
   /// Default value: `open` (simulation space is "infinite")\n
@@ -244,7 +237,7 @@ struct Param {
   ///
   ///     [simulation]
   ///     max_displacement = 1.0
-  real_t simulation_max_displacement = (max_bound-min_bound)/100;
+  real_t simulation_max_displacement = (max_bound - min_bound) / 100;
 
   /// Time between two simulation steps. Dimensionless parameter!
   /// Default value: `1.`\n
@@ -289,11 +282,7 @@ struct Param {
   ///                   processed in parallel. \see `Agent::CriticalRegion`.
   /// `kAutomatic`: the simulation automatically locks all agents of the
   ///               microenvironment.
-  enum ThreadSafetyMechanism {
-    kNone = 0,
-    kUserSpecified,
-    kAutomatic
-  };
+  enum ThreadSafetyMechanism { kNone = 0, kUserSpecified, kAutomatic };
 
   /// Select the thread-safety mechanism. Permissible values are:
   /// `"none"`, `"user-specified"`, `"automatic"`.
@@ -470,10 +459,7 @@ struct Param {
   uint64_t scheduling_batch_size = 1000;
 
   /// Enumerator to define order of computations agents-to-operations.
-  enum ExecutionOrder {
-    kForEachAgentForEachOp = 0,
-    kForEachOpForEachAgent
-  };
+  enum ExecutionOrder { kForEachAgentForEachOp = 0, kForEachOpForEachAgent };
 
   /// This parameter determines whether to execute for example either
   /// `kForEachAgentForEachOp`, meaning
@@ -578,11 +564,7 @@ struct Param {
   ///             array, to speed up access if it is used again.
   ///   `kCopy`: copy all data elements to a contiguous array at
   ///            initialization time. Serves requests from the cache.
-  enum MappedDataArrayMode {
-    kZeroCopy = 0,
-    kCopy,
-    kCache
-  };
+  enum MappedDataArrayMode { kZeroCopy = 0, kCopy, kCache };
 
   /// This parameter sets the operation mode in `bdm::MappedDataArray` with
   /// allowed values are defined in `MappedDataArrayMode`. Permissible values

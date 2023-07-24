@@ -252,7 +252,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   // visualization parameters group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(insitu_visualization, "visualization.insitu");
-  if ("paraview"==visualization_engine) {
+  if ("paraview" == visualization_engine) {
     BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline,
                             "visualization.pv_insitu_pipeline");
     BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipelinearguments,
@@ -261,7 +261,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(root_visualization, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization, "visualization.export");
   BDM_ASSIGN_CONFIG_VALUE(visualization_interval, "visualization.interval");
-  if ("paraview"==visualization_engine) {
+  if ("paraview" == visualization_engine) {
     BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm,
                             "visualization.export_generate_pvsm");
     BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
@@ -376,7 +376,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(compute_target, "experimental.compute_target");
   BDM_ASSIGN_CONFIG_VALUE(opencl_debug, "experimental.opencl_debug");
   BDM_ASSIGN_CONFIG_VALUE(preferred_gpu, "experimental.preferred_gpu");
-  BDM_ASSIGN_CONFIG_VALUE(plot_memory_layout, "experimental.plot_memory_layout");
+  BDM_ASSIGN_CONFIG_VALUE(plot_memory_layout,
+                          "experimental.plot_memory_layout");
 }
 
 }  // namespace bdm
