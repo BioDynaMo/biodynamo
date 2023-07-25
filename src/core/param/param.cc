@@ -228,7 +228,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(random_seed, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir, "simulation.output_dir");
   BDM_ASSIGN_CONFIG_VALUE(remove_output_dir_contents,
-                          "simulation.remove_output_dir_contents");
+                          "simulation.remove_output_dir");
   BDM_ASSIGN_CONFIG_VALUE(environment, "simulation.environment");
   BDM_ASSIGN_CONFIG_VALUE(nanoflann_depth, "simulation.nanoflann_depth");
   BDM_ASSIGN_CONFIG_VALUE(unibn_bucketsize, "simulation.unibn_bucketsize");
