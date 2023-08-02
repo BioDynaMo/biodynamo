@@ -132,7 +132,8 @@ void NeuriteElement::CriticalRegion(std::vector<AgentPointer<>>* aptrs) {
 }
 
 std::set<std::string> NeuriteElement::GetRequiredVisDataMembers() const {
-  return {"mass_location_", "diameter_", "actual_length_", "spring_axis_"};
+  return {"mass_location_", "diameter_", "actual_length_", "spring_axis_",
+          "mother_cell_type_", "mother_uid_"};
 }
 
 void NeuriteElement::SetDiameter(real_t diameter) {
