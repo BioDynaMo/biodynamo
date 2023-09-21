@@ -28,8 +28,8 @@ namespace fs = std::experimental::filesystem;
 namespace fs = std::__fs::filesystem;
 #endif
 #else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 #endif
 
 #endif  // (!defined(__CLING__) && !defined(__ROOTCLING__))
