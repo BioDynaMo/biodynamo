@@ -22,7 +22,7 @@
 #include "iostream"
 #include "stdio.h"
 
-namespace fs = std::filesystem;
+namespace fs = std::__fs::filesystem;
 
 // C style callback function for libgit2 - taken from the libgit2 examples.
 // See common.h in the libgit2 examples for more information. Definition
