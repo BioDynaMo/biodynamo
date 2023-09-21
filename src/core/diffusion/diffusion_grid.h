@@ -109,10 +109,8 @@ class DiffusionGrid : public ScalarField {
   void Step(real_t dt) override { Diffuse(dt); }
   void Diffuse(real_t dt);
 
-  [[deprecated("Use Neumann / Dirichlet instead")]] virtual void
-  DiffuseWithClosedEdge(real_t dt) = 0;
-  [[deprecated("Use Neumann / Dirichlet instead")]] virtual void
-  DiffuseWithOpenEdge(real_t dt) = 0;
+  virtual void DiffuseWithClosedEdge(real_t dt) = 0;
+  virtual void DiffuseWithOpenEdge(real_t dt) = 0;
   /// Compute the diffusion of the substance with Dirichlet boundary conditions
   /// ( u = const on the boundary) for a given time step dt.
   virtual void DiffuseWithDirichlet(real_t dt) = 0;
