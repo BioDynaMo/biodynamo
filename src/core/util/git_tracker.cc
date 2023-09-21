@@ -15,8 +15,8 @@
 #ifdef USE_LIBGIT2
 
 #include "git_tracker.h"
-#include "core/util/log.h"
 #include "core/stdfilesystem.h"
+#include "core/util/log.h"
 #include "fstream"
 #include "git2.h"
 #include "iostream"
