@@ -15,14 +15,12 @@
 #ifdef USE_LIBGIT2
 
 #include "git_tracker.h"
-#include <experimental/filesystem>
+#include "core/stdfilesystem.h"
 #include "core/util/log.h"
 #include "fstream"
 #include "git2.h"
 #include "iostream"
 #include "stdio.h"
-
-namespace fs = std::experimental::filesystem;
 
 // C style callback function for libgit2 - taken from the libgit2 examples.
 // See common.h in the libgit2 examples for more information. Definition

@@ -330,10 +330,8 @@ struct ComplexStateOp : public AgentOperationImpl {
 
   ComplexStateOp(const ComplexStateOp& other) {
     // Deep copy of vector
-    int i = 0;
     for (auto* a : other.a_vec_) {
       this->a_vec_.push_back(new A(*a));
-      i++;
     }
     b_ = other.b_;
   }
