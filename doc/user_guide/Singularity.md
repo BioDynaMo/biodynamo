@@ -102,6 +102,6 @@ Start a virtual frame buffer with:
 ```
 The buffer can be managed by the arguments ```start```|```stop```|```restart```
 
-Note: Some systems may require display forwarding. This can be achived through ```export DISPLAY=0```.
+Note: Some systems may require display forwarding **before** starting the frame buffer. This can be achived through ```export DISPLAY=0```.
 
 ### Option 2: Setting Paraview to work in a headless mode using the CMAKE flag
