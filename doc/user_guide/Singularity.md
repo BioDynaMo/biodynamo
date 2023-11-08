@@ -94,7 +94,7 @@ complex use cases.
 ## Exporting visualisations on HPC's
 Some HPC systems may not allow users to export visualisations using the paraview exporter. To bypass this issue there are two options.
 
-# Setting Paraview to work in a headless mode using the CMAKE flag
+### Setting Paraview to work in a headless mode using the CMAKE flag
 
-# Using xvfb
+### Using xvfb
 
