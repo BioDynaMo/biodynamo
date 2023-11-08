@@ -97,4 +97,8 @@ Some HPC systems may not allow users to export visualisations using the paraview
 ### Setting Paraview to work in a headless mode using the CMAKE flag
 
 ### Using xvfb
-
+Start a virtual frame buffer with: 
+```
+/biodynamo/util/xvfb-initd.sh start
+```
+The buffer can be managed by the arguments ```start```|```stop```|```restart```
