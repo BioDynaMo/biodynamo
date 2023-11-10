@@ -92,16 +92,20 @@ complex use cases.
 
 
 ## Exporting visualisations on HPC's
-Some HPC systems may not allow users to export visualisations using the paraview exporter. To bypass this issue there are two options.
-
+By default, BioDynaMo uses ParaView for visualization, which needs an X-display server to function. Since the Singularity image does not provide a graphical desktop environment and hence no X-server, there are two workarounds.
 
 ### Option 1: Using xvfb
-Start a virtual frame buffer with: 
+```xvfb``` stands for X virtual frame buffer and emulates the required display server. Start a virtual frame buffer with: 
 ```
 /biodynamo/util/xvfb-initd.sh start
 ```
-The buffer can be managed by the arguments ```start```|```stop```|```restart```
+The buffer can be managed with the arguments ```start```|```stop```|```restart```
 
 Note: Some systems may require display forwarding **before** starting the frame buffer. This can be achived through ```export DISPLAY=0```.
 
 ### Option 2: Setting Paraview to work in a headless mode using the CMAKE flag
+Paraview with the osmesa or EGL backend does not require an X-server. To change the backend, you have to edit the cmake options in [1], build paraview, and replace the ParaView version that BioDynaMo installs. See also [2].
+
+[1] https://github.com/BioDynaMo/biodynamo/blob/HPC-documentation/util/build-third-party/paraview/build.sh
+
+[2] https://discourse.paraview.org/t/pvpython-offscreen-rendering-segfault/246/3
