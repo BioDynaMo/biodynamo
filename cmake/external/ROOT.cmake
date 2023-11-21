@@ -17,7 +17,10 @@ if(APPLE)
     if("${XCODE_ERROR}" STREQUAL "")
       message(STATUS "##### XCODE is installed")
     else()
-      message(FATAL_ERROR "##### XCODE is not installed correctly. Please install XCODE (and then the command line tools). Consult issue #352 and the documentation")
+      message(FATAL_ERROR "##### XCODE is not installed correctly. " 
+              "Please install XCODE (and then the command line tools). " 
+              "Consult the documentation (https://biodynamo.github.io/docs/userguide/prerequisites/#macos) "
+              "and issue #352 (https://github.com/BioDynaMo/biodynamo/issues/352).")
     endif()
     # Determine XCDOE version
     execute_process(COMMAND bash "-c" "xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\\1/p'" OUTPUT_VARIABLE XCODE_VERS)
