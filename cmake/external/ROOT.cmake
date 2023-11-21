@@ -11,8 +11,21 @@ if(APPLE)
      "${DETECTED_OS_VERS}" MATCHES "^osx-12" OR
      "${DETECTED_OS_VERS}" MATCHES "^osx-11.6" OR
      "${DETECTED_OS_VERS}" MATCHES "^osx-11.7")
+    # Test if Xcode is installed via `xcodebuild -version`.
+    message(STATUS "##### Checking if XCODE is installed")
+    execute_process(COMMAND bash "-c" "xcodebuild -version" ERROR_VARIABLE XCODE_ERROR)
+    if("${XCODE_ERROR}" STREQUAL "")
+      message(STATUS "##### XCODE is installed")
+    else()
+      message(FATAL_ERROR "##### XCODE is not installed correctly. " 
+              "Please install XCODE (and then the command line tools). " 
+              "Consult the documentation (https://biodynamo.github.io/docs/userguide/prerequisites/#macos) "
+              "and issue #352 (https://github.com/BioDynaMo/biodynamo/issues/352).")
+    endif()
+    # Determine XCDOE version
     execute_process(COMMAND bash "-c" "xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\\1/p'" OUTPUT_VARIABLE XCODE_VERS)
     message(STATUS "##### XCODE version: ${XCODE_VERS}")
+    # Set appropriate ROOT version depending on XCODE version
     if("${XCODE_VERS}" GREATER_EQUAL "14.3")
       message(STATUS "##### Using ROOT builds for XCODE 14.3")
       set(ROOT_TAR_FILE root_v6.29.01_cxx14_python3.9_osx-xcode-14.3-${DETECTED_ARCH}.tar.gz)
