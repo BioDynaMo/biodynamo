@@ -533,15 +533,8 @@ Unset the environment variable BDM_LOCAL_LFS to download the file.")
     endif()
   else()
     # Download the file
-    if (${DETECTED_OS} MATCHES "centos.*")
-        execute_process(COMMAND ${WGET_BIN} --progress=bar:force
-                        -O ${FULL_TAR_PATH} ${URL}
-                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
-    else()
-        execute_process(COMMAND ${WGET_BIN} -nv --show-progress --progress=bar:force:noscroll
-                        -O ${FULL_TAR_PATH} ${URL}
-                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
-    endif()
+    file(DOWNLOAD ${URL} ${FULL_TAR_PATH} SHOW_PROGRESS STATUS DOWNLOAD_STATUS)
+    list(GET DOWNLOAD_STATUS 0 DOWNLOAD_STATUS_CODE)
     if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
       message( FATAL_ERROR "\nERROR: We were unable to download:\
     ${URL}\n\
