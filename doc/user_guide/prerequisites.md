@@ -219,7 +219,7 @@ sudo yum install -y llvm-toolset-7 llvm-toolset-7-clang-tools-extra \
 Requirements to build on macOS are:
 
  * A 64-bit Intel CPU or Apple Silicon CPU
- * macOS Catalina (10.15) or higher
+ * macOS 12.0 or higher
  * [Xcode](https://itunes.apple.com/us/app/xcode/id497799835) and the Command Line Tools (CLT) for Xcode: `xcode-select --install`  
     (or from [developer.apple.com/downloads](https://developer.apple.com/downloads))
  * An up to date [Homebrew](https://brew.sh) installation (MacPorts and Fink are not supported)
