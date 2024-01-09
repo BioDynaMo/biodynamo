@@ -93,6 +93,10 @@ class MechanicalForcesOp : public AgentOperationImpl {
       last_time_run_[tid] = current_time;
     }
 
+    if(agent->GetShape() == Shape::kCylinder) {
+      squared_radius_ = 0.0001;
+    }
+
     const auto& displacement =
         agent->CalculateDisplacement(force_, squared_radius_, delta_time_[tid]);
     agent->ApplyDisplacement(displacement);
