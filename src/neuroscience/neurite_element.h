@@ -478,7 +478,7 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
   Real3 position_ = {{0.0, 0.0, 0.0}};
 
   /// This is the type of the mother neuron 
-  real_t mother_cell_type_ = 0;
+  real_t mother_cell_type_ ;
 
   /// The uid of the mother neuron
   AgentUid mother_uid_;
