@@ -7,11 +7,11 @@ if(APPLE AND "${DETECTED_ARCH}" STREQUAL "i386")
   # The build was fixed with a reupload and carries the additional tag cm233.
   SET(PARAVIEW_TAR_FILE paraview_v5.10.0_cm323_${DETECTED_OS_VERS}_default.tar.gz)
 elseif(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
-  SET(PARAVIEW_TAR_FILE paraview_v5.10.0_osx-14.3-arm64_default.tar.gz)
+  SET(PARAVIEW_TAR_FILE paraview_v5.10.0_${DETECTED_OS_VERS}_default.tar.gz)
 else()
   SET(PARAVIEW_TAR_FILE paraview_v5.9.0_${DETECTED_OS_VERS}_default.tar.gz)
 endif()
-set(PARAVIEW_SHA_KEY osx-14.3-arm64-ParaView)
+set(PARAVIEW_SHA_KEY ${DETECTED_OS_VERS}-ParaView)
 set(PARAVIEW_SHA ${${PARAVIEW_SHA_KEY}})
 
 message(STATUS "Using  ParaView tarball    : ${PARAVIEW_TAR_FILE}")
