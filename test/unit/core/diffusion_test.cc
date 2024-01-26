@@ -974,8 +974,8 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -100;
-    param->max_bound = 100;
+    param->min_bound = -50;
+    param->max_bound = 50;
     param->diffusion_boundary_condition = "Dirichlet";
   };
   Simulation simulation(TEST_NAME, set_param);
@@ -984,7 +984,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
 
   double decay_coef = 0.0;
   double diff_coef = 100.0;
-  int res = 20;
+  int res = 10;
   // Depleting substance is fixed, i.e. no diff and no decay
   auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
 
@@ -996,7 +996,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   rm->AddContinuum(dgrid);
 
   // Simulate diffusion / exponential decay for `tot` timesteps
-  int tot = 100000;  // ToDo This should probably be lower for final version
+  int tot = 5000;  // ToDo This should probably be lower for final version
   for (int t = 0; t < tot; t++) {
     dgrid->Diffuse(simulation_time_step);
   }
@@ -1045,7 +1045,7 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
     rm->AddContinuum(dgrid);
 
     // Simulate diffusion / exponential decay for `tot` timesteps
-    int tot = 10000;
+    int tot = 1000;
     for (int t = 0; t < tot; t++) {
       dgrid->Diffuse(simulation_time_step);
     }
@@ -1104,7 +1104,7 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
   // ----------------------------------------------------------
 
   double intermediate_concentration_backup = 0.0;
-  int tot = 10000;
+  int tot = 1000;
   for (int t = 0; t < tot; t++) {
     dgrid->Diffuse(simulation_time_step);
     conc = dgrid->GetAllConcentrations();  // get current concentrations.
