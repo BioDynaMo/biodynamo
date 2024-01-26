@@ -49,8 +49,7 @@ endfunction()
 # will be downloaded. If the found cached ROOT is not the right
 # version (SHA256 check with builtin expected SHA256) then
 # a new version will be downloaded.
-# If a user installed ROOT is found we will check if ROOT
-# was compiled using c++17.
+# If a user installed ROOT is found we will check it is at least v6.22.xx.
 function(verify_ROOT)
     if(ROOT_FOUND AND CMAKE_THIRD_PARTY_DIR)
         # check if found ROOT is BDM installed (matchres > -1)
@@ -104,14 +103,6 @@ function(verify_ROOT)
         SET(ROOTCLING_EXECUTABLE ${ROOTCLING_EXECUTABLE} PARENT_SCOPE)
         SET(GENREFLEX_EXECUTABLE ${GENREFLEX_EXECUTABLE} PARENT_SCOPE)
     else()
-        # When ROOT is found, but it's not C++17 compliant, we exit the installation, because ROOT needs
-        # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
-        # reverting the previous find_package() call, which is not possible.)
-        if(NOT ROOT_cxx17_FOUND)
-          message(FATAL_ERROR "The ROOT installation found in ${ROOTSYS} is not C++17 compliant. "
-            "Please unset ROOTSYS and re-run cmake so that a compatible version of ROOT will be downloaded.")
-        endif()
-
         if (NOT DEFINED ROOTSYS OR NOT DEFINED ${ROOTSYS})
           # Set ROOTSYS variable
           string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
