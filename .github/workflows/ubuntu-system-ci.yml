@@ -64,7 +64,7 @@ jobs:
         find /tmp -iname biodynamo -type d || true
 
     - name: Checkout BioDynaMo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -78,7 +78,7 @@ jobs:
         fi
 
     - name: Cache pyenv
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: pyenv-cache
       with:
         path: ~/.pyenv
@@ -99,7 +99,7 @@ jobs:
         pyenv shell 3.9.1
 
     - name: Cache Third Party Packages
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
