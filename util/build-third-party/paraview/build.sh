@@ -33,7 +33,7 @@ if [ "$(uname)" = "Linux" ]; then
     set +e
     . /etc/profile.d/modules.sh
     module load mpi
-    . scl_source enable devtoolset-8
+    . scl_source enable devtoolset-10
     set -e
   fi
   export PYENV_ROOT="$HOME/.pyenv"

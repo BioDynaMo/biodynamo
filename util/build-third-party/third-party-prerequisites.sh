@@ -57,7 +57,7 @@ EOF'
 
     sudo yum install -y centos-release-scl epel-release
     sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm || true
-    sudo yum install -y devtoolset-8-gcc*
+    sudo yum install -y devtoolset-10-gcc*
     sudo yum install -y ninja-build
 
     # libroadrunner
@@ -73,7 +73,7 @@ EOF'
 
     export LLVM_CONFIG="/opt/rh/llvm-toolset-7/root/usr/bin/llvm-config"
     set +e
-    . scl_source enable devtoolset-8
+    . scl_source enable devtoolset-10
     . scl_source enable llvm-toolset-7
     set -e
     CC=gcc

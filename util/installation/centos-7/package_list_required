@@ -1,5 +1,5 @@
 bzip2-devel
-devtoolset-8-gcc*
+devtoolset-10-gcc*
 freeglut-devel
 git
 libXext-devel
