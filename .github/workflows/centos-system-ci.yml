@@ -89,7 +89,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.9.1
+        key: ${{ env.OSVERS }}-pyenv-3.9.1-devtoolset-10
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
