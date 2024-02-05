@@ -22,7 +22,7 @@ jobs:
         yum -y update
         yum -y install centos-release-scl epel-release
         yum -y install man wget environment-modules libXt-devel libXext-devel ninja-build make \
-          devtoolset-10-gcc* numactl-devel openmpi3-devel freeglut-devel \
+          devtoolset-8-gcc* devtoolset-10-gcc* numactl-devel openmpi3-devel freeglut-devel \
           scl-utils which xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         yum -y install @development zlib-devel bzip2 bzip2-devel readline-devel sqlite \
           sqlite-devel openssl-devel xz xz-devel libffi-devel findutils lapack-devel blas-devel
@@ -53,7 +53,7 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.9.1-devtoolset-10
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
 
     - name: Install pyenv dependency
       if: steps.pyenv-cache.outputs.cache-hit != 'true'
