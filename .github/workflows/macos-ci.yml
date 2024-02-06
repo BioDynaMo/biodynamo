@@ -29,6 +29,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         brew install libomp open-mpi python@3.9 wget cmake ninja qt@5 libgit2
 
     - name: Checkout BioDynaMo
