@@ -95,7 +95,7 @@ You will not need them in order to run the program.
 
 ```bash
 export MESA_GL_VERSION_OVERRIDE=3.3
-. scl_source enable devtoolset-8
+. scl_source enable devtoolset-10
 
 . /etc/profile.d/modules.sh
 module load mpi

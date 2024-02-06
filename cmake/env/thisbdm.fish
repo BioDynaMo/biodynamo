@@ -426,7 +426,7 @@ function source_thisbdm
         if test "$os_id" = 'centos'
             set -gx MESA_GL_VERSION_OVERRIDE "3.3"
             if test -z "$CXX"; and test -z "$CC"
-                . scl_source enable devtoolset-8; or return 1
+                . scl_source enable devtoolset-10; or return 1
             end
 
             . /etc/profile.d/modules.sh; or return 1
