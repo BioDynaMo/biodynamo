@@ -1016,8 +1016,8 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -100;
-    param->max_bound = 100;
+    param->min_bound = -50;
+    param->max_bound = 50;
     param->diffusion_boundary_condition = "Neumann";
   };
   Simulation simulation(TEST_NAME, set_param);
@@ -1026,12 +1026,12 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
 
   double decay_coef = 0.0;
   double diff_coef = 10.0;
-  int res = 20;
+  int res = 10;
   double init = 1e5;
   std::vector<Real3> sources;
   sources.push_back({0, 0, 0});
-  sources.push_back({50, 50, 50});
-  sources.push_back({-50, -50, -50});
+  sources.push_back({49, 49, 49});
+  sources.push_back({-49, -49, -49});
 
   // Test multiple positions for the source
   for (size_t s = 0; s < sources.size(); s++) {
