@@ -126,6 +126,7 @@ jobs:
         cmake \
           -Dnotebooks=ON \
           -Dsbml=OFF \
+          -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -Dreal_t=${{ env.REALT }} \
           -B build
