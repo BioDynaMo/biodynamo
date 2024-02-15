@@ -15,7 +15,7 @@
 #ifdef USE_LIBGIT2
 
 #include "git_tracker.h"
-#include "core/stdfilesystem.h"
+#include <filesystem>
 #include "core/util/log.h"
 #include "fstream"
 #include "git2.h"
@@ -164,12 +164,12 @@ void GitTracker::SaveGitDiff(const std::string& file,
 
 std::string GitTracker::GetAbsolutePath(const std::string& path) const {
   // Get absolute path via filesystem
-  return fs::absolute(path).string();
+  return std::filesystem::absolute(path).string();
 };
 
 void GitTracker::ConstructFolderNames() {
   // Determine the current working directory via filesystem
-  cwd_ = fs::current_path();
+  cwd_ = std::filesystem::current_path();
   // Trim the build directory from the current working directory if the string
   // ends with build
   if (cwd_.substr(cwd_.size() - 5, 5) == "build") {
@@ -180,7 +180,8 @@ void GitTracker::ConstructFolderNames() {
   // Determine the absolute path to the BioDynaMo installation
   bdm_installation_ = GetAbsolutePath(bdm_installation_);
   // Trim the build directory from the BDMSYS environment variable
-  bdm_installation_ = fs::path(bdm_installation_).parent_path().string();
+  bdm_installation_ =
+      std::filesystem::path(bdm_installation_).parent_path().string();
 };
 }  // namespace bdm
 

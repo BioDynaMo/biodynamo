@@ -148,10 +148,6 @@ if(APPLE)
   foreach(_prefix /sw /opt/local)
     list(APPEND CMAKE_IGNORE_PATH ${_prefix}/bin ${_prefix}/include ${_prefix}/lib)
   endforeach()
-  
-  # Silence std::experimental::filesystem warning on MacOS.
-  # Remove after update to c++17
-  add_definitions("-D_LIBCPP_NO_EXPERIMENTAL_DEPRECATION_WARNING_FILESYSTEM")
 endif()
 
 if(UNIX AND NOT APPLE)
@@ -580,15 +576,12 @@ file(GLOB_RECURSE KERNELS "${CMAKE_SOURCE_DIR}/src/*.cu")
 filter_list(LIB_SOURCES "${LIB_SOURCES}" "paraview/*")
 filter_list(HEADERS "${HEADERS}" "paraview/*")
 
-# NB: Remove stdc++fs after switching to c++17  
-if (LINUX)
-  set(FS_LIB stdc++fs)
-endif()
 build_shared_library(biodynamo
                    SELECTION selection-libbiodynamo.xml
                    SOURCES ${LIB_SOURCES}
                    HEADERS ${HEADERS}
-                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES} ${FS_LIB})
+                   LIBRARIES ${BDM_REQUIRED_LIBRARIES} ${ROOT_LIBRARIES})
+
 # libbiodynamo must be built before optimlib; otherwise optimlib could be missing during
 # the linking stage of libbiodynamo
 add_dependencies(biodynamo optim)
@@ -714,11 +707,12 @@ if (test)
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/core/visualization/paraview/*.h
                          ${CMAKE_SOURCE_DIR}/test/unit/neuroscience/*.h)
-  # NB: Remove stdc++fs after switching to c++17  
+  
   bdm_add_test_executable(biodynamo-unit-tests
                           SOURCES ${TEST_SOURCES}
                           HEADERS ${TEST_HEADERS}
-                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES} ${FS_LIB})
+                          LIBRARIES ${REQUIRED_PARAVIEW_LIBRARIES})
+
   #   separate test binaries - each source file is compiled into a separate binary
   # file(GLOB TEST_SOURCES ${CMAKE_SOURCE_DIR}/test/unit/separate_binary/*.cc)
   # file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/empty_header.h "")

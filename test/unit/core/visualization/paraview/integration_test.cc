@@ -14,9 +14,9 @@
 #ifdef USE_PARAVIEW
 
 #include <gtest/gtest.h>
+#include <filesystem>
 
 #include "biodynamo.h"
-#include "core/stdfilesystem.h"
 #include "core/visualization/visualization_adaptor.h"
 #include "neuroscience/neuroscience.h"
 #include "unit/test_util/test_util.h"
@@ -116,7 +116,7 @@ void RunDiffusionGridTest(uint64_t max_bound, uint64_t resolution,
     Validate("validate_diffusion_grid.py", sim_name, num_diffusion_boxes,
              use_pvsm);
   }
-  ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
+  ASSERT_TRUE(std::filesystem::exists(Concat(output_dir, "/valid")));
   // Test will run in separate process.
   exit(0);
 }
@@ -184,8 +184,8 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
   auto* sim = new Simulation(sim_name, set_param);
 
   auto output_dir = sim->GetOutputDir();
-  fs::remove_all(output_dir);
-  fs::create_directory(output_dir);
+  std::filesystem::remove_all(output_dir);
+  std::filesystem::create_directory(output_dir);
 
   using NeuriteElement = neuroscience::NeuriteElement;
 
@@ -215,10 +215,10 @@ void RunAgentsTest(Param::MappedDataArrayMode mode, uint64_t num_agents,
     // create pvsm file
     delete sim;
     Validate("validate_agents.py", sim_name, num_agents, use_pvsm);
-    ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
+    ASSERT_TRUE(std::filesystem::exists(Concat(output_dir, "/valid")));
   } else {
     delete sim;
-    ASSERT_TRUE(fs::exists(Concat(output_dir, "/valid")));
+    ASSERT_TRUE(std::filesystem::exists(Concat(output_dir, "/valid")));
   }
   // Test will run in separate process.
   exit(0);

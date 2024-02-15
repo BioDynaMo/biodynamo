@@ -14,9 +14,9 @@
 #ifdef USE_PARAVIEW
 
 #include <gtest/gtest.h>
+#include <filesystem>
 
 #include "biodynamo.h"
-#include "core/stdfilesystem.h"
 #include "core/util/io.h"
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
@@ -200,8 +200,8 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
   Simulation sim(TEST_NAME, set_param);
   sim.GetEnvironment()->Update();
   auto output_dir = sim.GetOutputDir();
-  fs::remove_all(output_dir);
-  fs::create_directory(output_dir);
+  std::filesystem::remove_all(output_dir);
+  std::filesystem::create_directory(output_dir);
 
   auto* rm = sim.GetResourceManager();
 
@@ -236,7 +236,7 @@ TEST_F(ParaviewAdaptorTest, CheckVisualizationSelection) {
       "Substance_1-0.pvti", "Substance_1-1.pvti", "Substance_1-2.pvti"};
 
   for (auto& file : required_files) {
-    EXPECT_TRUE(fs::exists(Concat(sim.GetOutputDir(), "/", file)));
+    EXPECT_TRUE(std::filesystem::exists(Concat(sim.GetOutputDir(), "/", file)));
   }
 }
 
