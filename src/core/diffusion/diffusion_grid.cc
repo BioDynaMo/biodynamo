@@ -12,8 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/diffusion/diffusion_grid.h"
+#include <algorithm>
 #include <mutex>
+
+#include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
@@ -385,14 +387,8 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
                  "Unknown interaction mode!");
   }
 
-  // Enforce upper and lower bounds. (use std::clamp() when moving to C++17)
-  if (c1_[idx] > upper_threshold_) {
-    c1_[idx] = upper_threshold_;
-  } else if (c1_[idx] < lower_threshold_) {
-    c1_[idx] = lower_threshold_;
-  } else {
-    // c1_[idx] is bounded by the thresholds and does not need to be modified
-  }
+  // Enforce upper and lower bounds.
+  c1_[idx] = std::clamp(c1_[idx], lower_threshold_, upper_threshold_);
 }
 
 /// Get the concentration at specified position
