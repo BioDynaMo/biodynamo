@@ -12,6 +12,7 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <filesystem>
 #include <stack>
 
 #include <TClass.h>
@@ -20,7 +21,6 @@
 #include <TInterpreter.h>
 #include <TList.h>
 
-#include "core/stdfilesystem.h"
 #include "core/util/jit.h"
 #include "core/util/log.h"
 #include "core/util/string.h"
@@ -158,9 +158,9 @@ bool ExistsInIncludePath(const std::string& header) {
   // postprocess
   std::string slash_header = Concat("/", header);
   for (auto& dir : include_dirs) {
-    fs::path hpath = dir;
+    std::filesystem::path hpath = dir;
     hpath += slash_header;
-    if (fs::exists(hpath)) {
+    if (std::filesystem::exists(hpath)) {
       return true;
     }
   }
@@ -183,9 +183,9 @@ std::string GetIncludePaths() {
 // -----------------------------------------------------------------------------
 void JitHeaders::IncludeIntoCling() {
   for (auto& header : headers_) {
-    fs::path hpath = header;
+    std::filesystem::path hpath = header;
     if (hpath.is_absolute()) {
-      if (fs::exists(hpath)) {
+      if (std::filesystem::exists(hpath)) {
         gInterpreter->Declare(Concat("#include \"", header, "\"").c_str());
       } else {
         Log::Fatal("JitHeaders::Declare",
