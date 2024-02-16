@@ -313,4 +313,100 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
   c1_.swap(c2_);
 }
 
+void EulerGrid::DiffuseWithPeriodic(real_t dt) {
+
+  const auto nx = resolution_;
+  const auto ny = resolution_;
+  const auto nz = resolution_;
+  const auto num_boxes = nx * ny * nz;
+
+  const real_t dx = box_length_;
+  const real_t d = 1 - dc_[0];
+
+  constexpr size_t YBF = 16;
+#pragma omp parallel for collapse(2)
+  for (size_t yy = 0; yy < ny; yy += YBF) {
+    for (size_t z = 0; z < nz; z++) {
+      size_t ymax = yy + YBF;
+      if (ymax >= ny) {
+        ymax = ny;
+      }
+      for (size_t y = yy; y < ymax; y++) {
+        size_t x{0};
+        size_t c{0};
+        size_t l{0};
+        size_t r{0};
+        size_t n{0};
+        size_t s{0};
+        size_t b{0};
+        size_t t{0};
+        c = x + y * nx + z * nx * ny;
+#pragma omp simd
+        for (x = 0; x < nx; x++) {
+          l = c - 1;
+          r = c + 1;
+          n = c - nx;
+          s = c + nx;
+          b = c - nx * ny;
+          t = c + nx * ny;
+
+          // Clamp to avoid out of bounds access. Clamped values are initialized
+          // to a wrong value but will be overwritten by the boundary condition
+          // evaluation. All other values are correct.
+          real_t left{c1_[Clamp(l, 0, num_boxes - 1)]};
+          real_t right{c1_[Clamp(r, 0, num_boxes - 1)]};
+          real_t bottom{c1_[Clamp(b, 0, num_boxes - 1)]};
+          real_t top{c1_[Clamp(t, 0, num_boxes - 1)]};
+          real_t north{c1_[Clamp(n, 0, num_boxes - 1)]};
+          real_t south{c1_[Clamp(s, 0, num_boxes - 1)]};
+
+          if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
+              z == (nz - 1)) {
+
+            // For each box on the boundary, we find the concentration of the 
+            // box on the opposite side of the simulation:
+            //    |                          |
+            //    |u0  u1  u2 .... un-2  un-1|
+            //    |                          |
+            // The diffusion in u0 will be determined by the concentration in 
+            // u1 and un-1.
+
+
+            if (x == 0) {
+              l = nx-1 + y * nx + z * nx * ny;
+              left = c1_[l];
+            } else if (x == (nx - 1)) {
+              r = 0 + y * nx + z * nx * ny;
+              right = c1_[r];
+            }
+
+            if (y == 0) {
+              n = x + (ny-1) * nx + z * nx * ny;
+              north = c1_[n];
+            } else if (y == (ny - 1)) {
+              s = x + 0 * nx + z * nx * ny;
+              south = c1_[s];
+            }
+
+            if (z == 0) {
+              b = x + y * nx + (nz-1) * nx * ny;
+              bottom = c1_[b];
+            } else if (z == (nz - 1)) {
+              t = x + y * nx + 0 * nx * ny;
+              top = c1_[t];
+            }
+          }
+
+          c2_[c] = c1_[c] * (1 - (mu_ * dt))
+                            + ( (d * dt / (dx*dx) ) * (left + right + north + south
+                                                       + top + bottom - 6.0*c1_[c]) );
+
+          ++c;
+        }
+      }  // tile ny
+    }    // tile nz
+  }      // block ny
+  c1_.swap(c2_);
+}
+
 }  // namespace bdm
