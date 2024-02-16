@@ -36,7 +36,8 @@ enum class BoundaryConditionType {
   kDirichlet,
   kNeumann,
   kOpenBoundaries,
-  kClosedBoundaries
+  kClosedBoundaries,
+  kPeriodic
 };
 
 enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
@@ -117,6 +118,9 @@ class DiffusionGrid : public ScalarField {
   /// Compute the diffusion of the substance with Neumann boundary conditions
   /// (du/dn = const on the boundary) for a given time step dt.
   virtual void DiffuseWithNeumann(real_t dt) = 0;
+  /// Compute the diffusion of the substance with Periodic boundary conditions
+  /// (u_{-1} = {u_N-1}, u_{N} = u_{0}) for a given time step dt.
+  virtual void DiffuseWithPeriodic(real_t dt) = 0;
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
