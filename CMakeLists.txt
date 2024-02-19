@@ -163,6 +163,12 @@ if(real_t)
   add_definitions("-DBDM_REALT=${real_t}")
   add_definitions("-DBDM_CL_REALT=cl_${real_t}")
   set(BDM_CONFIG_REALT "${real_t}")
+  if(notebooks AND real_t STREQUAL "float")
+    # This if statement turns of the notebooks when we run with real_t=float.
+    # Currently, the notebooks do not support BDM with float for unknown reasons.
+    message(WARNING "Notebooks are not supported with real_t=float. Disabling notebooks.")
+    set(notebooks OFF)
+  endif()
 else()
   message(STATUS "Using default real_t (double)")
   set(BDM_CONFIG_REALT "float")
