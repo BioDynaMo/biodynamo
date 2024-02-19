@@ -353,12 +353,12 @@ void EulerGrid::DiffuseWithPeriodic(real_t dt) {
           // Clamp to avoid out of bounds access. Clamped values are initialized
           // to a wrong value but will be overwritten by the boundary condition
           // evaluation. All other values are correct.
-          real_t left{c1_[Clamp(l, 0, num_boxes - 1)]};
-          real_t right{c1_[Clamp(r, 0, num_boxes - 1)]};
-          real_t bottom{c1_[Clamp(b, 0, num_boxes - 1)]};
-          real_t top{c1_[Clamp(t, 0, num_boxes - 1)]};
-          real_t north{c1_[Clamp(n, 0, num_boxes - 1)]};
-          real_t south{c1_[Clamp(s, 0, num_boxes - 1)]};
+          real_t left{c1_[std::clamp(l, 0, num_boxes - 1)]};
+          real_t right{c1_[std::clamp(r, 0, num_boxes - 1)]};
+          real_t bottom{c1_[std::clamp(b, 0, num_boxes - 1)]};
+          real_t top{c1_[std::clamp(t, 0, num_boxes - 1)]};
+          real_t north{c1_[std::clamp(n, 0, num_boxes - 1)]};
+          real_t south{c1_[std::clamp(s, 0, num_boxes - 1)]};
 
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
