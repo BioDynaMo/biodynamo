@@ -16,6 +16,7 @@
 #define CORE_UTIL_FILESYSTEM_H_
 
 #include <string>
+#include <cstdint>
 
 namespace bdm {
 

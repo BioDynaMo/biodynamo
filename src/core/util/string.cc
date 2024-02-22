@@ -14,6 +14,8 @@
 
 #include "core/util/string.h"
 #include <iostream>
+#include <cstdint>
+
 namespace bdm {
 
 std::vector<std::string> Split(const std::string& s,

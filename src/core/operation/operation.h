@@ -19,6 +19,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "core/functor.h"
 #include "core/util/log.h"
