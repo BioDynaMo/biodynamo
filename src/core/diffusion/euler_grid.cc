@@ -244,17 +244,6 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
-          // Clamp to avoid out of bounds access. Clamped values are initialized
-          // to a wrong value but will be overwritten by the boundary condition
-          // evaluation. All other values are correct.
-          real_t left{c1_[std::clamp(c - 1, size_t{0}, num_boxes - 1)]};
-          real_t right{c1_[std::clamp(c + 1, size_t{0}, num_boxes - 1)]};
-          real_t bottom{c1_[std::clamp(b, size_t{0}, num_boxes - 1)]};
-          real_t top{c1_[std::clamp(t, size_t{0}, num_boxes - 1)]};
-          real_t north{c1_[std::clamp(n, size_t{0}, num_boxes - 1)]};
-          real_t south{c1_[std::clamp(s, size_t{0}, num_boxes - 1)]};
-          real_t center_factor{6.0};
-
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
             real_t real_x = grid_dimensions_[0] + x * box_length_;
@@ -337,16 +326,6 @@ void EulerGrid::DiffuseWithPeriodic(real_t dt) {
           s = c + nx;
           b = c - nx * ny;
           t = c + nx * ny;
-
-          // Clamp to avoid out of bounds access. Clamped values are initialized
-          // to a wrong value but will be overwritten by the boundary condition
-          // evaluation. All other values are correct.
-          real_t left{c1_[std::clamp(l, size_t{0}, num_boxes - 1)]};
-          real_t right{c1_[std::clamp(r, size_t{0}, num_boxes - 1)]};
-          real_t bottom{c1_[std::clamp(b, size_t{0}, num_boxes - 1)]};
-          real_t top{c1_[std::clamp(t, size_t{0}, num_boxes - 1)]};
-          real_t north{c1_[std::clamp(n, size_t{0}, num_boxes - 1)]};
-          real_t south{c1_[std::clamp(s, size_t{0}, num_boxes - 1)]};
 
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
