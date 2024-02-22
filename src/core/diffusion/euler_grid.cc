@@ -244,6 +244,14 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
+          real_t left = c1_[c - 1];
+          real_t right = c1_[c + 1];
+          real_t bottom = c1_[b];
+          real_t top = c1_[t];
+          real_t north = c1_[n];
+          real_t south = c1_[s];
+          real_t center_factor{6.0};
+
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
             real_t real_x = grid_dimensions_[0] + x * box_length_;
@@ -326,6 +334,13 @@ void EulerGrid::DiffuseWithPeriodic(real_t dt) {
           s = c + nx;
           b = c - nx * ny;
           t = c + nx * ny;
+
+          real_t left = c1_[l];
+          real_t right = c1_[r];
+          real_t bottom = c1_[b];
+          real_t top = c1_[t];
+          real_t north = c1_[n];
+          real_t south = c1_[s];
 
           if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
               z == (nz - 1)) {
