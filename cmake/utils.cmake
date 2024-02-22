@@ -15,6 +15,9 @@
 # Detect the system flavour and version. Generate variables
 # called DETECTED_OS (ubuntu-18.04, ubuntu-20.04, centos-7, osx)
 # and DETECTED_OS_VERS (ubuntu-18.04, ubuntu-20.04, centos-7 or osx-11.2-i386).
+# In case the Linux arch is aarch64, the DETECTED_OS_VERS ends in -aarch64,
+# like ubuntu-23.10-aarch64. For backward compatibility reasons we don't
+# add -x86_64.
 function(detect_os)
     if(APPLE)
         execute_process(COMMAND sw_vers "-productVersion"
@@ -40,7 +43,11 @@ function(detect_os)
         set(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
         set(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
         set(DETECTED_ARCH "${DISTRO_ARCH}" PARENT_SCOPE)
-        set(DETECTED_OS_VERS "${BDM_OS}" PARENT_SCOPE)
+        if("${DISTRO_ARCH}" STREQUAL "aarch64")
+            set(DETECTED_OS_VERS "${BDM_OS}-${DISTRO_ARCH}" PARENT_SCOPE)
+        else()
+            set(DETECTED_OS_VERS "${BDM_OS}" PARENT_SCOPE)
+        endif()
     endif()
 endfunction()
 

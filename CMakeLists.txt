@@ -650,7 +650,7 @@ if (CUDA_FOUND)
       message("CUDA Debug mode")
       set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -g -G -O0" )
     endif()
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17")
 
     target_link_libraries(biodynamo ${CUDA_LIBRARIES})
     cuda_include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_TOOLKIT_ROOT_DIR})

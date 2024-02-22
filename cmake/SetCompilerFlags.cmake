@@ -26,8 +26,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # general flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -m64 -fPIC ${OpenMP_CXX_FLAGS}")
-set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall -Wno-missing-braces -m64 -fPIC ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -fPIC ${OpenMP_CXX_FLAGS}")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall -Wno-missing-braces -fPIC ${OpenMP_C_FLAGS}")
+if(${DETECTED_ARCH} STREQUAL "x86_64")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -m64")
+endif()
+if(${DETECTED_ARCH} STREQUAL "aarch64")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=native")
+    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mcpu=native")
+endif()
 
 # suppress OpenCL-generated warnings
 if (OPENCL_FOUND)
