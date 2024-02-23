@@ -13,8 +13,8 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/string.h"
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 
 namespace bdm {
 

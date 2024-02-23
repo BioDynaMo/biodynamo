@@ -15,11 +15,11 @@
 #ifndef CORE_OPERATION_OPERATION_H_
 #define CORE_OPERATION_OPERATION_H_
 
+#include <cstdint>
 #include <functional>
 #include <set>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 #include "core/functor.h"
 #include "core/util/log.h"
