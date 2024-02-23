@@ -247,8 +247,8 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           // Clamp to avoid out of bounds access. Clamped values are initialized
           // to a wrong value but will be overwritten by the boundary condition
           // evaluation. All other values are correct.
-          real_t left{c1_[std::clamp(l, size_t{0}, num_boxes - 1)]};
-          real_t right{c1_[std::clamp(r, size_t{0}, num_boxes - 1)]};
+          real_t left{c1_[std::clamp(c-1, size_t{0}, num_boxes - 1)]};
+          real_t right{c1_[std::clamp(c+1, size_t{0}, num_boxes - 1)]};
           real_t bottom{c1_[std::clamp(b, size_t{0}, num_boxes - 1)]};
           real_t top{c1_[std::clamp(t, size_t{0}, num_boxes - 1)]};
           real_t north{c1_[std::clamp(n, size_t{0}, num_boxes - 1)]};
