@@ -127,7 +127,7 @@ sudo apt-get install -y kcov
  * **cmake**: Set of tools for automate building, testing of software
  * **libXt-devel**: Basic library for developing X11
  * **libXext-devel**: Library which contains a handful of X11 extensions
- * **devtoolset-8-gcc**: Compiler suite for C and C++
+ * **devtoolset-10-gcc**: Compiler suite for C and C++
  * **numactl-devel**: Development files for NUMA (simple programming interface to the policy supported by the Linux kernel)
  * **freeglut-devel**: Development files for GLUT (OpenGL Utility Toolkit)
  * **openmpi3-devel**: Development files for OpenMP (API for multiprocessor programming)
@@ -170,7 +170,7 @@ sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 sudo yum -y install wget libXt-devel libXext-devel \
-  devtoolset-8-gcc* numactl-devel \
+  devtoolset-10-gcc* numactl-devel \
   openmpi3-devel freeglut-devel git
 
 curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh

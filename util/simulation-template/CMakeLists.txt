@@ -14,8 +14,8 @@
 cmake_minimum_required(VERSION 3.19.3)
 project(my-simulation)
 
-# BioDynaMo curretly uses the C++14 standard.
-set(CMAKE_CXX_STANDARD 14)
+# BioDynaMo curretly uses the C++17 standard.
+set(CMAKE_CXX_STANDARD 17)
 
 # Use BioDynaMo in this project.
 find_package(BioDynaMo REQUIRED)

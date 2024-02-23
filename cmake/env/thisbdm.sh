@@ -554,7 +554,7 @@ _source_thisbdm()
     if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
         if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
-            . scl_source enable devtoolset-8 || return 1
+            . scl_source enable devtoolset-10 || return 1
         fi
         . /etc/profile.d/modules.sh || return 1
         module load mpi || return 1

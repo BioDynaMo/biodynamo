@@ -21,26 +21,26 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-12, macos-13]
+        os: [macos-12, macos-13, macos-14]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 14.1 is used on macOS 12 as the default /Application/Xcode.app
+    - name: Make sure Xcode 14.2 is used on macOS 12 as the default /Application/Xcode.app
       shell: zsh {0}
       run: |
         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_14.1.app /Applications/Xcode.app
+        sudo ln -s /Applications/Xcode_14.2.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       if: matrix.os == 'macos-12'
-
-    - name: Make sure Xcode 13.1 is used on macOS 11 as the default /Application/Xcode.app
+    
+    - name: Make sure Xcode 15.2 is used on macOS 13 as the default /Application/Xcode.app
       shell: bash
       run: |
         sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_13.1.app /Applications/Xcode.app
+        sudo ln -s /Applications/Xcode_15.2.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      if: matrix.os == 'macos-11'
+      if: matrix.os == 'macos-13'
 
     - name: Set GHA_BRANCH_NAME
       run: |
@@ -67,7 +67,7 @@ jobs:
         find /tmp -iname biodynamo -type d || true
 
     - name: Checkout BioDynaMo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -84,7 +84,7 @@ jobs:
         fi
 
     # - name: Cache Third Party Packages
-    #   uses: actions/cache@v2
+    #   uses: actions/cache@v4
     #   with:
     #     path: build/third_party
     #     key: ${{ runner.os }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}

@@ -14,7 +14,7 @@
 
 #include "core/util/proc.h"
 #include <unistd.h>
-#include "core/stdfilesystem.h"
+#include <filesystem>
 #include "core/util/log.h"
 
 #ifdef LINUX
@@ -60,12 +60,12 @@ std::string GetExecutablePath() {
 namespace bdm {
 
 std::string GetExecutableDirectory() {
-  fs::path bin_path = GetExecutablePath();
+  std::filesystem::path bin_path = GetExecutablePath();
   return bin_path.remove_filename().string();
 }
 
 std::string GetExecutableName() {
-  fs::path bin_path = GetExecutablePath();
+  std::filesystem::path bin_path = GetExecutablePath();
   return bin_path.filename().string();
 }
 

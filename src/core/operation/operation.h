@@ -15,6 +15,7 @@
 #ifndef CORE_OPERATION_OPERATION_H_
 #define CORE_OPERATION_OPERATION_H_
 
+#include <cstdint>
 #include <functional>
 #include <set>
 #include <string>

@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <ostream>
@@ -40,7 +41,6 @@
 #include "core/param/param.h"
 #include "core/resource_manager.h"
 #include "core/scheduler.h"
-#include "core/stdfilesystem.h"
 #include "core/util/filesystem.h"
 #include "core/util/io.h"
 #include "core/util/log.h"
@@ -559,7 +559,7 @@ void Simulation::InitializeOutputDir() {
     Log::Fatal("Simulation::InitializeOutputDir",
                "Failed to make output directory ", output_dir_);
   }
-  if (!fs::is_empty(output_dir_)) {
+  if (!std::filesystem::is_empty(output_dir_)) {
     if (param_->remove_output_dir_contents) {
       RemoveDirectoryContents(output_dir_);
     } else {

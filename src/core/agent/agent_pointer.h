@@ -233,7 +233,7 @@ class AgentPointer {
     }
   }
 
-  /// Replace with std::variant once we move to >= c++17
+  /// TODO. Replace with std::variant once we move to >= c++17
   union Data {
     AgentUid uid;
     TAgent* agent;

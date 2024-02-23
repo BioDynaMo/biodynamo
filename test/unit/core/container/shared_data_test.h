@@ -27,66 +27,74 @@ inline void RunCacheLineAlignmentTest() {
   // Test alignment of int
   EXPECT_EQ(
       std::alignment_of<typename SharedData<int>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
+      hardware_destructive_interference_size);
   // Test alignment of float
   EXPECT_EQ(
       std::alignment_of<typename SharedData<float>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
+      hardware_destructive_interference_size);
   // Test alignment of double
   EXPECT_EQ(
       std::alignment_of<typename SharedData<double>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
+      hardware_destructive_interference_size);
   // Test size of vector components int
   EXPECT_EQ(sizeof(typename SharedData<int>::Data::value_type),
-            BDM_CACHE_LINE_SIZE);
+            hardware_destructive_interference_size);
   // Test size of vector components float
   EXPECT_EQ(sizeof(typename SharedData<float>::Data::value_type),
-            BDM_CACHE_LINE_SIZE);
+            hardware_destructive_interference_size);
   // Test size of vector components double
   EXPECT_EQ(sizeof(typename SharedData<double>::Data::value_type),
-            BDM_CACHE_LINE_SIZE);
+            hardware_destructive_interference_size);
 
   // Test a cache line fully filled with doubles.
   // Test alignment of double[max_double], e.g. max cache line capacity
   EXPECT_EQ(
       std::alignment_of<
-          typename SharedData<double[BDM_CACHE_LINE_SIZE /
+          typename SharedData<double[hardware_destructive_interference_size /
                                      sizeof(double)]>::Data::value_type>::value,
-      BDM_CACHE_LINE_SIZE);
+      hardware_destructive_interference_size);
   // Test size of vector components double[max_double], e.g. max cache line
   // capacity
   EXPECT_EQ(
-      sizeof(typename SharedData<
-             double[BDM_CACHE_LINE_SIZE / sizeof(double)]>::Data::value_type),
-      BDM_CACHE_LINE_SIZE);
+      sizeof(typename SharedData<double[hardware_destructive_interference_size /
+                                        sizeof(double)]>::Data::value_type),
+      hardware_destructive_interference_size);
 
   // Test some custom data structures
   // Test alignment of data that fills 1 cache line
-  EXPECT_EQ(std::alignment_of<typename SharedData<
-                char[BDM_CACHE_LINE_SIZE - 1]>::Data::value_type>::value,
-            BDM_CACHE_LINE_SIZE);
+  EXPECT_EQ(
+      std::alignment_of<
+          typename SharedData<char[hardware_destructive_interference_size -
+                                   1]>::Data::value_type>::value,
+      hardware_destructive_interference_size);
   // Test alignment of data that fills 2 cache lines
-  EXPECT_EQ(std::alignment_of<typename SharedData<
-                char[BDM_CACHE_LINE_SIZE + 1]>::Data::value_type>::value,
-            BDM_CACHE_LINE_SIZE);
+  EXPECT_EQ(
+      std::alignment_of<
+          typename SharedData<char[hardware_destructive_interference_size +
+                                   1]>::Data::value_type>::value,
+      hardware_destructive_interference_size);
   // Test alignment of data that fills 3 cache lines
-  EXPECT_EQ(std::alignment_of<typename SharedData<
-                char[2 * BDM_CACHE_LINE_SIZE + 1]>::Data::value_type>::value,
-            BDM_CACHE_LINE_SIZE);
+  EXPECT_EQ(
+      std::alignment_of<
+          typename SharedData<char[2 * hardware_destructive_interference_size +
+                                   1]>::Data::value_type>::value,
+      hardware_destructive_interference_size);
   // Test size of data that fills 1 cache line
   EXPECT_EQ(
-      sizeof(
-          typename SharedData<char[BDM_CACHE_LINE_SIZE - 1]>::Data::value_type),
-      BDM_CACHE_LINE_SIZE);
+      sizeof(typename SharedData<char[hardware_destructive_interference_size -
+                                      1]>::Data::value_type),
+      hardware_destructive_interference_size);
   // Test size of data that fills 2 cache lines
   EXPECT_EQ(
-      sizeof(
-          typename SharedData<char[BDM_CACHE_LINE_SIZE + 1]>::Data::value_type),
-      2 * BDM_CACHE_LINE_SIZE);
+      sizeof(typename SharedData<char[hardware_destructive_interference_size +
+                                      1]>::Data::value_type),
+      2 * hardware_destructive_interference_size);
   // Test size of data that fills 3 cache lines
-  EXPECT_EQ(sizeof(typename SharedData<
-                   char[2 * BDM_CACHE_LINE_SIZE + 1]>::Data::value_type),
-            3 * BDM_CACHE_LINE_SIZE);
+  EXPECT_EQ(
+      sizeof(
+          typename SharedData<char[2 * hardware_destructive_interference_size +
+                                   1]>::Data::value_type),
+      3 * hardware_destructive_interference_size);
 }
 
 #ifdef USE_DICT
