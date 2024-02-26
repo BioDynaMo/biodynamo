@@ -394,6 +394,33 @@
   fun:getpwuid_r@@GLIBC_2.2.5
 }
 
+{
+  glib_issue_root_v6-30-02
+  Memcheck:Addr8
+  fun:strncmp
+  fun:is_dst
+  fun:_dl_dst_substitute
+  fun:fillin_rpath.isra.0
+  fun:decompose_rpath
+  fun:cache_rpath
+  fun:cache_rpath
+  fun:_dl_map_object
+  fun:openaux
+  fun:_dl_catch_exception
+  fun:_dl_map_object_deps
+  fun:dl_open_worker_begin
+  fun:_dl_catch_exception
+  fun:dl_open_worker
+  fun:_dl_catch_exception
+  fun:_dl_open
+  fun:dlopen_doit
+  fun:_dl_catch_exception
+  fun:_dl_catch_error
+  fun:_dlerror_run
+  fun:dlopen_implementation
+  fun:dlopen@@GLIBC_2.34
+}
+
 ######### Suppress OpenMPI issues
 {
    ignore_openmpi_false_positives
