@@ -1135,10 +1135,10 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
 TEST(DiffusionTest, EulerPeriodicBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [&](Param* param) {
-          param->bound_space = Param::BoundSpaceMode::kClosed;
-          param->min_bound = -50;
-          param->max_bound = 50;
-          param->diffusion_boundary_condition = "Periodic";
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -50;
+    param->max_bound = 50;
+    param->diffusion_boundary_condition = "Periodic";
   };
   Simulation simulation(TEST_NAME, set_param);
 
