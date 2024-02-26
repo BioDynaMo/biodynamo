@@ -247,8 +247,8 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
           // Clamp to avoid out of bounds access. Clamped values are initialized
           // to a wrong value but will be overwritten by the boundary condition
           // evaluation. All other values are correct.
-          real_t left{c1_[std::clamp(c-1, size_t{0}, num_boxes - 1)]};
-          real_t right{c1_[std::clamp(c+1, size_t{0}, num_boxes - 1)]};
+          real_t left{c1_[std::clamp(c - 1, size_t{0}, num_boxes - 1)]};
+          real_t right{c1_[std::clamp(c + 1, size_t{0}, num_boxes - 1)]};
           real_t bottom{c1_[std::clamp(b, size_t{0}, num_boxes - 1)]};
           real_t top{c1_[std::clamp(t, size_t{0}, num_boxes - 1)]};
           real_t north{c1_[std::clamp(n, size_t{0}, num_boxes - 1)]};
@@ -302,11 +302,9 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
 }
 
 void EulerGrid::DiffuseWithPeriodic(real_t dt) {
-
   const size_t nx = resolution_;
   const size_t ny = resolution_;
   const size_t nz = resolution_;
-  const size_t num_boxes = nx * ny * nz;
 
   const real_t dx = box_length_;
   const real_t d = 1 - dc_[0];
@@ -320,17 +318,15 @@ void EulerGrid::DiffuseWithPeriodic(real_t dt) {
         ymax = ny;
       }
       for (size_t y = yy; y < ymax; y++) {
-        size_t x{0};
-        size_t c{0};
         size_t l{0};
         size_t r{0};
         size_t n{0};
         size_t s{0};
         size_t b{0};
         size_t t{0};
-        c = x + y * nx + z * nx * ny;
+        size_t c = y * nx + z * nx * ny;
 #pragma omp simd
-        for (x = 0; x < nx; x++) {
+        for (size_t x = 0; x < nx; x++) {
           l = c - 1;
           r = c + 1;
           n = c - nx;
@@ -338,56 +334,29 @@ void EulerGrid::DiffuseWithPeriodic(real_t dt) {
           b = c - nx * ny;
           t = c + nx * ny;
 
-           // Clamp to avoid out of bounds access. Clamped values are initialized
-          // to a wrong value but will be overwritten by the boundary condition
-          // evaluation. All other values are correct.
-          real_t left{c1_[std::clamp(l, size_t{0}, num_boxes - 1)]};
-          real_t right{c1_[std::clamp(r, size_t{0}, num_boxes - 1)]};
-          real_t bottom{c1_[std::clamp(b, size_t{0}, num_boxes - 1)]};
-          real_t top{c1_[std::clamp(t, size_t{0}, num_boxes - 1)]};
-          real_t north{c1_[std::clamp(n, size_t{0}, num_boxes - 1)]};
-          real_t south{c1_[std::clamp(s, size_t{0}, num_boxes - 1)]};
-
-          if (x == 0 || x == (nx - 1) || y == 0 || y == (ny - 1) || z == 0 ||
-              z == (nz - 1)) {
-
-            // For each box on the boundary, we find the concentration of the 
-            // box on the opposite side of the simulation:
-            //    |                          |
-            //    |u0  u1  u2 .... un-2  un-1|
-            //    |                          |
-            // The diffusion in u0 will be determined by the concentration in 
-            // u1 and un-1.
-
-
-            if (x == 0) {
-              l = nx-1 + y * nx + z * nx * ny;
-              left = c1_[l];
-            } else if (x == (nx - 1)) {
-              r = 0 + y * nx + z * nx * ny;
-              right = c1_[r];
-            }
-
-            if (y == 0) {
-              n = x + (ny-1) * nx + z * nx * ny;
-              north = c1_[n];
-            } else if (y == (ny - 1)) {
-              s = x + 0 * nx + z * nx * ny;
-              south = c1_[s];
-            }
-
-            if (z == 0) {
-              b = x + y * nx + (nz-1) * nx * ny;
-              bottom = c1_[b];
-            } else if (z == (nz - 1)) {
-              t = x + y * nx + 0 * nx * ny;
-              top = c1_[t];
-            }
+          // Adapt neighbor indices for boundary boxes for periodic boundary
+          if (x == 0) {
+            l = nx - 1 + y * nx + z * nx * ny;
+          } else if (x == (nx - 1)) {
+            r = 0 + y * nx + z * nx * ny;
           }
 
-          c2_[c] = c1_[c] * (1 - (mu_ * dt))
-                            + ( (d * dt / (dx*dx) ) * (left + right + north + south
-                                                       + top + bottom - 6.0*c1_[c]) );
+          if (y == 0) {
+            n = x + (ny - 1) * nx + z * nx * ny;
+          } else if (y == (ny - 1)) {
+            s = x + 0 * nx + z * nx * ny;
+          }
+
+          if (z == 0) {
+            b = x + y * nx + (nz - 1) * nx * ny;
+          } else if (z == (nz - 1)) {
+            t = x + y * nx + 0 * nx * ny;
+          }
+
+          // Stencil update
+          c2_[c] = c1_[c] * (1 - (mu_ * dt)) +
+                   ((d * dt / (dx * dx)) * (c1_[l] + c1_[r] + c1_[n] + c1_[s] +
+                                            c1_[t] + c1_[b] - 6.0 * c1_[c]));
 
           ++c;
         }
