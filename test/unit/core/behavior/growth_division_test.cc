@@ -21,7 +21,12 @@
 namespace bdm {
 
 TEST(GrowthDivisionTest, Grow) {
-  Simulation simulation(TEST_NAME);
+  auto set_param = [](auto* param) {
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
+  };
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 
@@ -40,7 +45,12 @@ TEST(GrowthDivisionTest, Grow) {
 }
 
 TEST(GrowthDivisionTest, Divide) {
-  Simulation simulation(TEST_NAME);
+  auto set_param = [](auto* param) {
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
+  };
+  Simulation simulation(TEST_NAME, set_param);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
 

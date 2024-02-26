@@ -28,7 +28,12 @@ namespace bdm {
 namespace dividing_cell_op_test_internal {
 
 inline void RunTest() {
-  Simulation simulation("dividing_cell_op_test_RunTest");
+  auto set_param = [](auto* param) {
+    param->min_bound = 0;
+    param->max_bound = 100;
+    param->simulation_time_step = 0.01;
+  };
+  Simulation simulation("dividing_cell_op_test_RunTest", set_param);
   auto* rm = simulation.GetResourceManager();
   auto* ctxt = simulation.GetExecutionContext();
   ctxt->SetupIterationAll(simulation.GetAllExecCtxts());

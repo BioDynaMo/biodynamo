@@ -62,6 +62,7 @@ void Param::Restore(Param&& other) {
   other.groups_.clear();
 }
 
+// -----------------------------------------------------------------------------
 Param::Param(const Param& other) {
   *this = other;
   for (auto el : other.groups_) {
@@ -223,9 +224,11 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
     el.second->AssignFromConfig(config);
   }
 
-  // simulation group
+  // simulation parameters group
   BDM_ASSIGN_CONFIG_VALUE(random_seed, "simulation.random_seed");
   BDM_ASSIGN_CONFIG_VALUE(output_dir, "simulation.output_dir");
+  BDM_ASSIGN_CONFIG_VALUE(remove_output_dir_contents,
+                          "simulation.remove_output_dir");
   BDM_ASSIGN_CONFIG_VALUE(environment, "simulation.environment");
   BDM_ASSIGN_CONFIG_VALUE(nanoflann_depth, "simulation.nanoflann_depth");
   BDM_ASSIGN_CONFIG_VALUE(unibn_bucketsize, "simulation.unibn_bucketsize");
@@ -242,25 +245,30 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(diffusion_method, "simulation.diffusion_method");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients,
                           "simulation.calculate_gradients");
+
   AssignBoundSpaceMode(config, this);
   AssignThreadSafetyMechanism(config, this);
 
-  // visualization group
+  // visualization parameters group
   BDM_ASSIGN_CONFIG_VALUE(visualization_engine, "visualization.adaptor");
   BDM_ASSIGN_CONFIG_VALUE(insitu_visualization, "visualization.insitu");
-  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline,
-                          "visualization.pv_insitu_pipeline");
-  BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipelinearguments,
-                          "visualization.pv_insitu_pipelinearguments");
+  if ("paraview" == visualization_engine) {
+    BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipeline,
+                            "visualization.pv_insitu_pipeline");
+    BDM_ASSIGN_CONFIG_VALUE(pv_insitu_pipelinearguments,
+                            "visualization.pv_insitu_pipelinearguments");
+  }
   BDM_ASSIGN_CONFIG_VALUE(root_visualization, "visualization.root");
   BDM_ASSIGN_CONFIG_VALUE(export_visualization, "visualization.export");
   BDM_ASSIGN_CONFIG_VALUE(visualization_interval, "visualization.interval");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm,
-                          "visualization.export_generate_pvsm");
-  BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
-                          "visualization.compress_pv_files");
+  if ("paraview" == visualization_engine) {
+    BDM_ASSIGN_CONFIG_VALUE(visualization_export_generate_pvsm,
+                            "visualization.export_generate_pvsm");
+    BDM_ASSIGN_CONFIG_VALUE(visualization_compress_pv_files,
+                            "visualization.compress_pv_files");
+  }
 
-  //   visualize_agents
+  // visualization parameters group (for agents)
   auto visualize_agentstarr = config->get_table_array("visualize_agent");
   if (visualize_agentstarr) {
     for (const auto& table : *visualize_agentstarr) {
@@ -292,7 +300,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
     }
   }
 
-  //   visualize_diffusion
+  // visualization parameters group (for diffusion grid)
   auto visualize_diffusiontarr = config->get_table_array("visualize_diffusion");
   if (visualize_diffusiontarr) {
     for (const auto& table : *visualize_diffusiontarr) {
@@ -335,7 +343,7 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
     }
   }
 
-  // performance group
+  // performance parameters group
   BDM_ASSIGN_CONFIG_VALUE(scheduling_batch_size,
                           "performance.scheduling_batch_size");
   BDM_ASSIGN_CONFIG_VALUE(detect_static_agents,
@@ -350,19 +358,26 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "performance.mem_mgr_max_mem_per_thread_factor");
   BDM_ASSIGN_CONFIG_VALUE(minimize_memory_while_rebalancing,
                           "performance.minimize_memory_while_rebalancing");
+
   AssignMappedDataArrayMode(config, this);
 
-  // development group
+  // development parameters group
   BDM_ASSIGN_CONFIG_VALUE(statistics, "development.statistics");
   BDM_ASSIGN_CONFIG_VALUE(debug_numa, "development.debug_numa");
   BDM_ASSIGN_CONFIG_VALUE(show_simulation_step,
                           "development.show_simulation_step");
   BDM_ASSIGN_CONFIG_VALUE(use_progress_bar, "development.use_progress_bar");
+  if (use_progress_bar) {
+    BDM_ASSIGN_CONFIG_VALUE(progress_bar_time_unit,
+                            "development.progress_bar_time_unit");
+  }
 
-  // experimental group
+  // experimental parameters group
   BDM_ASSIGN_CONFIG_VALUE(compute_target, "experimental.compute_target");
   BDM_ASSIGN_CONFIG_VALUE(opencl_debug, "experimental.opencl_debug");
   BDM_ASSIGN_CONFIG_VALUE(preferred_gpu, "experimental.preferred_gpu");
+  BDM_ASSIGN_CONFIG_VALUE(plot_memory_layout,
+                          "experimental.plot_memory_layout");
 }
 
 }  // namespace bdm
