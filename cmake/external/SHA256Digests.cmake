@@ -92,3 +92,4 @@ SET(centos-7-ParaView 45d545e75baf32c9fe30944781b4f6b172d4efd7d6cd794dcd19ec671c
 SET(centos-7-Qt 4308621ff9ec84585c3aead92a9d2de787b3c700323333b6e78ed45d04a0d2a4)
 SET(centos-7-ROOT 54298aa5f13dc2942925c10d755768f81f53d7135ac1a3e698e9b7ef1a3dfd1e)
 
+SET(almalinux-9.3-aarch64-ROOT f72e4abbfcaeca16cba862310d4dada2d6a7eda16e1044bcdaea9321e50ae48a)
