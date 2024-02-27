@@ -143,7 +143,7 @@ Then click the Play button at the top of the screen to run the simulation visual
 ### Boundary conditions
 
 For a numerical solution, we need to specify the equation, the boundary
-conditions, and the domain. BioDynaMo supports Neumann and Dirichlet boundaries 
+conditions, and the domain. BioDynaMo supports Neumann, Dirichlet and Periodic boundaries 
 with constant coefficients on a cube domain. For instance, you may specify 
 no-flux boundaries (homogeneous Neumann) via
 ``` cpp
@@ -156,6 +156,11 @@ or some Dirichlet boundaries via
 ModelInitializer::AddBoundaryConditions(
     kKalium, BoundaryConditionType::kDirichlet,
     std::make_unique<ConstantBoundaryCondition>(1.0));
+```
+or Periodic boundaries via
+``` cpp
+ModelInitializer::AddBoundaryConditions(
+    kKalium, BoundaryConditionType::kPeriodic);
 ```
 
 The `ModelInitializer` conveniently wraps the access to the `ResourceManager`
