@@ -1,5 +1,9 @@
+epel-release
+lsb_release
 cmake
 git
+gcc
+g++
 wget
 ninja-build
 bzip2-devel
