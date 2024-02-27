@@ -5,6 +5,8 @@ git
 gcc
 g++
 wget
+man
+make
 ninja-build
 bzip2-devel
 freeglut-devel
