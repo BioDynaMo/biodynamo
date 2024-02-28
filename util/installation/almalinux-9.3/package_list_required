@@ -1,5 +1,5 @@
 epel-release
-lsb-release
+lsb_release
 cmake
 git
 gcc
