@@ -20,9 +20,8 @@ jobs:
     - name: Install dependencies
       run: |
         dnf -y update
-        dnf config-manager --set-enabled crb
-        dnf -y install epel-release
-        dnf -y install \
+        dnf -y --enablerepo=crb install epel-release
+        dnf -y --enablerepo=crb install \
           lsb_release cmake git gcc g++ wget man make ninja-build \
           bzip2-devel freeglut-devel libXext-devel libXt-devel libXpm-devel \
           libXft-devel numactl-devel openmpi-devel zlib-devel lapack-devel \
