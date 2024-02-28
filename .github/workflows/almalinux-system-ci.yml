@@ -118,8 +118,8 @@ jobs:
         eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         pyenv shell 3.9.1
-        #. /etc/profile.d/modules.sh || true
-        #module load mpi
+        . /etc/profile.d/modules.sh || true
+        module load mpi
         cmake \
           -Dparaview=OFF \
           -Dbenchmark=ON \
@@ -139,7 +139,6 @@ jobs:
     #     eval "$(pyenv init --path)"
     #     eval "$(pyenv init -)"
     #     pyenv shell 3.9.1
-    #     . scl_source enable devtoolset-10 || true
     #     . /etc/profile.d/modules.sh || true
     #     module load mpi
     #     cmake \

@@ -79,8 +79,8 @@ jobs:
         eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
         pyenv shell 3.9.1
-        #. /etc/profile.d/modules.sh || true
-        #module load mpi
+        . /etc/profile.d/modules.sh || true
+        module load mpi
         cmake -G Ninja \
           -Dparaview=OFF \
           -Dbenchmark=ON \

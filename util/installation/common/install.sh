@@ -51,6 +51,21 @@ if [ $BDM_OS = "centos-7" ]; then
   module load mpi
 fi
 
+if [ $BDM_OS = "almalinux-9.3" ]; then
+  # Turn of NUMA for Github Actions CentOS runner, because we get "mbind
+  # operation not permitted errors", due to docker security constraints
+  if [ ! -z ${GITHUB_ACTIONS+x} ]; then
+    BDM_CMAKE_FLAGS="$BDM_CMAKE_FLAGS -Dnuma=off"
+  fi
+
+  #if [ -z ${CXX} ] && [ -z ${CC} ] ; then
+  #  . scl_source enable devtoolset-10
+  #fi
+
+  . /etc/profile.d/modules.sh
+  module load mpi
+fi
+
 if [ "$BDM_OS" != "osx" ]; then
   export PYENV_ROOT="$HOME/.pyenv"
   export PATH="$PYENV_ROOT/bin:$PATH"
