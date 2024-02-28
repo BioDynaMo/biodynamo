@@ -19,9 +19,10 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
+        lsb_release -a
         dnf -y update
         dnf -y --enablerepo=crb install \
-          epel-release lsb_release cmake git gcc g++ wget man make ninja-build \
+          epel-release cmake git gcc g++ wget man make ninja-build \
           bzip2-devel freeglut-devel libXext-devel libXt-devel libXpm-devel \
           libXft-devel numactl-devel openmpi-devel zlib-devel lapack-devel \
           blas-devel readline-devel sqlite-devel openssl-devel xz-devel \
