@@ -61,7 +61,7 @@ jobs:
       shell: bash
       run: |
         dnf update -y
-        dnf install -y sudo curl
+        dnf install -y --allowerasing sudo curl
         curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
         # remove whole BioDynaMo repository to catch errors related to paths pointing into the build dir
         mktemp -d
