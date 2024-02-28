@@ -29,9 +29,10 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 
 sudo -v
 
-sudo dnf update -y
+sudo dnf -y update
 
 # Install required packages
+sudo dnf -y --enablerepo=crb install epel-release
 sudo dnf -y --enablerepo=crb install \
   $(cat $BDM_PROJECT_DIR/util/installation/almalinux-9.3/package_list_required)
 

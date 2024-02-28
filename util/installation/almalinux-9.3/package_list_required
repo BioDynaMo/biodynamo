@@ -1,4 +1,3 @@
-epel-release
 lsb_release
 cmake
 git
@@ -27,3 +26,4 @@ xz-devel
 libffi-devel
 findutils
 patch
+which
