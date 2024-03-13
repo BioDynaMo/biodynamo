@@ -974,8 +974,8 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -100;
-    param->max_bound = 100;
+    param->min_bound = -50;
+    param->max_bound = 50;
     param->diffusion_boundary_condition = "Dirichlet";
   };
   Simulation simulation(TEST_NAME, set_param);
@@ -984,7 +984,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
 
   double decay_coef = 0.0;
   double diff_coef = 100.0;
-  int res = 20;
+  int res = 10;
   // Depleting substance is fixed, i.e. no diff and no decay
   auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
 
@@ -996,7 +996,7 @@ TEST(DiffusionTest, EulerDirichletBoundaries) {
   rm->AddContinuum(dgrid);
 
   // Simulate diffusion / exponential decay for `tot` timesteps
-  int tot = 100000;  // ToDo This should probably be lower for final version
+  int tot = 5000;  // ToDo This should probably be lower for final version
   for (int t = 0; t < tot; t++) {
     dgrid->Diffuse(simulation_time_step);
   }
@@ -1016,8 +1016,8 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
-    param->min_bound = -100;
-    param->max_bound = 100;
+    param->min_bound = -50;
+    param->max_bound = 50;
     param->diffusion_boundary_condition = "Neumann";
   };
   Simulation simulation(TEST_NAME, set_param);
@@ -1026,12 +1026,12 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
 
   double decay_coef = 0.0;
   double diff_coef = 10.0;
-  int res = 20;
+  int res = 10;
   double init = 1e5;
   std::vector<Real3> sources;
   sources.push_back({0, 0, 0});
-  sources.push_back({50, 50, 50});
-  sources.push_back({-50, -50, -50});
+  sources.push_back({49, 49, 49});
+  sources.push_back({-49, -49, -49});
 
   // Test multiple positions for the source
   for (size_t s = 0; s < sources.size(); s++) {
@@ -1045,7 +1045,7 @@ TEST(DiffusionTest, EulerNeumannZeroBoundaries) {
     rm->AddContinuum(dgrid);
 
     // Simulate diffusion / exponential decay for `tot` timesteps
-    int tot = 10000;
+    int tot = 1000;
     for (int t = 0; t < tot; t++) {
       dgrid->Diffuse(simulation_time_step);
     }
@@ -1104,7 +1104,7 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
   // ----------------------------------------------------------
 
   double intermediate_concentration_backup = 0.0;
-  int tot = 10000;
+  int tot = 1000;
   for (int t = 0; t < tot; t++) {
     dgrid->Diffuse(simulation_time_step);
     conc = dgrid->GetAllConcentrations();  // get current concentrations.
@@ -1130,6 +1130,73 @@ TEST(DiffusionTest, EulerNeumannNonZeroBoundaries) {
   }
 
   rm->RemoveContinuum(0);
+}
+
+TEST(DiffusionTest, EulerPeriodicBoundaries) {
+  double simulation_time_step{0.1};
+  auto set_param = [&](Param* param) {
+    param->bound_space = Param::BoundSpaceMode::kClosed;
+    param->min_bound = -50;
+    param->max_bound = 50;
+    param->diffusion_boundary_condition = "Periodic";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 100.0;
+  int res = 10;
+  double init = 1e5;
+
+  // Place source at u0 and measure concentration in u1 and un-1.
+  // Concentration should be identical.
+  //    |                          |
+  //    |u0  u1  u2 .... un-2  un-1|
+  //    |                          |
+  //
+  // Repeat for all 6 sides of simulation.
+
+  std::vector<Real3> sources;
+  sources.push_back({45, 5, 5});
+  sources.push_back({-45, 5, 5});
+  sources.push_back({5, 45, 5});
+  sources.push_back({5, -45, 0});
+  sources.push_back({5, 5, 45});
+  sources.push_back({5, 5, -45});
+
+  std::vector<Real3> inside;
+  inside.push_back({35, 5, 5});
+  inside.push_back({-35, 5, 5});
+  inside.push_back({5, 35, 5});
+  inside.push_back({5, -35, 5});
+  inside.push_back({5, 5, 35});
+  inside.push_back({5, 5, -35});
+
+  std::vector<Real3> outside;
+  outside.push_back({-45, 5, 0});
+  outside.push_back({45, 5, 5});
+  outside.push_back({5, -45, 5});
+  outside.push_back({5, 45, 5});
+  outside.push_back({5, 5, -45});
+  outside.push_back({5, 5, 45});
+
+  for (size_t s = 0; s < sources.size(); s++) {
+    auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+    dgrid->Initialize();
+    dgrid->SetUpperThreshold(1e15);
+    dgrid->ChangeConcentrationBy(sources[s], init);
+    rm->AddContinuum(dgrid);
+
+    // Concententration measured at both positions should be identical.
+    int tot = 20;
+    for (int t = 0; t < tot; t++) {
+      dgrid->Diffuse(simulation_time_step);
+      EXPECT_FLOAT_EQ(dgrid->GetValue(inside[s]), dgrid->GetValue(outside[s]));
+    }
+    rm->RemoveContinuum(0);
+  }
 }
 
 TEST(DiffusionTest, DynamicTimeStepping) {

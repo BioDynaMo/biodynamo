@@ -31,6 +31,7 @@ class TestGrid : public DiffusionGrid {
   void DiffuseWithOpenEdge(real_t dt) override { return; };
   void DiffuseWithDirichlet(real_t dt) override { return; };
   void DiffuseWithNeumann(real_t dt) override { return; };
+  void DiffuseWithPeriodic(real_t dt) override { return; };
 
   void Swap() { c1_.swap(c2_); }
 

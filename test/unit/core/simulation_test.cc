@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include <omp.h>
+#include <filesystem>
 #include <fstream>
 #include <regex>
 #include <string>
@@ -23,7 +24,6 @@
 #include "core/environment/environment.h"
 #include "core/resource_manager.h"
 #include "core/simulation_backup.h"
-#include "core/stdfilesystem.h"
 #include "core/util/io.h"
 #include "unit/test_util/io_test.h"
 #include "unit/test_util/test_util.h"
@@ -448,27 +448,27 @@ TEST_F(SimulationTest, InlineConfig) {
 }
 
 TEST_F(SimulationTest, DontRemoveOutputDirContents) {
-  fs::create_directory(Concat("output/", TEST_NAME));
-  fs::create_directory(Concat("output/", TEST_NAME, "/subdir"));
-  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+  std::filesystem::create_directory(Concat("output/", TEST_NAME));
+  std::filesystem::create_directory(Concat("output/", TEST_NAME, "/subdir"));
+  EXPECT_FALSE(std::filesystem::is_empty(Concat("output/", TEST_NAME)));
 
   auto SetParam = [](Param* param) {
     param->remove_output_dir_contents = false;
   };
   Simulation sim(TEST_NAME, SetParam);
-  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+  EXPECT_FALSE(std::filesystem::is_empty(Concat("output/", TEST_NAME)));
 }
 
 TEST_F(SimulationTest, RemoveOutputDirContents) {
-  fs::create_directory(Concat("output/", TEST_NAME));
-  fs::create_directory(Concat("output/", TEST_NAME, "/subdir"));
-  EXPECT_FALSE(fs::is_empty(Concat("output/", TEST_NAME)));
+  std::filesystem::create_directory(Concat("output/", TEST_NAME));
+  std::filesystem::create_directory(Concat("output/", TEST_NAME, "/subdir"));
+  EXPECT_FALSE(std::filesystem::is_empty(Concat("output/", TEST_NAME)));
 
   auto set_param = [](Param* param) {
     param->remove_output_dir_contents = true;
   };
   Simulation sim(TEST_NAME, set_param);
-  EXPECT_TRUE(fs::is_empty(Concat("output/", TEST_NAME)));
+  EXPECT_TRUE(std::filesystem::is_empty(Concat("output/", TEST_NAME)));
 }
 
 #ifdef USE_DICT

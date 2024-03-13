@@ -44,7 +44,7 @@ if [ $BDM_OS = "centos-7" ]; then
   fi
 
   if [ -z ${CXX} ] && [ -z ${CC} ] ; then
-    . scl_source enable devtoolset-8
+    . scl_source enable devtoolset-10
   fi
 
   . /etc/profile.d/modules.sh

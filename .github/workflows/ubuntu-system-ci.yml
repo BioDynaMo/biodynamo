@@ -64,7 +64,7 @@ jobs:
         find /tmp -iname biodynamo -type d || true
 
     - name: Checkout BioDynaMo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -78,7 +78,7 @@ jobs:
         fi
 
     - name: Cache pyenv
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: pyenv-cache
       with:
         path: ~/.pyenv
@@ -99,7 +99,7 @@ jobs:
         pyenv shell 3.9.1
 
     - name: Cache Third Party Packages
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: build/third_party
         key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
@@ -115,7 +115,8 @@ jobs:
         fi
 
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
-    # runners, while waiting for other targets to be compiled
+    # runners, while waiting for other targets to be compiled. Run notebooks only
+    # if the event is a pull request, and on ubuntu-22.04.
     - name: Run notebooks
       shell: bash
       run: |
@@ -126,11 +127,13 @@ jobs:
         cmake \
           -Dnotebooks=ON \
           -Dsbml=OFF \
+          -Dnuma=OFF \
           -DCMAKE_BUILD_TYPE=Release \
           -Dreal_t=${{ env.REALT }} \
           -B build
         cmake --build build --parallel --config Release --target notebooks  -- -j1
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-22.04'
+      
 
     - name: Build BioDynaMo
       shell: bash

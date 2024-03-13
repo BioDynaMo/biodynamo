@@ -17,15 +17,29 @@
 
 #include <array>
 #include <cstdint>
+#include <new>
 #include <vector>
 
 #include "core/util/root.h"
 
-/// This is BioDynaMo's default cacheline size. If you system has a different
-/// cacheline size, consider changing the value accordingly. When BioDynaMo
-/// moves to the C++17 standard, this choice will be automated. See :
-/// en.cppreference.com/w/cpp/thread/hardware_destructive_interference_size
-#define BDM_CACHE_LINE_SIZE 64u
+/// This is BioDynaMo's cacheline size. If you system has a different
+/// cacheline size, consider changing the value accordingly. In particular,
+/// this value is used to align the data in the SharedData class to avoid false
+/// sharing between threads. From C++17 on, the standard library provides
+/// hardware_constructive_interference_size and
+/// hardware_destructive_interference_size, which can be used instead of this
+/// constant. If the standard library does not provide these constants, the
+/// default value for x86-64 is used.
+#ifdef __cpp_lib_hardware_interference_size
+using std::hardware_constructive_interference_size;
+using std::hardware_destructive_interference_size;
+#else
+// Default values for x86-64
+// 64 bytes on x86-64 │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned │
+// ...
+constexpr std::size_t hardware_constructive_interference_size = 64u;
+constexpr std::size_t hardware_destructive_interference_size = 64u;
+#endif
 
 namespace bdm {
 
@@ -34,13 +48,13 @@ template <typename T>
 class SharedData {
  public:
   /// Wrapper for a chacheline-size aligned T.
-  struct alignas(BDM_CACHE_LINE_SIZE) AlignedT {
+  struct alignas(hardware_destructive_interference_size) AlignedT {
     T data;
   };
 
   /// Data type definition for a vector whose entries fill full cache lines.
   /// A vector whose components' sizes are a multiple of the cacheline size,
-  /// e.g sizeof(Data[i]) = N*BDM_CACHE_LINE_SIZE.
+  /// e.g sizeof(Data[i]) = N*hardware_destructive_interference_size.
   using Data = std::vector<AlignedT>;
 
   SharedData() = default;

@@ -12,8 +12,10 @@
 //
 // -----------------------------------------------------------------------------
 
-#include "core/diffusion/diffusion_grid.h"
+#include <algorithm>
 #include <mutex>
+
+#include "core/diffusion/diffusion_grid.h"
 #include "core/environment/environment.h"
 #include "core/simulation.h"
 #include "core/util/log.h"
@@ -31,6 +33,8 @@ std::string BoundaryTypeToString(const BoundaryConditionType& type) {
       return "closed";
     case BoundaryConditionType::kDirichlet:
       return "Dirichlet";
+    case BoundaryConditionType::kPeriodic:
+      return "Periodic";
     default:
       return "unknown";
   }
@@ -46,6 +50,8 @@ BoundaryConditionType StringToBoundaryType(const std::string& type) {
     return BoundaryConditionType::kClosedBoundaries;
   } else if (type == "Dirichlet") {
     return BoundaryConditionType::kDirichlet;
+  } else if (type == "Periodic") {
+    return BoundaryConditionType::kPeriodic;
   } else {
     Log::Fatal("StringToBoundaryType", "Unknown boundary type: ", type);
     return BoundaryConditionType::kNeumann;
@@ -137,6 +143,8 @@ void DiffusionGrid::Diffuse(real_t dt) {
     DiffuseWithDirichlet(dt);
   } else if (bc_type_ == BoundaryConditionType::kNeumann) {
     DiffuseWithNeumann(dt);
+  } else if (bc_type_ == BoundaryConditionType::kPeriodic) {
+    DiffuseWithPeriodic(dt);
   } else {
     Log::Error(
         "EulerGrid::Diffuse", "Boundary condition of type '",
@@ -385,14 +393,8 @@ void DiffusionGrid::ChangeConcentrationBy(size_t idx, real_t amount,
                  "Unknown interaction mode!");
   }
 
-  // Enforce upper and lower bounds. (use std::clamp() when moving to C++17)
-  if (c1_[idx] > upper_threshold_) {
-    c1_[idx] = upper_threshold_;
-  } else if (c1_[idx] < lower_threshold_) {
-    c1_[idx] = lower_threshold_;
-  } else {
-    // c1_[idx] is bounded by the thresholds and does not need to be modified
-  }
+  // Enforce upper and lower bounds.
+  c1_[idx] = std::clamp(c1_[idx], lower_threshold_, upper_threshold_);
 }
 
 /// Get the concentration at specified position

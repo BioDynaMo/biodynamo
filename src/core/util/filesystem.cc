@@ -13,18 +13,18 @@
 // -----------------------------------------------------------------------------
 
 #include "core/util/filesystem.h"
+#include <filesystem>
 #include <string>
-#include "core/stdfilesystem.h"
 
 namespace bdm {
 
 uint64_t RemoveDirectoryContents(const std::string& directory) {
-  fs::path dir = directory;
-  if (!fs::is_directory(dir) || fs::is_empty(dir)) {
+  std::filesystem::path dir = directory;
+  if (!std::filesystem::is_directory(dir) || std::filesystem::is_empty(dir)) {
     return 0;
   }
-  auto files_removed = fs::remove_all(directory);
-  fs::create_directory(directory);
+  auto files_removed = std::filesystem::remove_all(directory);
+  std::filesystem::create_directory(directory);
   // subtract 1 because we don't count the removal of `directory`
   // itself.
   return files_removed - 1;

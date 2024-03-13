@@ -58,6 +58,10 @@ class EulerDepletionGrid : public EulerGrid {
   /// subsequently depletes the substance according to binding_substances_ and
   /// binding_coefficients_. See ApplyDepletion for details.
   void DiffuseWithNeumann(real_t dt) override;
+  /// Simulates the Diffusion with EulerGrid::DiffuseWithPeriodic and
+  /// subsequently depletes the substance according to binding_substances_ and
+  /// binding_coefficients_. See ApplyDepletion for details.
+  void DiffuseWithPeriodic(real_t dt) override;
 
   // To avoid missing substances or coefficients, name of the sub and binding
   // coefficient must be set at the same time
