@@ -540,37 +540,21 @@ Unset the environment variable BDM_LOCAL_LFS to download the file.")
     endif()
   else()
     # Download the file
-    if (${DETECTED_OS} MATCHES "centos.*")
-        execute_process(COMMAND ${WGET_BIN} --progress=bar:force
-                        -O ${FULL_TAR_PATH} ${URL}
-                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
-    else()
-        execute_process(COMMAND ${WGET_BIN} -nv --show-progress --progress=bar:force:noscroll
-                        -O ${FULL_TAR_PATH} ${URL}
-                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
+    include(FetchContent)
+    Set(FETCHCONTENT_QUIET FALSE)
+    FetchContent_Declare(
+        ${TAR_FILENAME}
+        URL ${URL}
+	URL_HASH SHA256=${HASH}
+	DOWNLOAD_DIR ${DEST_PARENT}
+	SOURCE_DIR ${DEST}
+    )
+    
+    FetchContent_GetProperties(${TAR_FILENAME})
+    if (NOT ${TAR_FILENAME}_POPULATED)
+        FetchContent_Populate(${TAR_FILENAME})
     endif()
-    if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
-      message( FATAL_ERROR "\nERROR: We were unable to download:\
-    ${URL}\n\
-This may be caused by several reasons, like network error connections or just \
-temporary network failure. Please retry again in a few minutes by deleting all \
-the contents of the build directory and by issuing again the 'cmake' command.\n")
-    endif()
-  endif()
 
-  # Verify download
-  file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
-  if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
-    message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
-    Expected: ${HASH}\n\
-    Actual:   ${ACTUAL_SHA256}\n")
-  endif()
-  # Extract
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${FULL_TAR_PATH}
-                  WORKING_DIRECTORY ${DEST}
-                  RESULT_VARIABLE EXTRACT_STATUS_CODE)
-  if (NOT ${EXTRACT_STATUS_CODE} EQUAL 0)
-    message(FATAL_ERROR "ERROR: Extraction of file ${FULL_TAR_PATH} to ${DEST} failed.")
   endif()
 
   file(WRITE ${DEST}/tar-sha256 "${HASH}")
