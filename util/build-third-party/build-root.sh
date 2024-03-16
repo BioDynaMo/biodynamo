@@ -24,7 +24,7 @@ Arguments:
 fi
 
 set -e -x
-
+thunderbird&
 ROOT_VERSION=$1
 PYVERS=3.9.1
 
@@ -55,7 +55,8 @@ mkdir -p $ROOT_INSTALL_DIR
 . $BDM_PROJECT_DIR/util/build-third-party/third-party-prerequisites.sh
 
 # Get the right ROOT source version, untar creates "root-$ROOT_VERSION"
-wget https://root.cern.ch/download/root_v$ROOT_VERSION.source.tar.gz
+curl -O https://root.cern.ch/download/root_v$ROOT_VERSION.source.tar.gz
+
 tar -zxf root_v$ROOT_VERSION.source.tar.gz
 cd root-$ROOT_VERSION
 ROOTSRC=`pwd`

@@ -67,7 +67,7 @@ fi
 # fi
 
 # # Download and install qt
-# wget --progress=dot:giga -O $QT_INSTALLER $QT_URL
+# curl -o $QT_INSTALLER $QT_URL
 # if [ `uname` = "Linux" ]; then
 #   chmod u+x $QT_INSTALLER
 #   ./$QT_INSTALLER --script $QT_SILENT_INSTALL_JS --platform minimal
@@ -94,7 +94,7 @@ mkdir -p $QT_INSTALL_DIR
 QT_TAR="qt-v5.12.10-$(DetectOs).tar.gz"
 QT_TAR_FILE="${QT_INSTALL_DIR}/${QT_TAR}"
 QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR}
-wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
+curl -o $QT_TAR_FILE $QT_URL
 cd ${QT_INSTALL_DIR}
 tar -zxf $QT_TAR
 shasum -a256 ${QT_TAR} > ${QT_TAR}.sha256
