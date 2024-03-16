@@ -52,7 +52,7 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
     else
       sudo apt update
       sudo apt-get -y install gcc g++
-      sudo apt-get -y install rsync git make
+      sudo apt-get -y install rsync wget git make
       # paraview
       sudo apt-get -y install libopenmpi-dev || true
       sudo apt-get install -y ninja-build
@@ -62,7 +62,7 @@ if [ -z "$SKIP_PACKAGE_MAN" ]; then
 
       # Install dependencies to install Python with PyEnv
       sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev \
-        libreadline-dev libsqlite3-dev curl llvm \
+        libreadline-dev libsqlite3-dev wget curl llvm \
         xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
 
       sudo apt install -y libxt-dev freeglut3-dev
@@ -119,7 +119,7 @@ if [ -z "$SKIP_QT" ]; then
       cd ${QT_INSTALL_DIR}
     else
       QT_URL=http://cern.ch/biodynamo-lfs/third-party/${QT_TAR}
-      curl -o $QT_TAR_FILE $QT_URL
+      wget --progress=dot:giga -O $QT_TAR_FILE $QT_URL
       cd ${QT_INSTALL_DIR}
       tar -zxf $QT_TAR
     fi

@@ -20,7 +20,7 @@ From:ubuntu:20.04
   apt-get -y update
   apt-get -y install apt-utils
   apt-get -y install software-properties-common
-  apt-get -y install python python3 git curl make gcc g++ wamerican wamerican libffi-dev libncurses5-dev zlib1g zlib1g-dev bzip2 aptitude libreadline-dev libssl-dev libsqlite3-dev \
+  apt-get -y install python python3 git curl make gcc g++ wget wamerican wget wamerican libffi-dev libncurses5-dev zlib1g zlib1g-dev bzip2 aptitude libreadline-dev libssl-dev libsqlite3-dev \
     openmpi-bin libopenmpi-dev libxkbcommon-x11-dev bsdmainutils clang clang-format clang-tidy doxygen graphviz libxml2-dev llvm-7 llvm-7-dev llvm-7-runtime valgrind libgsl-dev freeglut3-dev \
     libbz2-dev libnuma-dev libomp5 libomp-dev libopenmpi-dev libpthread-stubs0-dev zlib1g-dev libbz2-dev libffi-dev liblzma-dev libreadline-dev libsqlite3-dev libssl-dev python-openssl tk-dev \
     xz-utils zlib1g-dev sudo libblas-dev liblapack-dev nano locales locales-all ninja-build python3-pip freeglut3-dev valgrind xvfb
@@ -28,7 +28,7 @@ From:ubuntu:20.04
   dpkg-reconfigure locales
   locale-gen
   
-  curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
   bash Miniconda3-latest-Linux-x86_64.sh -b -f -p /miniconda3/
   rm Miniconda3-latest-Linux-x86_64.sh
 
@@ -47,7 +47,7 @@ From:ubuntu:20.04
 
   pyenv shell 3.9.1
 
-  curl -O https://bootstrap.pypa.io/get-pip.py
+  wget https://bootstrap.pypa.io/get-pip.py
   python3 get-pip.py
   python3 -m pip install -U pip
   python3 -m pip install --upgrade pip

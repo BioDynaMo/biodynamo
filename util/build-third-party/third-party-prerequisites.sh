@@ -84,7 +84,7 @@ EOF'
     CC=gcc
     CXX=g++
     # only for ubuntu image
-    sudo apt-get -y install git make ninja-build
+    sudo apt-get -y install wget git make ninja-build
     #  root required packages
     sudo apt-get -y install git dpkg-dev g++ gcc binutils libx11-dev libxpm-dev \
       libxft-dev libxext-dev
@@ -99,7 +99,7 @@ EOF'
 
     # Install dependencies to install Python with PyEnv
     sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev \
-      libreadline-dev libsqlite3-dev curl llvm \
+      libreadline-dev libsqlite3-dev wget curl llvm \
       xz-utils tk-dev libffi-dev liblzma-dev git
 
     # Different versions of Ubuntu have different package names for 

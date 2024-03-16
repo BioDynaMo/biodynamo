@@ -45,7 +45,7 @@ cd $WORKING_DIR
 ## Download OpenMPI official release source files
 SRC_DIR=$WORKING_DIR/openmpi_src
 mkdir -p $SRC_DIR
-curl -O https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-$OMPI_VERSION.tar.gz
+wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-$OMPI_VERSION.tar.gz
 tar -zxf openmpi-$OMPI_VERSION.tar.gz -C $SRC_DIR --strip-components=1
 
 # The install directory

@@ -2,6 +2,7 @@ tbb
 libomp
 open-mpi
 python@3.9
+wget
 cmake
 ninja
 bash

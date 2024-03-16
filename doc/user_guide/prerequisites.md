@@ -28,6 +28,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 
 ### Required Packages
 
+  * **wget**: Retrieves files from the web
   * **curl**: Command line tool for transferring data with URL syntax
   * **cmake**: Set of tools for automate building, testing of software
   * **make**: Build automation tool
@@ -73,7 +74,7 @@ BioDynaMo provides also an automated procedure to install all the needed librari
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y curl make gcc g++ \
+sudo apt-get install -y wget curl make gcc g++ \
 libblas-dev liblapack-dev libopenmpi-dev libomp5 libomp-dev \ 
 libnuma-dev freeglut3-dev libpthread-stubs0-dev
 
@@ -122,6 +123,7 @@ sudo apt-get install -y kcov
 
  * **epel-release**: Provides a set of additional packages for Enterprise Linux
  * **ius-release**: Provides RPM packages for newer software versions for for Enterprise Linux distributions
+ * **wget**: Retrieves files from the web
  * **cmake**: Set of tools for automate building, testing of software
  * **libXt-devel**: Basic library for developing X11
  * **libXext-devel**: Library which contains a handful of X11 extensions
@@ -167,7 +169,7 @@ sudo apt-get install -y kcov
 sudo yum update -y
 sudo yum -y install centos-release-scl epel-release
 sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-sudo yum -y install libXt-devel libXext-devel \
+sudo yum -y install wget libXt-devel libXext-devel \
   devtoolset-10-gcc* numactl-devel \
   openmpi3-devel freeglut-devel git
 
@@ -228,6 +230,7 @@ Requirements to build on macOS are:
  * **libomp**: Development files for OpenMP (API for multiprocessor programming)
  * **open-mpi**: Development files for OpenMP (API for multiprocessor programming)
  * **python@3.9**: Python interpreter
+ * **wget**: Retrieves files from the web
  * **cmake**: Set of tools for automate building, testing of software
  * **ninja**: Ninja is a small build system with a focus on speed
  * **bash**: Recent version of bash shell
@@ -248,7 +251,7 @@ Requirements to build on macOS are:
 
 ```bash
 brew update; brew upgrade
-brew install libomp open-mpi python@3.9 cmake ninja bash tbb qt@5
+brew install libomp open-mpi python@3.9 wget cmake ninja bash tbb qt@5
 ```
 
 #### Optional Packages

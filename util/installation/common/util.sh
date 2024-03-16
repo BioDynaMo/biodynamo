@@ -145,7 +145,7 @@ function DownloadTarAndExtract {
   if [ $BDM_LOCAL_LFS ]  && [[ "$URL" = /* ]]; then
     tar -xzf $URL --strip=$STRIP_COMP -C $DEST
   else
-    curl -o $TMP_DEST $URL
+    wget --progress=dot:giga -O $TMP_DEST $URL
     tar -xzf $TMP_DEST --strip=$STRIP_COMP -C $DEST
     rm $TMP_DEST
   fi
