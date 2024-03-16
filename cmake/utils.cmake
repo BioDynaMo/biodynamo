@@ -554,7 +554,9 @@ Unset the environment variable BDM_LOCAL_LFS to download the file.")
     if (NOT ${TAR_FILENAME}_POPULATED)
         FetchContent_Populate(${TAR_FILENAME})
     endif()
-
+    
+    # Remove subbuild files, we don't need them
+    file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/_deps/)
   endif()
 
   file(WRITE ${DEST}/tar-sha256 "${HASH}")
