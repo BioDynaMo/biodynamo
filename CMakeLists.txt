@@ -193,11 +193,6 @@ if (jemalloc)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -ljemalloc -L ${JEMALLOC_LIBRARY_DIR}")
 endif()
 
-find_program(WGET_BIN wget)
-if (NOT WGET_BIN)
-  message(FATAL_ERROR "The program wget was not found in your system. Please run ./prerequisites.sh again before calling cmake.")
-endif()
-
 if (APPLE)
    set(NOPYENV YES)
 endif()
