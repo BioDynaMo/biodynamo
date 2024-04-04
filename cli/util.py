@@ -23,5 +23,5 @@ import select
 def GetBinaryName():
     with open("CMakeLists.txt") as f:
         content = f.read()
-        return re.search("project\((.*)\)", content).group(1)
+        return re.search(r"project\((.*)\)", content).group(1)
 
