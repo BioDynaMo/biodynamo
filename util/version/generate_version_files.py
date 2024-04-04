@@ -84,13 +84,13 @@ if __name__ == '__main__':
     version = GetGitDescribeString(sys.argv[4], sys.argv[3])
 
     # extract information
-    search = re.search('v([0-9]+)\.([0-9]+)\.([0-9]+)\-(.*)', version)
+    search = re.search(r'v([0-9]+)\.([0-9]+)\.([0-9]+)\-(.*)', version)
     if search != None:
         major = search.group(1)
         minor = search.group(2)
         patch = search.group(3)
     else:
-        search = re.search('v([0-9]+)\.([0-9]+)', version)
+        search = re.search(r'v([0-9]+)\.([0-9]+)', version)
         major = search.group(1)
         minor = search.group(2)
         patch = 0
