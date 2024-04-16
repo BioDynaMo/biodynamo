@@ -37,7 +37,8 @@ enum class BoundaryConditionType {
   kNeumann,
   kOpenBoundaries,
   kClosedBoundaries,
-  kPeriodic
+  kPeriodic,
+  kComplex
 };
 
 enum class InteractionMode { kAdditive = 0, kExponential = 1, kLogistic = 2 };
@@ -121,6 +122,11 @@ class DiffusionGrid : public ScalarField {
   /// Compute the diffusion of the substance with Periodic boundary conditions
   /// (u_{-1} = {u_N-1}, u_{N} = u_{0}) for a given time step dt.
   virtual void DiffuseWithPeriodic(real_t dt) = 0;
+  /// Compute the diffusion of the substance with Complex boundary conditions,
+  /// where the boundary type can be Dirichlet, Neumann or Periodic depending on
+  /// the side of the environment.
+  virtual void DiffuseWithComplex(real_t dt) = 0;
+
 
   /// Calculates the gradient for each box in the diffusion grid.
   /// The gradient is calculated in each direction (x, y, z) as following:
@@ -323,6 +329,10 @@ class DiffusionGrid : public ScalarField {
   /// `ConstantBoundaryCondition`
   void SetBoundaryCondition(std::unique_ptr<BoundaryCondition> bc);
 
+  void SetBoundaryCondition_neumann(std::unique_ptr<BoundaryCondition> bc);
+
+  void SetBoundaryCondition_dirichlet(std::unique_ptr<BoundaryCondition> bc);
+
   /// @brief  Returns the boundary condition. Does not transfer ownership.
   /// @return const Pointer to the boundary condition
   BoundaryCondition* GetBoundaryCondition() const;
@@ -415,6 +425,14 @@ class DiffusionGrid : public ScalarField {
   BoundaryConditionType bc_type_ = BoundaryConditionType::kDirichlet;
   /// Object that implements the boundary conditions.
   std::unique_ptr<BoundaryCondition> boundary_condition_ = nullptr;
+  /// Object that implements the boundary condition for Neumann type when
+  /// using complex boundaries.
+  std::unique_ptr<BoundaryCondition> boundary_condition_neumann_ = nullptr;
+  /// Object that implements the boundary condition for Dirichlet type when
+  /// using complex boundaries.
+  std::unique_ptr<BoundaryCondition> boundary_condition_dirichlet_ = nullptr;
+  /// Stores the boundary condition types when using complex boundaries.
+  std::array<std::string, 6> complex_bct_ = {{""}};
   /// Flag to indicate if the grid is initialized
   bool initialized_ = false;
   /// Flag to indicate if we want to print information about the grid after

@@ -239,6 +239,12 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(max_bound, "simulation.max_bound");
   BDM_ASSIGN_CONFIG_VALUE(diffusion_boundary_condition,
                           "simulation.diffusion_boundary_condition");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_bc_x_min, "simulation.diffusion_bc_x_min");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_bc_x_max, "simulation.diffusion_bc_x_max");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_bc_y_min, "simulation.diffusion_bc_y_min");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_bc_y_max, "simulation.diffusion_bc_y_max");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_bc_z_min, "simulation.diffusion_bc_z_min");
+  BDM_ASSIGN_CONFIG_VALUE(diffusion_bc_z_max, "simulation.diffusion_bc_z_max");
   BDM_ASSIGN_CONFIG_VALUE(diffusion_method, "simulation.diffusion_method");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients,
                           "simulation.calculate_gradients");

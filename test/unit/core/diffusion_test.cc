@@ -970,6 +970,215 @@ TEST(DiffusionTest, DepletionMissmatch) {
       "that of the depleted one (ECM)*");
 }
 
+TEST(DiffusionTest, EulerComplexBoundariesUnknownBounds) {
+  ASSERT_DEATH(
+      {
+        auto set_param = [&](Param* param) {
+            param->bound_space = Param::BoundSpaceMode::kClosed;
+            param->diffusion_boundary_condition = "Complex";
+            // Initialisation should fail when given boundary that is
+            // not 'Neumann', 'Dirichlet' or 'Periodic'.
+            param->diffusion_bc_z_max = "Neum";
+        };
+        Simulation simulation(TEST_NAME, set_param);
+        simulation.GetEnvironment()->Update();
+
+        auto* dgrid = new EulerGrid(0, "Kalium", 10, 0.0, 10);
+        dgrid->Initialize();
+      },
+      ".*Complex boundaries: unknown boundary condition*");
+}
+
+TEST(DiffusionTest, EulerComplexBoundariesCase1) {
+  double simulation_time_step{0.1};
+  auto set_param = [&](Param* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -50;
+          param->max_bound = 50;
+          param->diffusion_boundary_condition = "Complex";
+          param->diffusion_bc_x_min = "Dirichlet";
+          param->diffusion_bc_x_max = "Neumann";
+          param->diffusion_bc_y_min = "Periodic";
+          param->diffusion_bc_y_max = "Periodic";
+          param->diffusion_bc_z_min = "Periodic";
+          param->diffusion_bc_z_max = "Periodic";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 400.0;
+  int res = 5;
+  double init = 1e5;
+
+  // Dirichlet boundaries on one side and closed Neumann boundaries on the opposite.
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  dgrid->Initialize();
+  dgrid->SetBoundaryCondition_neumann(std::make_unique<ConstantBoundaryCondition>(0.0));
+  dgrid->SetBoundaryCondition_dirichlet(std::make_unique<ConstantBoundaryCondition>(init));
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid);
+
+  double close = 0.0;
+  double far = 0.0;
+
+  int tot = 2500;
+  for (int i=0; i<tot; i++) {
+    dgrid->Diffuse(simulation_time_step);
+    // We should a higher concentration closer to the dirichlet boundary than the
+    // neumann boundary at the start of the simulation.
+    if (i < 50) {
+      close = std::abs(dgrid->GetValue({-40, 0, 0}));
+      far = std::abs(dgrid->GetValue({40, 0, 0}));
+      EXPECT_LT(far, close);
+    }
+  }
+
+  // After some time, the concentration across the space should become homogenous.
+  double final_close = std::abs(dgrid->GetValue({-40, 0, 0}));
+  double final_far = std::abs(dgrid->GetValue({40, 0, 0}));
+  EXPECT_LT((final_close - final_far) / final_close, 0.0001);
+
+  rm->RemoveContinuum(0);
+}
+
+TEST(DiffusionTest, EulerComplexBoundariesCase2) {
+  double simulation_time_step{0.1};
+  auto set_param = [&](Param* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -50;
+          param->max_bound = 50;
+          param->diffusion_boundary_condition = "Complex";
+          param->diffusion_bc_x_min = "Neumann";
+          param->diffusion_bc_x_max = "Neumann";
+          param->diffusion_bc_y_min = "Periodic";
+          param->diffusion_bc_y_max = "Periodic";
+          param->diffusion_bc_z_min = "Dirichlet";
+          param->diffusion_bc_z_max = "Dirichlet";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 100.0;
+  int res = 5;
+  double init = 1e5;
+
+  // Test 6 sources; one at each boundary of the simulation.
+  std::vector<Real3> sources;
+  sources.push_back({40, 0, 0});
+  sources.push_back({-40, 0, 0});
+  sources.push_back({0, 40, 0});
+  sources.push_back({0, -40, 0});
+  sources.push_back({0, 0, 40});
+  sources.push_back({0, 0, -40});
+
+  // Measure box adjacent to source within the simulation.
+  std::vector<Real3> inside;
+  inside.push_back({20, 0, 0});
+  inside.push_back({-20, 0, 0});
+  inside.push_back({0, 20, 0});
+  inside.push_back({0, -20, 0});
+  inside.push_back({0, 0, 20});
+  inside.push_back({0, 0, -20});
+
+  // Measure box adjacent to source on opposite side of simulation.
+  std::vector<Real3> outside;
+  outside.push_back({-40, 0, 0});
+  outside.push_back({40, 0, 0});
+  outside.push_back({0, -40, 0});
+  outside.push_back({0, 40, 0});
+  outside.push_back({0, 0, -40});
+  outside.push_back({0, 0, 40});
+
+  for (size_t s = 0; s < sources.size(); s++) {
+    auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+    dgrid->Initialize();
+    dgrid->SetUpperThreshold(1e15);
+    dgrid->ChangeConcentrationBy(sources[s], init);
+    rm->AddContinuum(dgrid);
+
+    int tot = 20;
+    for (int t = 0; t < tot; t++) {
+      dgrid->Diffuse(simulation_time_step);
+      if (s == 2 || s == 3) {
+        // Source should pass through periodic boundaries.
+        EXPECT_FLOAT_EQ(dgrid->GetValue(inside[s]), dgrid->GetValue(outside[s]));
+      }
+      else {
+        // Source should not pass through dirichlet and neumann boundaries.
+        EXPECT_GT(dgrid->GetValue(inside[s]), dgrid->GetValue(outside[s]));
+      }
+    }
+    rm->RemoveContinuum(0);
+  }
+}
+
+TEST(DiffusionTest, EulerComplexBoundariesCase3) {
+  double simulation_time_step{0.1};
+  auto set_param = [&](Param* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -50;
+          param->max_bound = 50;
+          param->diffusion_boundary_condition = "Complex";
+          param->diffusion_bc_x_min = "Periodic";
+          param->diffusion_bc_x_max = "Periodic";
+          param->diffusion_bc_y_min = "Neumann";
+          param->diffusion_bc_y_max = "Dirichlet";
+          param->diffusion_bc_z_min = "Periodic";
+          param->diffusion_bc_z_max = "Periodic";
+  };
+  Simulation simulation(TEST_NAME, set_param);
+  simulation.GetEnvironment()->Update();
+  auto* rm = simulation.GetResourceManager();
+
+  double decay_coef = 0.0;
+  double diff_coef = 400.0;
+  int res = 5;
+
+  // Constant Incoming flux at neumann boundary on one side of simulation and zero conc dirichlet
+  // boundary on the other side.
+  auto* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay_coef, res);
+  dgrid->Initialize();
+  dgrid->SetBoundaryCondition_neumann(std::make_unique<ConstantBoundaryCondition>(-1.0));
+  dgrid->SetBoundaryCondition_dirichlet(std::make_unique<ConstantBoundaryCondition>(0.0));
+  dgrid->SetUpperThreshold(1e15);
+  rm->AddContinuum(dgrid);
+
+  double total_conc = 0.0;
+  double total_conc_backup = 0.0;
+  double close = 0.0;
+  double far = 0.0;
+
+  int tot = 2500;
+  for (int t=0; t<tot; t++) {
+    dgrid->Diffuse(simulation_time_step);
+    auto conc = dgrid->GetAllConcentrations();
+    total_conc = 0.0;
+    for (size_t i = 0; i < dgrid->GetNumBoxes(); i++) {
+      total_conc += conc[i];
+    }
+    // We should see a higher concentration at neumann boundary compared to dirichlet
+    // boundary at any point in the simulation.
+    close = std::abs(dgrid->GetValue({0, -40, 0}));
+    far = std::abs(dgrid->GetValue({0, 40, 0}));
+    EXPECT_LT(far, close);
+    // The total concentration in the system increases at the start
+    if (t < 100) {
+      EXPECT_GT(total_conc, total_conc_backup);
+    }
+    total_conc_backup = total_conc;
+  }
+  // As the concenentration at the dirichlet boundary increases, so does the flux out of the
+  // boundary. Eventually this flux will equal the flux concentration coming in from the neumann
+  // boundary. The total concentation reaches a steady state.
+  EXPECT_LT((total_conc - total_conc_backup) / total_conc, 0.0001);
+
+  rm->RemoveContinuum(0);
+}
+
 TEST(DiffusionTest, EulerDirichletBoundaries) {
   double simulation_time_step{0.1};
   auto set_param = [](auto* param) {

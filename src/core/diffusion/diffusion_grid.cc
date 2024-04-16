@@ -35,6 +35,8 @@ std::string BoundaryTypeToString(const BoundaryConditionType& type) {
       return "Dirichlet";
     case BoundaryConditionType::kPeriodic:
       return "Periodic";
+    case BoundaryConditionType::kComplex:
+      return "Complex";
     default:
       return "unknown";
   }
@@ -52,6 +54,8 @@ BoundaryConditionType StringToBoundaryType(const std::string& type) {
     return BoundaryConditionType::kDirichlet;
   } else if (type == "Periodic") {
     return BoundaryConditionType::kPeriodic;
+  } else if (type == "Complex") {
+    return BoundaryConditionType::kComplex;
   } else {
     Log::Fatal("StringToBoundaryType", "Unknown boundary type: ", type);
     return BoundaryConditionType::kNeumann;
@@ -64,7 +68,9 @@ DiffusionGrid::DiffusionGrid(int substance_id,
     : dc_({{1 - dc, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6, dc / 6}}),
       mu_(mu),
       resolution_(resolution),
-      boundary_condition_(std::make_unique<ConstantBoundaryCondition>(0.0)) {
+      boundary_condition_(std::make_unique<ConstantBoundaryCondition>(0.0)),
+      boundary_condition_neumann_(std::make_unique<ConstantBoundaryCondition>(0.0)),
+      boundary_condition_dirichlet_(std::make_unique<ConstantBoundaryCondition>(0.0)) {
   // Compatibility with new abstract interface
   SetContinuumId(substance_id);
   SetContinuumName(substance_name);
@@ -79,6 +85,24 @@ void DiffusionGrid::Initialize() {
     Log::Fatal("DiffusionGrid::Initialize",
                "Resolution cannot be zero. (substance '", GetContinuumName(),
                "')");
+  }
+
+  if (bc_type_ == BoundaryConditionType::kComplex) {
+    auto* param = Simulation::GetActive()->GetParam();
+    complex_bct_ = {param->diffusion_bc_x_min,
+                    param->diffusion_bc_x_max,
+                    param->diffusion_bc_y_min,
+                    param->diffusion_bc_y_max,
+                    param->diffusion_bc_z_min,
+                    param->diffusion_bc_z_max};
+    for (int i=0; i<6; i++) {
+      if (complex_bct_[i] != "Neumann" && complex_bct_[i] != "Dirichlet" && 
+          complex_bct_[i] != "Periodic") {
+        Log::Fatal("DiffusionGrid::Initialize",
+                   "Complex boundaries: unknown boundary condition ", complex_bct_[i],
+                   ". Select 'Neumann', 'Dirichlet' or 'Periodic' for each side of boundary.");
+      }
+    }
   }
 
   // Get neighbor grid dimensions
@@ -145,6 +169,8 @@ void DiffusionGrid::Diffuse(real_t dt) {
     DiffuseWithNeumann(dt);
   } else if (bc_type_ == BoundaryConditionType::kPeriodic) {
     DiffuseWithPeriodic(dt);
+  } else if (bc_type_ == BoundaryConditionType::kComplex) {
+    DiffuseWithComplex(dt);
   } else {
     Log::Error(
         "EulerGrid::Diffuse", "Boundary condition of type '",
@@ -531,6 +557,16 @@ std::array<size_t, 6> DiffusionGrid::GetNeighboringBoxes(
 void DiffusionGrid::SetBoundaryCondition(
     std::unique_ptr<BoundaryCondition> bc) {
   boundary_condition_ = std::move(bc);
+}
+
+void DiffusionGrid::SetBoundaryCondition_neumann(
+    std::unique_ptr<BoundaryCondition> bc) {
+  boundary_condition_neumann_ = std::move(bc);
+}
+
+void DiffusionGrid::SetBoundaryCondition_dirichlet(
+    std::unique_ptr<BoundaryCondition> bc) {
+  boundary_condition_dirichlet_ = std::move(bc);
 }
 
 BoundaryCondition* DiffusionGrid::GetBoundaryCondition() const {

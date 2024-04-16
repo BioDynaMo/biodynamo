@@ -243,6 +243,22 @@ struct Param {
   ///     diffusion_boundary_condition = "Neumann"
   std::string diffusion_boundary_condition = "Neumann";
 
+  /// Define the boundary condition of each side of the simulation space
+  /// when using complex boundaries [Neumann, Dirichlet, Periodic].
+  /// Default value: `"Neumann"`\n TOML config file:
+  ///
+  ///     [simulation]
+  ///     diffusion_bc_x_min = "Neumann"
+  ///     diffusion_bc_x_max = "Neumann"
+  ///                ....
+  std::string diffusion_bc_x_min = "Neumann";
+  std::string diffusion_bc_x_max = "Neumann";
+  std::string diffusion_bc_y_min = "Neumann";
+  std::string diffusion_bc_y_max = "Neumann";
+  std::string diffusion_bc_z_min = "Neumann";
+  std::string diffusion_bc_z_max = "Neumann";
+
+
   /// A string for determining diffusion type within the simulation space.
   /// Currently, only the method "euler" implementing a FTCS scheme is
   /// supported. See for instance here:
