@@ -1,13 +1,13 @@
 ---
 title: "Building Biodynamo"
 date: "2019-01-01"
-path: "/docs/dev_guide/build/"
+path: "/docs/devguide/build/"
 meta_title: "BioDynaMo Dev Guide"
 meta_description: "This is the how to build page."
 toc: true
 image: ""
 next:
-    url:  "/docs/dev_guide/build/"
+    url:  "/docs/devguide/build/"
     title: "Building Biodynamo"
     description: "This is the how to build page."
 sidebar: "devguide"
