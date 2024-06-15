@@ -90,6 +90,18 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   void SetMassLocation(const Real3& mass_location);
 
+  // Getter and setter for mother_cell_type_ (used for visualization)
+  real_t GetMotherCellType() const { return mother_cell_type_; }
+  
+  void SetMotherCellType(real_t mother_cell_type) {
+    mother_cell_type_ = mother_cell_type;
+  }
+
+  // Getter and setter for mother_uid_ (used for synapses)
+  AgentUid GetMotherUid() { return mother_uid_; }
+
+  void SetMotherUid(AgentUid mother_uid) { mother_uid_ = mother_uid; }
+
   real_t GetAdherence() const { return adherence_; }
 
   void SetAdherence(real_t adherence);
@@ -464,6 +476,12 @@ class NeuriteElement : public Agent, public NeuronOrNeurite {
 
   /// position_ is the middle point of cylinder
   Real3 position_ = {{0.0, 0.0, 0.0}};
+
+  /// This is the type of the mother neuron 
+  real_t mother_cell_type_ ;
+
+  /// The uid of the mother neuron
+  AgentUid mother_uid_;
 
   real_t volume_;
   /// NB: Use setter and don't assign values directly

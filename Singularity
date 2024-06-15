@@ -59,7 +59,7 @@ From:ubuntu:20.04
   git config --system user.name "Test User"
   git config --system user.email user@test.com
 
-  export BDM_BRANCH="master"
+  export BDM_BRANCH="umar_neurite_test"
   git clone https://github.com/BioDynaMo/biodynamo.git
   cd biodynamo
   git checkout $BDM_BRANCH
@@ -70,6 +70,6 @@ From:ubuntu:20.04
   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
   
   ninja -j $(($(nproc) - 1)) 
-  
+  export XVFBARGS=":99 -ac -screen 0 2560x1440x24"
 
 %runscript
