@@ -34,6 +34,8 @@ jobs:
           echo "GHA_BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
         fi
 
+        echo "GHA_REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
+
     - name: Set OSVERS
       run: |
         ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
@@ -55,7 +57,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y curl
-        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
+        curl https://raw.githubusercontent.com/${GHA_REPOSITORY}/${GHA_BRANCH_NAME}/util/install | bash
         # remove whole bidynamo repository to catch errors related to paths pointing into the build dir
         mktemp -d
         find /tmp -iname biodynamo -type d || true
@@ -133,7 +135,7 @@ jobs:
           -B build
         cmake --build build --parallel --config Release --target notebooks  -- -j1
       if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-22.04'
-      
+
 
     - name: Build BioDynaMo
       shell: bash

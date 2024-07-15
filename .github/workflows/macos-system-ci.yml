@@ -33,7 +33,7 @@ jobs:
         sudo ln -s /Applications/Xcode_14.2.app /Applications/Xcode.app
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       if: matrix.os == 'macos-12'
-    
+
     - name: Make sure Xcode 15.2 is used on macOS 13 as the default /Application/Xcode.app
       shell: bash
       run: |
@@ -53,12 +53,14 @@ jobs:
         if [ "${{ github.event_name }}" = "schedule" ]; then
           echo "GHA_BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
         fi
-    
+
+        echo "GHA_REPOSITORY=${{ github.repository}}" >> $GITHUB_ENV
+
     - name: Install BioDynaMo
       shell: zsh {0}
       run: |
         brew install curl
-        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
+        curl https://raw.githubusercontent.com/${GHA_REPOSITORY}/${GHA_BRANCH_NAME}/util/install | bash
         # remove whole bidynamo repository to catch errors related to paths pointing into the build dir
         mktemp -d
         find /tmp -iname biodynamo -type d || true
@@ -102,7 +104,7 @@ jobs:
         cmake --build build --parallel --config Release
 
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
-    # runners, while waiting for other targets to be compiled. Run notebooks only on 
+    # runners, while waiting for other targets to be compiled. Run notebooks only on
     # macOS 10.15 until we managed to compile ROOT for 11.6 again.
     - name: Run notebooks
       shell: zsh {0}
