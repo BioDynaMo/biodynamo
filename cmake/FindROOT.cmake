@@ -97,8 +97,6 @@ mark_as_advanced(ROOT_CONFIG_EXECUTABLE)
 include(CMakeParseArguments)
 find_program(ROOTCLING_EXECUTABLE rootcling
   HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
-find_program(GENREFLEX_EXECUTABLE genreflex
-  HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
 #find_package(GCCXML)
 
 # We use the launcher script to emulate a `source thisbdm.sh` call
@@ -198,7 +196,7 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
   #set(rootmapopts --rootmap=${rootmapname} --rootmap-lib=${libprefix}${dictionary}Dict)
   #---Actual command----------------------------------------
   add_custom_command(OUTPUT ${gensrcdict} ${rootmapname} ${dictionary}_rdict.pcm
-    COMMAND ${LAUNCHER} ${ROOTCLING_EXECUTABLE} --reflex -o ${gensrcdict} ${rootmapopts} ${headerfiles} ${selectionfile} --noIncludePaths -inlineInputHeader
+    COMMAND ${LAUNCHER} ${ROOTCLING_EXECUTABLE} --reflex -o ${gensrcdict} ${rootmapopts} ${headerfiles} ${selectionfile} --noIncludePaths -inlineInputHeader -cxxmodule
                             ${ARG_OPTIONS} ${includedirs} ${definitions}
                      DEPENDS ${headerfiles} ${selectionfile})
 endfunction()
