@@ -606,6 +606,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
 
   if(ARG_REFLEX)
     set(newargs -reflex ${newargs})
+  endif()
     
   #---what rootcling command to use--------------------------
   if(ARG_STAGE1)
