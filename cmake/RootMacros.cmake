@@ -683,8 +683,8 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   endforeach()
 
   #---call rootcint------------------------------------------
-  add_custom_command(OUTPUT ${dictionary}.cxx ${pcm_name} ${rootmap_name} ${cpp_module_file}
-                     COMMAND ${command} -v2 -f  ${dictionary}.cxx ${newargs} ${excludepathsargs} ${rootmapargs}
+  add_custom_command(OUTPUT ${dictionary}.cc ${pcm_name} ${rootmap_name} ${cpp_module_file}
+                     COMMAND ${ROOTCLING_EXECUTABLE} -v2 -f  ${dictionary}.cxx ${newargs} ${excludepathsargs} ${rootmapargs}
                                         ${ARG_OPTIONS}
                                         ${definitions} "$<$<BOOL:${module_defs}>:-D$<JOIN:${module_defs},;-D>>"
                                         ${compIncPaths}
