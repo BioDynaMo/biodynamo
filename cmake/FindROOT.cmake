@@ -116,9 +116,10 @@ endif()
 #   The dictionary target depends on these headers. These files must exist.
 # <NODEPHEADERS> same as <headerfiles>. If these files are not found (given the target include path)
 #   no error is emitted. The dictionary does not depend on these headers.
+# <REFLEX> is for enabling rootcling's reflex mode. In this mode the LinkDef needs to be an XML Selection File
 #---------------------------------------------------------------------------------------------------
 function(ROOT_GENERATE_DICTIONARY dictionary)
-  CMAKE_PARSE_ARGUMENTS(ARG "STAGE1;MULTIDICT;NOINSTALL;NO_CXXMODULE"
+  CMAKE_PARSE_ARGUMENTS(ARG "STAGE1;MULTIDICT;NOINSTALL;NO_CXXMODULE;REFLEX"
     "MODULE;LINKDEF" "NODEPHEADERS;OPTIONS;DEPENDENCIES;EXTRA_DEPENDENCIES;BUILTINS" ${ARGN})
 
   # Check if OPTIONS start with a dash.
@@ -437,6 +438,10 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
 
   if(cpp_module_file)
     set(newargs -cxxmodule ${newargs})
+  endif()
+  
+  if(ARG_REFLEX)
+    set(newargs -reflex ${newargs})
   endif()
 
   #---what rootcling command to use--------------------------
