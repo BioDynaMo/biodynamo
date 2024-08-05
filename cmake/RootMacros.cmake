@@ -540,14 +540,14 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   set(runtime_cxxmodule_dependencies )
   set(cpp_module)
   set(library_name ${libprefix}${library_target_name}${libsuffix})
-  set(newargs -s ${library_output_dir}/${library_name})
-  set(rootmap_name ${library_output_dir}/${libprefix}${library_target_name}.rootmap)
-  set(pcm_name ${library_output_dir}/${libprefix}${library_target_name}_rdict.pcm)
+  set(newargs -s ${library_name})
+  set(rootmap_name ${libprefix}${library_target_name}.rootmap)
+  set(pcm_name ${libprefix}${library_target_name}_rdict.pcm)
   if(ARG_MODULE)
     if(ARG_MULTIDICT)
       set(newargs ${newargs} -multiDict)
-      set(pcm_name ${library_output_dir}/${libprefix}${library_target_name}_${dictionary}_rdict.pcm)
-      set(rootmap_name ${library_output_dir}/${libprefix}${library_target_name}32.rootmap)
+      set(pcm_name ${libprefix}${library_target_name}_${dictionary}_rdict.pcm)
+      set(rootmap_name ${libprefix}${library_target_name}32.rootmap)
     else()
       set(cpp_module ${library_target_name})
     endif(ARG_MULTIDICT)
@@ -558,7 +558,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
         set(pcm_name)
       endif()
       if(cpp_module)
-        set(cpp_module_file ${library_output_dir}/${cpp_module}.pcm)
+        set(cpp_module_file ${cpp_module}.pcm)
         # The module depends on its modulemap file.
         if (cpp_module_file AND CMAKE_PROJECT_NAME STREQUAL ROOT)
 		set (runtime_cxxmodule_dependencies copymodulemap "${CMAKE_BINARY_DIR}/include/ROOT.modulemap")
@@ -684,7 +684,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
 
   #---call rootcint------------------------------------------
   add_custom_command(OUTPUT ${dictionary}.cc ${pcm_name} ${rootmap_name} ${cpp_module_file}
-                     COMMAND ${ROOTCLING_EXECUTABLE} -v2 -f  ${dictionary}.cxx ${newargs} ${excludepathsargs} ${rootmapargs}
+                     COMMAND ${ROOTCLING_EXECUTABLE} -v2 -f  ${dictionary}.cc ${newargs} ${excludepathsargs} ${rootmapargs}
                                         ${ARG_OPTIONS}
                                         ${definitions} "$<$<BOOL:${module_defs}>:-D$<JOIN:${module_defs},;-D>>"
                                         ${compIncPaths}
@@ -1174,7 +1174,7 @@ function(ROOT_GENERATE_ROOTMAP library)
   #---Set the library output directory-----------------------
   ROOT_GET_LIBRARY_OUTPUT_DIR(library_output_dir)
 
-  set(outfile ${library_output_dir}/${libprefix}${libname}.rootmap)
+  set(outfile ${libprefix}${libname}.rootmap)
   foreach( f ${ARG_LINKDEF})
     if( IS_ABSOLUTE ${f})
       set(_linkdef ${_linkdef} ${f})
