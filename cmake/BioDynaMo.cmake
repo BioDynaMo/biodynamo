@@ -108,7 +108,7 @@ function(build_shared_library TARGET)
   # We always need dictionaries for the plugins (plugin manager requires class
   # information)
   if(dict OR DEFINED ARG_PLUGIN)
-    # generate dictionary using genreflex
+    # generate dictionary using rootcling reflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
 
@@ -179,7 +179,7 @@ function(generate_rootlogon)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"ERROR: Loading BioDynaMo into ROOT failed!\\\" << endl\;\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"       BioDynaMo was not built with dict=ON\\\" << endl\;\")\;")
   endif()
-  
+
   set(CONTENT "${CONTENT}\n}\n")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)
