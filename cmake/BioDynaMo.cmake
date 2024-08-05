@@ -179,7 +179,7 @@ function(generate_rootlogon)
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"ERROR: Loading BioDynaMo into ROOT failed!\\\" << endl\;\")\;")
     set(CONTENT "${CONTENT}\n  gROOT->ProcessLine(\"cout << \\\"       BioDynaMo was not built with dict=ON\\\" << endl\;\")\;")
   endif()
-
+  
   set(CONTENT "${CONTENT}\n}\n")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/rootlogon.C" ${CONTENT})
 endfunction(generate_rootlogon)
