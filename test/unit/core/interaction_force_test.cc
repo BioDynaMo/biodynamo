@@ -37,17 +37,23 @@ TEST(InteractionForce, GeneralSphere) {
   InteractionForce force;
   auto result = force.Calculate(&cell, &nb);
 
-  EXPECT_NEAR(4.50152537445543206341835066295, result[0], abs_error<real_t>::value);
-  EXPECT_NEAR(4.09229579495948369401668242086, result[1], abs_error<real_t>::value);
-  EXPECT_NEAR(3.68306621546353532461501417877, result[2], abs_error<real_t>::value);
+  EXPECT_NEAR(4.50152537445543206341835066295, result[0],
+              abs_error<real_t>::value);
+  EXPECT_NEAR(4.09229579495948369401668242086, result[1],
+              abs_error<real_t>::value);
+  EXPECT_NEAR(3.68306621546353532461501417877, result[2],
+              abs_error<real_t>::value);
 
   nb.SetDiameter(10);
   nb.SetPosition({5, 5, 0});
   result = force.Calculate(&cell, &nb);
 
-  EXPECT_NEAR(-2.99648347356091527350007596923, result[0], abs_error<real_t>::value);
-  EXPECT_NEAR(-3.07331638313940028051289842998, result[1], abs_error<real_t>::value);
-  EXPECT_NEAR(0.691496186206365063115402146746, result[2], abs_error<real_t>::value);
+  EXPECT_NEAR(-2.99648347356091527350007596923, result[0],
+              abs_error<real_t>::value);
+  EXPECT_NEAR(-3.07331638313940028051289842998, result[1],
+              abs_error<real_t>::value);
+  EXPECT_NEAR(0.691496186206365063115402146746, result[2],
+              abs_error<real_t>::value);
 }
 
 /// Tests the special case that none of the neighbors overlap

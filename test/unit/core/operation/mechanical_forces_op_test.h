@@ -65,7 +65,8 @@ inline void RunTest(const std::string& environment) {
   // cell 1
   final_position = final_cell1->GetPosition();
   EXPECT_NEAR(0, final_position[0], abs_error<real_t>::value);
-  EXPECT_NEAR(5.06220489350739084993450043382, final_position[1], abs_error<real_t>::value);
+  EXPECT_NEAR(5.06220489350739084993450043382, final_position[1],
+              abs_error<real_t>::value);
   EXPECT_NEAR(0, final_position[2], abs_error<real_t>::value);
 
   // check if tractor_force has been reset to zero
