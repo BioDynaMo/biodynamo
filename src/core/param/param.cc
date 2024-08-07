@@ -242,6 +242,8 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
   BDM_ASSIGN_CONFIG_VALUE(diffusion_method, "simulation.diffusion_method");
   BDM_ASSIGN_CONFIG_VALUE(calculate_gradients,
                           "simulation.calculate_gradients");
+  BDM_ASSIGN_CONFIG_VALUE(virtual_agent_radius_scale_factor,
+                          "simulation.virtual_agent_radius_scale_factor");
   AssignBoundSpaceMode(config, this);
   AssignThreadSafetyMechanism(config, this);
 
