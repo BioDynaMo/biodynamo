@@ -64,7 +64,7 @@ void InteractionForce::ForceBetweenSpheres(const Agent* sphere_lhs,
   real_t ref_diameter = sphere_lhs->GetDiameter();
   const Real3& nb_mass_location = sphere_rhs->GetPosition();
   real_t nb_diameter = sphere_rhs->GetDiameter();
-  auto* sim = Simulation::GetActive();
+  const auto* sim = Simulation::GetActive();
   auto* param = sim->GetParam();
 
   auto c1 = ref_mass_location;
