@@ -111,14 +111,14 @@ function(build_shared_library TARGET)
     # generate dictionary using rootcling reflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
-
+    set(module "${TARGET}")
     # Since the location of the CMake files differ in the build and installation
     # directory, we check if BDM_CMAKE_DIR is already set (in build directory
     # case). Otherwise, set it to the installation directory
     if(NOT DEFINED BDM_CMAKE_DIR)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
-    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX)
+    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} MODULE ${module} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX)
     if (BDM_OUT_OF_SOURCE)
       set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
     else()
