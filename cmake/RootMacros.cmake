@@ -606,7 +606,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
 
   if(ARG_REFLEX)
     set(newargs -reflex ${newargs})
-    
+  endif()
   #---what rootcling command to use--------------------------
   if(ARG_STAGE1)
     if(MSVC AND CMAKE_ROOTTEST_DICT)
@@ -1514,7 +1514,7 @@ set(ROOT_TEST_DRIVER ${CMAKE_CURRENT_LIST_DIR}/RootTestDriver.cmake)
 #                        [LABELS label1 label2]
 #                        [PYTHON_DEPS numpy numba keras torch ...] # List of python packages required to run this test.
 #                                                              A fixture will be added the tries to import them before the test starts.
-#                        [PROPERTIES prop1 value1 prop2 value2...] 
+#                        [PROPERTIES prop1 value1 prop2 value2...]
 #                       )
 #
 function(ROOT_ADD_TEST test)
