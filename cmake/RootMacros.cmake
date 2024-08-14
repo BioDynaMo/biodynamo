@@ -150,7 +150,7 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
     set(selectionfile ${CMAKE_CURRENT_SOURCE_DIR}/${ARG_SELECTION})
   endif()
 
-  set(gensrcdict ${dictionary}.cxx)
+  set(gensrcdict ${dictionary}.cc)
 
   #---roottest compability---------------------------------
   if(CMAKE_ROOTTEST_NOROOTMAP)
@@ -217,7 +217,7 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
   # FIXME: Do not set gensrcdict variable to the outer scope but use an argument to
   # REFLEX_GENERATE_DICTIONARY passed from the outside. Note this would be a
   # breaking change for roottest and other external users.
-  set(gensrcdict ${dictionary}.cxx PARENT_SCOPE)
+  set(gensrcdict ${dictionary}.cc PARENT_SCOPE)
 
 endfunction()
 
@@ -275,7 +275,7 @@ endfunction(ROOT_REPLACE_BUILD_INTERFACE)
 #                                                    STAGE1 LINKDEF linkdef OPTIONS opt1 opt2 ...)
 #
 # <dictionary> is the dictionary stem; the macro creates (among other files) the dictionary source as
-#   <dictionary>.cxx
+#   <dictionary>.cc
 # <headerfiles> are "as included"; set appropriate INCLUDE_DIRECTORIES property on the directory.
 #   The dictionary target depends on these headers. These files must exist.
 # <NODEPHEADERS> same as <headerfiles>. If these files are not found (given the target include path)
@@ -684,8 +684,8 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   endforeach()
 
   #---call rootcint------------------------------------------
-  add_custom_command(OUTPUT ${dictionary}.cxx ${pcm_name} ${rootmap_name} ${cpp_module_file}
-                     COMMAND ${command} -v2 -f  ${dictionary}.cxx ${newargs} ${excludepathsargs} ${rootmapargs}
+  add_custom_command(OUTPUT ${dictionary}.cc ${pcm_name} ${rootmap_name} ${cpp_module_file}
+                     COMMAND ${command} -v2 -f  ${dictionary}.cc ${newargs} ${excludepathsargs} ${rootmapargs}
                                         ${ARG_OPTIONS}
                                         ${definitions} "$<$<BOOL:${module_defs}>:-D$<JOIN:${module_defs},;-D>>"
                                         ${compIncPaths}
@@ -704,7 +704,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   # the generated source at the same scope level as its owning target, something that
   # would not happen if we used target_sources() directly with the dictionary source.
   if(TARGET "${ARG_MODULE}" AND NOT "${ARG_MODULE}" STREQUAL "${dictionary}")
-    add_library(${dictionary} OBJECT ${dictionary}.cxx)
+    add_library(${dictionary} OBJECT ${dictionary}.cc)
     set_target_properties(${dictionary} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
     target_sources(${ARG_MODULE} PRIVATE $<TARGET_OBJECTS:${dictionary}>)
 
@@ -721,12 +721,12 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
       ${incdirs} $<TARGET_PROPERTY:${ARG_MODULE},INCLUDE_DIRECTORIES>)
   else()
     get_filename_component(dictionary_name ${dictionary} NAME)
-    add_custom_target(${dictionary_name} DEPENDS ${dictionary}.cxx ${pcm_name} ${rootmap_name} ${cpp_module_file})
+    add_custom_target(${dictionary_name} DEPENDS ${dictionary}.cc ${pcm_name} ${rootmap_name} ${cpp_module_file})
   endif()
 
   if(PROJECT_NAME STREQUAL "ROOT")
     set_property(GLOBAL APPEND PROPERTY ROOT_PCH_DEPENDENCIES ${dictionary})
-    set_property(GLOBAL APPEND PROPERTY ROOT_PCH_DICTIONARIES ${CMAKE_CURRENT_BINARY_DIR}/${dictionary}.cxx)
+    set_property(GLOBAL APPEND PROPERTY ROOT_PCH_DICTIONARIES ${CMAKE_CURRENT_BINARY_DIR}/${dictionary}.cc)
   endif()
 
   if(ARG_MULTIDICT)
