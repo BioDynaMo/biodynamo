@@ -111,6 +111,7 @@ function(build_shared_library TARGET)
     # generate dictionary using rootcling reflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
+    set(module "${TARGET}_dict")
 
     # Since the location of the CMake files differ in the build and installation
     # directory, we check if BDM_CMAKE_DIR is already set (in build directory
@@ -118,7 +119,7 @@ function(build_shared_library TARGET)
     if(NOT DEFINED BDM_CMAKE_DIR)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
-    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/${ARG_SELECTION})
+    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} MODULE ${module} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX)
     if (BDM_OUT_OF_SOURCE)
       set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
     else()
@@ -140,9 +141,9 @@ function(build_shared_library TARGET)
     endif()
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
     if (DEFINED CMAKE_INSTALL_LIBDIR)
-      add_custom_command(TARGET ${TARGET}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
+      # add_custom_command(TARGET ${TARGET}
+      #      POST_BUILD
+      #     COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
     endif()
   else()
     add_library(${TARGET} SHARED ${ARG_SOURCES})
