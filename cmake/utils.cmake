@@ -268,12 +268,12 @@ function(install_inside_build)
     # Copy some cmake files
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
+            ${CMAKE_SOURCE_DIR}/cmake/RootMacros.cmake
             ${CMAKE_SOURCE_DIR}/cmake/BioDynaMoConfig.cmake
             ${CMAKE_SOURCE_DIR}/cmake/BioDynaMo.cmake
             ${CMAKE_SOURCE_DIR}/cmake/SetCompilerFlags.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindLibroadrunner.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindROOT.cmake
-            ${CMAKE_SOURCE_DIR}/cmake/RootMacros.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindVTune.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindOpenCL.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake

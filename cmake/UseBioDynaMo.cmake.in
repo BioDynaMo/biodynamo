@@ -332,6 +332,7 @@ endfunction(bdm_add_test)
 
 # -------------------- includes -----------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDMSYS}/share/cmake")
+include("${BDMSYS}/share/cmake/RootMacros.cmake")
 include("${BDMSYS}/share/cmake/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
