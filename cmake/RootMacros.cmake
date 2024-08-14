@@ -609,36 +609,6 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
     set(newargs -reflex ${newargs})
   endif()
 
-  #---what rootcling command to use--------------------------
-  if(ARG_STAGE1)
-    if(MSVC AND CMAKE_ROOTTEST_DICT)
-      set(command ${CMAKE_COMMAND} -E ${CMAKE_BINARY_DIR}/bin/rootcling_stage1.exe)
-    else()
-      set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:rootcling_stage1>)
-    endif()
-    set(ROOTCINTDEP rconfigure)
-    set(pcm_name)
-  else()
-    if(CMAKE_PROJECT_NAME STREQUAL ROOT)
-      if(MSVC AND CMAKE_ROOTTEST_DICT)
-        set(command ${CMAKE_COMMAND} -E env "ROOTIGNOREPREFIX=1" ${CMAKE_BINARY_DIR}/bin/rootcling.exe)
-      else()
-        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib:$ENV{LD_LIBRARY_PATH}"
-                    "ROOTIGNOREPREFIX=1" $<TARGET_FILE:rootcling> -rootbuild)
-        # Modules need RConfigure.h copied into include/.
-        set(ROOTCINTDEP rootcling rconfigure)
-      endif()
-    elseif(TARGET ROOT::rootcling)
-      if(APPLE)
-        set(command ${CMAKE_COMMAND} -E env "DYLD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}:$ENV{DYLD_LIBRARY_PATH}" $<TARGET_FILE:ROOT::rootcling>)
-      else()
-        set(command ${CMAKE_COMMAND} -E env "LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}:$ENV{LD_LIBRARY_PATH}" $<TARGET_FILE:ROOT::rootcling>)
-      endif()
-    else()
-      set(command ${CMAKE_COMMAND} -E env rootcling)
-    endif()
-  endif()
-
   #---build the path exclusion switches----------------------
   set(excludepathsargs "")
   foreach(excludepath ${excludepaths})
@@ -685,7 +655,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
 
   #---call rootcint------------------------------------------
   add_custom_command(OUTPUT ${dictionary}.cc ${pcm_name} ${rootmap_name} ${cpp_module_file}
-                     COMMAND ${command} -v2 -f  ${dictionary}.cc ${newargs} ${excludepathsargs} ${rootmapargs}
+    COMMAND ${ROOTCLING_EXECUTABLE} -v2 -f  ${dictionary}.cc ${newargs} ${excludepathsargs} ${rootmapargs}
                                         ${ARG_OPTIONS}
                                         ${definitions} "$<$<BOOL:${module_defs}>:-D$<JOIN:${module_defs},;-D>>"
                                         ${compIncPaths}
