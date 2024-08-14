@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Adapted from https://github.com/pyenv/pyenv-installer/
-# Usage: curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash 
+# Usage: curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/master/util/install | bash
 
 set -e
 
@@ -8,7 +8,7 @@ if [ -z ${BDM_INSTALL} ]; then
   export BDM_INSTALL=v1.04-patches
 fi
 echo "BDM_INSTALL is set to: $BDM_INSTALL"
-  
+
 temp_dir=$(mktemp -d)
 BDM_SRC="${temp_dir}/biodynamo"
 mkdir "$BDM_SRC"
@@ -34,8 +34,9 @@ FailedCheckout() {
 
 Checkout() {
   # In Github Actions we checkout the branch that is running the install script
+  REPO_URL="${GITHUB}/${GHA_REPOSITORY}.git"
   if [ ! -z ${GITHUB_ACTIONS+x} ]; then
-    git clone --branch ${GHA_BRANCH_NAME} "$1" . || FailedClone "$1"
+    git clone --branch ${GHA_BRANCH_NAME} "$REPO_URL" . || FailedClone "$REPO_URL"
   else
     git clone "$1" . || FailedClone "$1"
     git checkout "$BDM_INSTALL" || FailedCheckout "$BDM_INSTALL"
