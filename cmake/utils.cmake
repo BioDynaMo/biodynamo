@@ -273,6 +273,7 @@ function(install_inside_build)
             ${CMAKE_SOURCE_DIR}/cmake/SetCompilerFlags.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindLibroadrunner.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindROOT.cmake
+            ${CMAKE_SOURCE_DIR}/cmake/RootMacros.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindVTune.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindOpenCL.cmake
             ${CMAKE_SOURCE_DIR}/cmake/FindNuma.cmake
