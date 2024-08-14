@@ -655,7 +655,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
 
   #---call rootcint------------------------------------------
   add_custom_command(OUTPUT ${dictionary}.cc ${pcm_name} ${rootmap_name} ${cpp_module_file}
-    COMMAND ${ROOTCLING_EXECUTABLE} -v2 -f  ${dictionary}.cc ${newargs} ${excludepathsargs} ${rootmapargs}
+    COMMAND ${LAUNCHER} ${ROOTCLING_EXECUTABLE} -v2 -f  ${dictionary}.cc ${newargs} ${excludepathsargs} ${rootmapargs}
                                         ${ARG_OPTIONS}
                                         ${definitions} "$<$<BOOL:${module_defs}>:-D$<JOIN:${module_defs},;-D>>"
                                         ${compIncPaths}
