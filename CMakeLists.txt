@@ -504,6 +504,7 @@ file(COPY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/launcher.sh
         GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # -------------------- includes -----------------------------------------------
+include(RootMacros)
 include(BioDynaMo)
 include(ExternalProject)
 include(Documentation)

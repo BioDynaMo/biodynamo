@@ -104,4 +104,3 @@ if(NOT BDM_OUT_OF_SOURCE)
   set(LAUNCHER ${CMAKE_BINARY_DIR}/launcher.sh)
 endif()
 
-include(${CMAKE_SOURCE_DIR}/cmake/RootMacros.cmake)
