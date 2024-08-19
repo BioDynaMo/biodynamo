@@ -112,6 +112,7 @@ function(build_shared_library TARGET)
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
     set(module "${TARGET}_dict")
+    string(REPLACE "${CMAKE_SOURCE_DIR}/src/" "" ROOT_HEADERS "${ARG_HEADERS}")
 
     # Since the location of the CMake files differ in the build and installation
     # directory, we check if BDM_CMAKE_DIR is already set (in build directory
@@ -119,7 +120,7 @@ function(build_shared_library TARGET)
     if(NOT DEFINED BDM_CMAKE_DIR)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
-    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} MODULE ${module} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX OPTIONS --noIncludePaths --inlineInputHeader)
+    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ROOT_HEADERS} MODULE ${module} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX OPTIONS -I src --noIncludePaths --inlineInputHeader)
     if (BDM_OUT_OF_SOURCE)
       set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
     else()
