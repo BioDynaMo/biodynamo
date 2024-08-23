@@ -549,12 +549,9 @@ Unset the environment variable BDM_LOCAL_LFS to download the file.")
 	DOWNLOAD_DIR ${DEST_PARENT}
 	SOURCE_DIR ${DEST}
     )
-    
-    FetchContent_GetProperties(${TAR_FILENAME})
-    if (NOT ${TAR_FILENAME}_POPULATED)
-        FetchContent_Populate(${TAR_FILENAME})
-    endif()
-    
+
+    FetchContent_MakeAvailable(${TAR_FILENAME})
+
     # Remove subbuild files, we don't need them
     file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/_deps/)
   endif()
