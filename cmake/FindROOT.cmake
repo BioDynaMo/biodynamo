@@ -196,7 +196,7 @@ function(REFLEX_GENERATE_DICTIONARY dictionary)
   #set(rootmapopts --rootmap=${rootmapname} --rootmap-lib=${libprefix}${dictionary}Dict)
   #---Actual command----------------------------------------
   add_custom_command(OUTPUT ${gensrcdict} ${rootmapname} ${dictionary}_rdict.pcm
-    COMMAND ${ROOTCLING_EXECUTABLE} --reflex -f ${gensrcdict} ${rootmapopts} ${headerfiles} ${selectionfile} --noIncludePaths --inlineInputHeader
+    COMMAND ${ROOTCLING_EXECUTABLE} --reflex --v2 -f ${gensrcdict} ${rootmapopts} ${headerfiles} ${selectionfile} --noIncludePaths --inlineInputHeader
                             ${ARG_OPTIONS} ${includedirs} ${definitions}
                      DEPENDS ${headerfiles} ${selectionfile})
 endfunction()

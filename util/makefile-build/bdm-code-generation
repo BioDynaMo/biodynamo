@@ -58,7 +58,7 @@ CXX_INCLUDES=$(${BDM_CONFIG} --cxxincludes | sed 's|-isystem |-I|g')
 
 CXX_DEFINES=$(${BDM_CONFIG} --cxxdefines)
 
-rootcling --reflex -f ${DICT} ${HEADERS} ${SELECTIONFILE} --noIncludePaths --inlineInputHeader ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
+rootcling --reflex --v2 -f ${DICT} ${HEADERS} ${SELECTIONFILE} --noIncludePaths --inlineInputHeader ${CXX_DEFINES} ${CXX_INCLUDES} $ADDITIONAL_CXX_FLAGS
 
 # Generate bdm dictionary and append to DICT
 BDM_DICT=$(mktemp)
