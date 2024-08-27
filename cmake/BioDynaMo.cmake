@@ -111,7 +111,7 @@ function(build_shared_library TARGET)
     # generate dictionary using rootcling reflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
-    set(module "${TARGET}_dict")
+    set(module "${TARGET}")
     string(REPLACE "${CMAKE_SOURCE_DIR}/src/" "" ROOT_HEADERS "${ARG_HEADERS}")
 
     # Since the location of the CMake files differ in the build and installation
