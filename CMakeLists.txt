@@ -138,6 +138,7 @@ option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 option(real_t    "Define data type for real numbers. Currently supported: float, double" double)
+option(runtime_cxxmodules "Enable C++ Modules support." ON)
 
 if(APPLE)
   # ParaView on Apple devices
