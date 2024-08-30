@@ -17,8 +17,8 @@
 
 #include "core/agent/cell.h"
 #include "core/operation/mechanical_forces_op.h"
-#include "unit/test_util/test_util.h"
 #include "core/operation/operation_registry.h"
+#include "unit/test_util/test_util.h"
 
 namespace bdm {
 namespace mechanical_forces_op_test_internal {
