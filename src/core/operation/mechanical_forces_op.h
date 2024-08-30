@@ -31,6 +31,7 @@
 #include "core/simulation.h"
 #include "core/util/math.h"
 #include "core/util/thread_info.h"
+#include "core/operation/operation_registry.h"
 
 namespace bdm {
 

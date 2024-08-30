@@ -17,6 +17,8 @@
 
 #include <array>
 #include "core/agent/new_agent_event.h"
+#include "core/real_t.h"
+#include "core/container/math_array.h"
 
 namespace bdm {
 namespace neuroscience {
