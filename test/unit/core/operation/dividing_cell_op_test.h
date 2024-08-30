@@ -23,6 +23,7 @@
 #include "core/operation/dividing_cell_op.h"
 #include "core/resource_manager.h"
 #include "unit/test_util/test_util.h"
+#include "core/operation/operation_registry.h"
 
 namespace bdm {
 namespace dividing_cell_op_test_internal {
