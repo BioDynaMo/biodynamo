@@ -21,6 +21,7 @@
 
 #include "core/agent/cell.h"
 #include "core/operation/dividing_cell_op.h"
+#include "core/operation/operation_registry.h"
 #include "core/resource_manager.h"
 #include "unit/test_util/test_util.h"
 
