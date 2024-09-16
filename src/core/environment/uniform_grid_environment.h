@@ -625,6 +625,7 @@ class UniformGridEnvironment : public Environment {
         uint64_t start, uint64_t end,
         Functor<void, Iterator<AgentHandle>*>& f) const override;
 
+   private:
     UniformGridEnvironment* grid_;
     MortonOrder mo_;
     ParallelResizeVector<Box*> sorted_boxes_;

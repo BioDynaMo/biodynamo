@@ -112,7 +112,16 @@ function(build_shared_library TARGET)
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
     set(module "${TARGET}")
-    string(REPLACE "${CMAKE_SOURCE_DIR}/src/" "" ROOT_HEADERS "${ARG_HEADERS}")
+
+    if (runtime_cxxmodules)
+      set(MODULEMAP "--moduleMapFile=${CMAKE_SOURCE_DIR}/src/module.modulemap")
+    endif()
+
+    if (NOT ${TARGET} STREQUAL "biodynamo")
+      #set(DEPENDENCY_OPTION "-m ${CMAKE_CURRENT_BINARY_DIR}/lib/biodynamo.pcm")
+      #set(NO_MODULE "NO_CXXMODULE")
+      #set(MODULEMAP)
+    endif()
 
     # Since the location of the CMake files differ in the build and installation
     # directory, we check if BDM_CMAKE_DIR is already set (in build directory
@@ -120,7 +129,7 @@ function(build_shared_library TARGET)
     if(NOT DEFINED BDM_CMAKE_DIR)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
-    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ROOT_HEADERS} MODULE ${module} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX OPTIONS -I src --noIncludePaths --inlineInputHeader --moduleMapFile=${CMAKE_SOURCE_DIR}/src/module.modulemap)
+    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} MODULE ${module} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX ${NO_MODULE} OPTIONS ${DEPENDENCY_OPTION} -I src --inlineInputHeader --noIncludePaths ${MODULEMAP})
     if (BDM_OUT_OF_SOURCE)
       set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
     else()

@@ -743,7 +743,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
     # Install the C++ module if we generated one.
     if (cpp_module_file)
       install(FILES ${cpp_module_file}
-                    DESTINATION ${shared_lib_install_dir} COMPONENT libraries)
+        DESTINATION ${CMAKE_BINARY_DIR}/lib COMPONENT libraries)
     endif()
 
     if(ARG_STAGE1)
