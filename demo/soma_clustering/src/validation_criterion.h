@@ -17,12 +17,12 @@
 
 #include <vector>
 #include "biodynamo.h"
-#include "my_cell.h"
-#include "core/real_t.h"
 #include "core/agent/agent.h"
-#include "core/simulation.h"
 #include "core/container/math_array.h"
+#include "core/real_t.h"
 #include "core/resource_manager.h"
+#include "core/simulation.h"
+#include "my_cell.h"
 
 namespace bdm {
 namespace soma_clustering {
