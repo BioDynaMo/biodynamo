@@ -844,7 +844,7 @@ function (ROOT_CXXMODULES_APPEND_TO_MODULEMAP library library_headers)
   # exposed via the main modulemap. This is exposed by setting the
   # ROOT_CXXMODULES_WRITE_TO_CURRENT_DIR.
   if (NOT "${CMAKE_PROJECT_NAME}" STREQUAL ROOT OR ROOT_CXXMODULES_WRITE_TO_CURRENT_DIR)
-    set(modulemap_output_file "${CMAKE_SOURCE_DIR}/src/module.modulemap")
+    set(modulemap_output_file "${CMAKE_BINARY_DIR}/include/module.modulemap")
 
     # It's possible that multiple modulemaps are needed in the current
     # directory and we need to merge them. As we don't want to have multiple
