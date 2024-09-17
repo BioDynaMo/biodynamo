@@ -17,6 +17,9 @@
 
 #include <vector>
 #include "biodynamo.h"
+#include <iostream>
+#include <bits/std_function.h>
+#include <cmath>
 #include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/real_t.h"

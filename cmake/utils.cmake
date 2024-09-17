@@ -401,7 +401,7 @@ function(install_inside_build)
     endif()
 
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
-    add_dependencies(copy_files_bdm biodynamo)
+    add_dependencies(biodynamo copy_files_bdm)
 endfunction()
 
 # This function add a description to the packages which will be displayed
