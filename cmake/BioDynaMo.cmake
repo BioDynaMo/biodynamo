@@ -118,7 +118,7 @@ function(build_shared_library TARGET)
 
 
     if (runtime_cxxmodules)
-      set(CLING_MODULEMAP_FILES "$ENV{${CMAKE_BINARY_DIR}/include/module.modulemap}")
+      set(MODULEMAP "--moduleMapFile=${CMAKE_BINARY_DIR}/include/module.modulemap")
     endif()
 
     if (NOT ${TARGET} STREQUAL "biodynamo")
