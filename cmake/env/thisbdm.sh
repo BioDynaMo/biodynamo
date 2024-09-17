@@ -423,6 +423,7 @@ _source_thisbdm()
   fi
 
   export BDM_ROOT_DIR
+  export CLING_MODULEMAP_FILES=${BDMSYS}/include/module.modulemap
   # shellcheck disable=SC1090
   . "${BDM_ROOT_DIR}"/bin/thisroot.sh || return 1
   _bdm_define_command root || return 1
