@@ -15,7 +15,7 @@
 #ifndef CORE_UTIL_PARTITION_H_
 #define CORE_UTIL_PARTITION_H_
 
-#include <bits/stdint-uintn.h>
+#include <stdint.h>
 #include <cmath>
 
 namespace bdm {
