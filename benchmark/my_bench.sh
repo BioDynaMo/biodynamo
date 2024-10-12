@@ -37,6 +37,18 @@ cat run.txt | awk '/TumorConcept1/ \
 {print $2, $3, $4, $5, $6}' >> runtime.txt
 printf "###################################\n\n" >> runtime.txt
 
+#Pyramidal_cell export=FALSE
+printf "pyramidal_cell: export=false\n\n" >> runtime.txt
+cat run.txt | awk '/PyramidalCell0/ \
+{print $2, $3, $4, $5, $6}' >> runtime.txt
+printf "###################################\n\n" >> runtime.txt
+
+#Pyramidal_cell export=TRUE
+printf "pyramidal_cell: export=true\n\n" >> runtime.txt
+cat run.txt | awk '/PyramidalCell1/ \
+{print $2, $3, $4, $5, $6}' >> runtime.txt
+printf "###################################\n\n" >> runtime.txt
+
 rm run.txt
 
 mkdir plots
@@ -44,3 +56,5 @@ mkdir plots
 ./graph.py -a tumor_concept1
 ./graph.py -a soma_clustering0
 ./graph.py -a soma_clustering1
+./graph.py -a pyramidal_cell0
+./graph.py -a pyramidal_cell1

@@ -57,10 +57,12 @@ add_custom_target(run-benchmarks
 file(GLOB_RECURSE BENCH_HEADERS ${CMAKE_SOURCE_DIR}/benchmark/*.h)
 file(GLOB_RECURSE BENCH_SOURCES ${CMAKE_SOURCE_DIR}/benchmark/*.cc)
 file(GLOB_RECURSE DEMO_HEADERS ${CMAKE_SOURCE_DIR}/demo/soma_clustering/src/*.h 
-                               ${CMAKE_SOURCE_DIR}/demo/tumor_concept/src/*.h)
+                               ${CMAKE_SOURCE_DIR}/demo/tumor_concept/src/*.h
+                              ${CMAKE_SOURCE_DIR}/demo/pyramidal_cell/src/*.h)
 include_directories("${CMAKE_SOURCE_DIR}/benchmark")
 include_directories("${CMAKE_SOURCE_DIR}/demo/tumor_concept/src")
 include_directories("${CMAKE_SOURCE_DIR}/demo/soma_clustering/src")
+include_directories("${CMAKE_SOURCE_DIR}/demo/pyramidal_cell/src")
 include_directories("${CMAKE_BINARY_DIR}/gbench/src/gbench/src")
 bdm_add_executable(biodynamo-benchmark
                    HEADERS ${DEMO_HEADERS} ${BENCH_HEADERS}
