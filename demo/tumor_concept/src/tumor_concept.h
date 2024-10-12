@@ -103,7 +103,11 @@ inline int Simulate(int argc, const char** argv) {
     param->max_bound = 100;  // cube of 100*100*100
   };
 
+  auto start = std::chrono::high_resolution_clock::now();
   Simulation simulation(argc, argv, set_param);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
   auto* ctxt = simulation.GetExecutionContext();
   auto* param = simulation.GetParam();
   auto* myrand = simulation.GetRandom();
@@ -137,9 +141,13 @@ inline int Simulate(int argc, const char** argv) {
   ctxt->AddAgent(cell);  // put the created cell in our cells structure
 
   // Run simulation
-  simulation.GetScheduler()->Simulate(500);
 
-  std::cout << "Simulation completed successfully!" << std::endl;
+  auto sim_start = std::chrono::high_resolution_clock::now();
+  simulation.GetScheduler()->Simulate(500);
+  auto sim_end = std::chrono::high_resolution_clock::now();
+  auto sim_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(sim_end - sim_start).count();
+
+  std::cout << "Simulation completed successfully! Startup: " << elapsed << " ns" << " Run: " << sim_elapsed << " ns" << std::endl;
   return 0;
 }
 
