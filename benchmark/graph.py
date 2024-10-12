@@ -39,6 +39,10 @@ def take_x(runtime):
     return i
 
 def search_loop(i, x):
+    if sys.argv[2] == "pyramidal_cell0":
+        av = "pyramidal_cell: export=false"
+    if sys.argv[2] == "pyramidal_cell1":
+        av = "pyramidal_cell: export=true"
     if sys.argv[2] == "soma_clustering0":
         av = "soma_clustering: export=false"
     if sys.argv[2] == "soma_clustering1":
@@ -63,6 +67,10 @@ def search_loop(i, x):
 
 # Take the Data Demo
 def take_demo_time(i, x):
+    if sys.argv[2] == "pyramidal_cell0":
+        av = "pyramidal_cell: export=false"
+    if sys.argv[2] == "pyramidal_cell1":
+        av = "pyramidal_cell: export=true"
     if sys.argv[2] == "soma_clustering0":
         av = "soma_clustering: export=false"
     if sys.argv[2] == "soma_clustering1":
@@ -98,6 +106,10 @@ def take_data_CPU(data_run, x):
 
 # How many times we used the script "my_bensh.sh"
 def nb_runtimes():
+    if sys.argv[2] == "pyramidal_cell0":
+        av = "pyramidal_cell: export=false"
+    if sys.argv[2] == "pyramidal_cell1":
+        av = "pyramidal_cell: export=true"
     if sys.argv[2] == "soma_clustering0":
         av = "soma_clustering: export=false"
     if sys.argv[2] == "soma_clustering1":
@@ -116,7 +128,7 @@ def nb_runtimes():
             i += 1
         if data == "":
             if i == 0:
-                print("Choose a Demo:\nsoma_clustering\ntumor_concept")
+                print("Choose a Demo:\nsoma_clustering\ntumor_concept\npyramidal_cell")
                 exit()
             return i
         data = runtime.readline()
@@ -185,4 +197,4 @@ if __name__ == "__main__":
     try:
         main()
     except:
-        print("USAGE: ./graph.py [av1] [av2]\n\nav1:\t-a or --average for average\n\t-c or --compare for compare\n\nav2:\tsoma_clustering1\n\tsoma_clustering0\n\ttumor_concept0\n\ttumor_concept1")
+        print("USAGE: ./graph.py [av1] [av2]\n\nav1:\t-a or --average for average\n\t-c or --compare for compare\n\nav2:\tsoma_clustering1\n\tsoma_clustering0\n\ttumor_concept0\n\ttumor_concept1\n\tpyramidal_cell1\n\tpyramidal_cell0")
