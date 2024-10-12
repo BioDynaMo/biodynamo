@@ -171,12 +171,21 @@ inline void SaveNeuronMorphology(Simulation& sim) {
 
 inline int Simulate(int argc, const char** argv) {
   neuroscience::InitModule();
+
+  auto start = std::chrono::high_resolution_clock::now();
   Simulation simulation(argc, argv);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
   AddInitialNeuron({150, 150, 0});
   CreateExtracellularSubstances(simulation.GetParam());
+  
+  auto sim_start = std::chrono::high_resolution_clock::now();
   simulation.GetScheduler()->Simulate(500);
+  auto sim_end = std::chrono::high_resolution_clock::now();
+  auto sim_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(sim_end - sim_start).count();
   SaveNeuronMorphology(simulation);
-  std::cout << "Simulation completed successfully!" << std::endl;
+  std::cout << "Simulation completed successfully! Startup: " << elapsed << " ns" << " Run: " << sim_elapsed << " ns" << std::endl;
   return 0;
 }
 

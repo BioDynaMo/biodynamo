@@ -45,7 +45,11 @@ inline int Simulate(int argc, const char** argv) {
     // param->unschedule_default_operations = {"mechanical forces"};
   };
 
+  auto start = std::chrono::high_resolution_clock::now();
   Simulation simulation(argc, argv, set_param);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
 
   // Define initial model
   auto* param = simulation.GetParam();
@@ -99,7 +103,12 @@ inline int Simulate(int argc, const char** argv) {
                  "We recommend to run the simulation for roughly 6000 time "
                  "steps. Please change 'timesteps = ..'.");
   }
+
+  auto sim_start = std::chrono::high_resolution_clock::now();
   simulation.GetScheduler()->Simulate(timesteps);
+  auto sim_end = std::chrono::high_resolution_clock::now();
+  auto sim_elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(sim_end - sim_start).count();
+
 
   // Check if criterion is met
   real_t spatial_range = 15;
@@ -109,7 +118,7 @@ inline int Simulate(int argc, const char** argv) {
   } else {
     std::cout << "<SomaClustering> Clustering criterion not met!" << std::endl;
   }
-  std::cout << "Simulation completed successfully!\n";
+  std::cout << "Simulation completed successfully! Startup: " << elapsed << " ns" << " Run: " << sim_elapsed << " ns" << std::endl;
   return 0;
 }
 
