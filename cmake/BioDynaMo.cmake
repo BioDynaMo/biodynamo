@@ -146,7 +146,7 @@ function(build_shared_library TARGET)
     else()
       set(BDM_OUT_OF_SRC_ARG --bdm-source ${CMAKE_SOURCE_DIR})
     endif()
-    if (runtime_cxxmodules)
+    if (BDM_CXXMODULES)
       set(BDM_CXX_MODULES_ARG "--cxxmodules")
     endif()
     add_custom_command(OUTPUT "${BDM_DICT_FILE}"
