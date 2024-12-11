@@ -148,6 +148,7 @@ function(build_shared_library TARGET)
     endif()
     if (runtime_cxxmodules)
       set(BDM_CXX_MODULES_ARG "--cxxmodules")
+    endif()
     add_custom_command(OUTPUT "${BDM_DICT_FILE}"
       COMMAND ${Python_EXECUTABLE} ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_OUT_OF_SRC_ARG} ${BDM_CXX_MODULES_ARG} --output ${BDM_DICT_FILE} --include-dirs ${INCLUDE_DIRS} --headers ${ARG_HEADERS}
                        DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary)
