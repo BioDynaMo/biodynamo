@@ -15,11 +15,11 @@
 #ifndef VALIDATION_CRITERION_H_
 #define VALIDATION_CRITERION_H_
 
+#include <cmath>
+#include <functional>
+#include <iostream>
 #include <vector>
 #include "biodynamo.h"
-#include <iostream>
-#include <functional>
-#include <cmath>
 #include "core/agent/agent.h"
 #include "core/container/math_array.h"
 #include "core/real_t.h"

@@ -118,7 +118,7 @@ static struct BioDynaMoDictInit {
                   f.write('    idirs << {0} << ":";\n'.format(id_processed))
         
         # We don't need to pass the headers to the interpreter since we use modules
-        if not args.modules:
+        if not args.cxxmodules:
             for h in args.headers:
                     f.write('    bdm::JitHeaders::Register("{0}");\n'.format(RemoveLongestPrefix(h, prefixes)))
 
