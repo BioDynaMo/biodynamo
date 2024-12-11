@@ -107,7 +107,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set(BDM_OUT_OF_SOURCE true)
-set(BDM_MODULES @runtime_cxxmodules@)
+set(BDM_CXXMODULES @runtime_cxxmodules@)
 
 if(real_t)
   message(STATUS "BioDynaMo real_t set to: ${real_t}")
