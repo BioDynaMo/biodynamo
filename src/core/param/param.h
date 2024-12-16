@@ -236,7 +236,7 @@ struct Param {
   real_t max_bound = 100;
 
   /// Define the boundary condition of the diffusion grid [open, closed,
-  /// Neumann, Dirichlet]\n
+  /// Neumann, Dirichlet, Periodic]\n
   /// Default value: `"Neumann"`\n TOML config file:
   ///
   ///     [simulation]

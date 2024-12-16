@@ -1,13 +1,13 @@
 ---
 title: "Contribute"
 date: "2019-01-01"
-path: "/doc/dev_guide/contribute/"
+path: "/docs/devguide/contribute/"
 meta_title: "BioDynaMo Dev Guide"
 meta_description: "This is the contribution page."
 toc: true
 image: ""
 next:
-    url:  "/doc/dev_guide/contribution/"
+    url:  "/docs/devguide/contribution/"
     title: "Contribute"
     description: "This is the contribution page."
 sidebar: "devguide"

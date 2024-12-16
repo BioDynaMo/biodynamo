@@ -32,6 +32,7 @@ jobs:
         if [ "${{ github.event_name }}" = "schedule" ]; then
           echo "GHA_BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
         fi
+        echo "GHA_REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
 
     - name: Set OSVERS
       run: |
@@ -62,7 +63,7 @@ jobs:
       run: |
         yum update -y
         yum install -y sudo curl
-        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
+        curl https://raw.githubusercontent.com/${GHA_REPOSITORY}/${GHA_BRANCH_NAME}/util/install | bash
         # remove whole BioDynaMo repository to catch errors related to paths pointing into the build dir
         mktemp -d
         find /tmp -iname biodynamo -type d || true

@@ -146,7 +146,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   add_custom_command(OUTPUT ${dictionary}.cxx
                      OUTPUT ${dictionary}_rdict.pcm
                      COMMAND ${LAUNCHER} ${ROOTCLING_EXECUTABLE} -f ${dictionary}.cxx
-                                          -c ${ARG_OPTIONS} ${includedirs} ${headerfiles} ${linkdefs}
+                                         ${ARG_OPTIONS} ${includedirs} ${headerfiles} ${linkdefs}
                      DEPENDS ${headerfiles} ${linkdefs} VERBATIM)
 endfunction()
 

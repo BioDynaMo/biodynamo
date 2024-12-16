@@ -24,7 +24,7 @@ from common import CopySupportFiles
 
 
 def ValidateSimName(sim_name):
-    pattern = re.compile("^[a-zA-Z]+[a-zA-Z0-9\-_]+$")
+    pattern = re.compile(r"^[a-zA-Z]+[a-zA-Z0-9\-_]+$")
     if not pattern.match(sim_name):
         Print.error('Error: simulation name "{}" is not valid.'.format(sim_name))
         Print.error("       Allowed characters are a-z A-Z 0-9 - and _")

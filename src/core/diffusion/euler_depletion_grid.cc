@@ -88,4 +88,11 @@ void EulerDepletionGrid::DiffuseWithNeumann(real_t dt) {
   ApplyDepletion(dt);
 }
 
+void EulerDepletionGrid::DiffuseWithPeriodic(real_t dt) {
+  // Update concentration without depletion (c1 is modified)
+  EulerGrid::DiffuseWithPeriodic(dt);
+
+  ApplyDepletion(dt);
+}
+
 }  // namespace bdm

@@ -52,6 +52,7 @@ class EulerGrid : public DiffusionGrid {
   void DiffuseWithOpenEdge(real_t dt) override;
   void DiffuseWithDirichlet(real_t dt) override;
   void DiffuseWithNeumann(real_t dt) override;
+  void DiffuseWithPeriodic(real_t dt) override;
 
  private:
   BDM_CLASS_DEF_OVERRIDE(EulerGrid, 1);

@@ -69,20 +69,19 @@ function(verify_ROOT)
                     # check if SHA256 of installed ROOT is the same as the expected one
                     file(READ ${CMAKE_THIRD_PARTY_DIR}/root/tar-sha256 TAR_SHA256)
                     if(APPLE)
-                        execute_process(COMMAND bash "-c" "xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\\1/p'" OUTPUT_VARIABLE XCODE_VERS)
-                        if("${XCODE_VERS}" GREATER_EQUAL "14.1")
-                            set(ROOT_SHA ${osx-xcode-14.1-${DETECTED_ARCH}-ROOT})
-                        else()
-                            set(ROOT_SHA ${osx-xcode-13.1-${DETECTED_ARCH}-ROOT})
-                        endif()
+                        execute_process(COMMAND bash "-c" "xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\\1/p' | tr -d '\\n'" OUTPUT_VARIABLE XCODE_VERS)
+                        set(ROOT_SHA_KEY osx-xcode-${XCODE_VERS}-${DETECTED_ARCH}-ROOT)
                     else()
-                        set(ROOT_SHA ${${DETECTED_OS_VERS}-ROOT})
+                        set(ROOT_SHA_KEY ${DETECTED_OS_VERS}-ROOT)
                     endif()
+                    set(ROOT_SHA ${${ROOT_SHA_KEY}})
                     if(NOT "${TAR_SHA256}" STREQUAL "${ROOT_SHA}")
                         # BDM installed ROOT has wrong SHA256... deleting it
                         message(WARNING "The found ROOT version is not compatible... deleting it...")
                         file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/root)
                         unset(ROOT_FOUND)
+                    else()
+                        message(STATUS "Found a compatible ROOT version in ${CMAKE_THIRD_PARTY_DIR}/root")
                     endif()
                 else()
                     # BDM installed ROOT exists but no SHA256 file... deleting it
@@ -540,37 +539,20 @@ Unset the environment variable BDM_LOCAL_LFS to download the file.")
     endif()
   else()
     # Download the file
-    if (${DETECTED_OS} MATCHES "centos.*")
-        execute_process(COMMAND ${WGET_BIN} --progress=bar:force
-                        -O ${FULL_TAR_PATH} ${URL}
-                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
-    else()
-        execute_process(COMMAND ${WGET_BIN} -nv --show-progress --progress=bar:force:noscroll
-                        -O ${FULL_TAR_PATH} ${URL}
-                        RESULT_VARIABLE DOWNLOAD_STATUS_CODE)
-    endif()
-    if (NOT ${DOWNLOAD_STATUS_CODE} EQUAL 0)
-      message( FATAL_ERROR "\nERROR: We were unable to download:\
-    ${URL}\n\
-This may be caused by several reasons, like network error connections or just \
-temporary network failure. Please retry again in a few minutes by deleting all \
-the contents of the build directory and by issuing again the 'cmake' command.\n")
-    endif()
-  endif()
+    include(FetchContent)
+    Set(FETCHCONTENT_QUIET FALSE)
+    FetchContent_Declare(
+        ${TAR_FILENAME}
+        URL ${URL}
+	URL_HASH SHA256=${HASH}
+	DOWNLOAD_DIR ${DEST_PARENT}
+	SOURCE_DIR ${DEST}
+    )
 
-  # Verify download
-  file(SHA256 ${FULL_TAR_PATH} ACTUAL_SHA256)
-  if(NOT ACTUAL_SHA256 STREQUAL "${HASH}")
-    message(FATAL_ERROR "\nERROR: SHA256 sum verification failed.\n\
-    Expected: ${HASH}\n\
-    Actual:   ${ACTUAL_SHA256}\n")
-  endif()
-  # Extract
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${FULL_TAR_PATH}
-                  WORKING_DIRECTORY ${DEST}
-                  RESULT_VARIABLE EXTRACT_STATUS_CODE)
-  if (NOT ${EXTRACT_STATUS_CODE} EQUAL 0)
-    message(FATAL_ERROR "ERROR: Extraction of file ${FULL_TAR_PATH} to ${DEST} failed.")
+    FetchContent_MakeAvailable(${TAR_FILENAME})
+
+    # Remove subbuild files, we don't need them
+    file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/_deps/)
   endif()
 
   file(WRITE ${DEST}/tar-sha256 "${HASH}")
