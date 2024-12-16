@@ -21,19 +21,11 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-12, macos-13, macos-14]
+        os: [macos-13, macos-14, macos-15]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 14.2 is used on macOS 12 as the default /Application/Xcode.app
-      shell: zsh {0}
-      run: |
-        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_14.2.app /Applications/Xcode.app
-        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      if: matrix.os == 'macos-12'
-
     - name: Make sure Xcode 15.2 is used on macOS 13 as the default /Application/Xcode.app
       shell: bash
       run: |

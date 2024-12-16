@@ -27,14 +27,6 @@ jobs:
         sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
       if: matrix.os == 'macos-13'
 
-    #- name: Make sure Xcode 16.2 is used on macOS 14 as the default /Application/Xcode.app
-    #  shell: bash
-    #  run: |
-    #    sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-    #    sudo ln -s /Applications/Xcode_16.2.app /Applications/Xcode.app
-    #    sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-    #  if: matrix.os == 'macos-14'
-
     - name: Install dependencies
       run: |
         export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
