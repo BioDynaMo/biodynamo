@@ -1,0 +1,11 @@
+clang
+clang-format
+clang-tidy
+doxygen
+graphviz
+libxml2-dev
+llvm-14
+llvm-14-dev
+llvm-14-runtime
+valgrind
+libgsl-dev

@@ -1,0 +1,161 @@
+# Runs the installation tests and valgrind tests in the following cases:
+#   1) every day at 3 am
+#   2) a pull request to the master branch
+
+name: AlmaLinux System CI
+
+on:
+  schedule:
+    # Every day at 3 am
+    - cron: '0 3 * * *'
+  pull_request:
+    # Upon pull requests
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: almalinux:9.5
+
+    steps:
+    - name: Set GHA_BRANCH_NAME
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "GHA_BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+        fi
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          echo "GHA_BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        fi
+
+    - name: Set OSVERS
+      run: |
+        ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+        VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+        echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
+
+      # Do this prior to checkout BioDynaMo, because the AlmaLinux docker
+      # container does not come with git preinstalled. This would mess
+      # up later calls to
+      # `git describe --tags`
+    - name: Install latest version of git
+      shell: bash
+      run: |
+        dnf -y --enablerepo=crb install git
+
+    - name: Start Xvfb
+      run: |
+        set -e
+        dnf -y install xorg-x11-server-Xvfb
+        XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+        /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+        sleep 3
+
+    - name: Install BioDynaMo
+      shell: bash
+      run: |
+        dnf update -y
+        dnf install -y --allowerasing sudo curl
+        curl https://raw.githubusercontent.com/BioDynaMo/biodynamo/${GHA_BRANCH_NAME}/util/install | bash
+        # remove whole BioDynaMo repository to catch errors related to paths pointing into the build dir
+        mktemp -d
+        find /tmp -iname biodynamo -type d || true
+        rm -rf $(find $(mktemp -d)/../* -maxdepth 1 -iname biodynamo -type d 2>/dev/null)
+        echo "Removed"
+        find /tmp -iname biodynamo -type d || true
+
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set INSTALL_DIR
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "INSTALL_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
+        fi
+        if [ "${{ github.event_name }}" = "schedule" ]; then
+          echo "INSTALL_DIR=$(echo ${HOME}/biodynamo-*)" >> $GITHUB_ENV
+        fi
+
+    - name: Cache pyenv
+      uses: actions/cache@v4
+      id: pyenv-cache
+      with:
+        path: ~/.pyenv
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
+
+    - name: Install pyenv dependency
+      if: steps.pyenv-cache.outputs.cache-hit != 'true'
+      run: |
+        if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+          curl https://pyenv.run | bash
+        fi
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        if [ ! -f  "$HOME/.pyenv/versions/3.9.1/lib/libpython3.so" ]; then
+          PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        fi
+        pyenv shell 3.9.1
+
+    - name: Cache Third Party Packages
+      uses: actions/cache@v4
+      with:
+        path: build/third_party
+        key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+
+    - name: Build BioDynaMo
+      shell: bash
+      run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        cmake \
+          -Dparaview=OFF \
+          -Dbenchmark=ON \
+          -Dsbml=OFF \
+          -Dnuma=OFF \
+          -Dlibgit2=OFF \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build
+        cmake --build build --config Release
+
+    # # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
+    # # runners, while waiting for other targets to be compiled
+    # - name: Run notebooks
+    #   shell: bash
+    #   run: |
+    #     export PATH="$HOME/.pyenv/bin:$PATH"
+    #     eval "$(pyenv init --path)"
+    #     eval "$(pyenv init -)"
+    #     pyenv shell 3.9.1
+    #     . /etc/profile.d/modules.sh || true
+    #     module load mpi
+    #     cmake \
+    #       -Dnotebooks=ON \
+    #       -B build
+    #     cmake --build build --config Release --target notebooks -- -j1
+
+    - name: Run system tests
+      shell: bash
+      working-directory: build
+      run: |
+        dnf install -y xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
+        . $INSTALL_DIR/bin/thisbdm.sh
+        git config --system user.name "Test User"
+        git config --system user.email user@test.com
+        export DISPLAY=:99.0
+        biodynamo new test-sim
+        . ../test/util.inc
+        run_cmake_simulation test-sim
+        make run-demos
