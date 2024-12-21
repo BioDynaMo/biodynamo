@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: almalinux:9.3
+      image: almalinux:9.5
 
     steps:
     - name: Install dependencies
@@ -26,7 +26,7 @@ jobs:
           bzip2-devel freeglut-devel libXext-devel libXt-devel libXpm-devel \
           libXft-devel numactl-devel openmpi-devel zlib-devel lapack-devel \
           blas-devel readline-devel sqlite-devel openssl-devel xz-devel \
-          libffi-devel findutils patch which \
+          libffi-devel findutils patch which perl-Digest-SHA \
           xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
         
     - name: Start Xvfb

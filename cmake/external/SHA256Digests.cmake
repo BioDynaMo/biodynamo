@@ -108,13 +108,13 @@ SET(ubuntu-22.04-ParaView afc803835973fdb8b963fe10eaf1103f2e1650e4573141964c1322
 SET(ubuntu-22.04-Qt b2388d1bcca4e3741ab5b2b0fb95395aeb6c448951a0d3cdeb6db33b64a7d41c)
 SET(ubuntu-22.04-ROOT 24921a85b53c5cfbe9f192e523263781d595c59c9c553818349992e61efc64ac)
 
-SET(ubuntu-23.04-aarch64-ROOT 7d2fcaaeb1e452c38c1d8436288e3171d1b6935f5b6f25d5df16b21e00ca45d8)
-SET(ubuntu-23.10-aarch64-ROOT 8f6fa9db579e011ef4ae7e96830d8ab1284b6df95a1b2f46e6a1cea56fd4626f)
+SET(ubuntu-24.04-ROOT xxx)
+SET(ubuntu-24.04-aarch64-ROOT xxx)
 
 SET(centos-7-Libroadrunner a0b49487a28aedc4b909a71c66263d4a388964008e2b23073dd744231251470c)
 SET(centos-7-ParaView 45d545e75baf32c9fe30944781b4f6b172d4efd7d6cd794dcd19ec671cc5ead0)
 SET(centos-7-Qt 4308621ff9ec84585c3aead92a9d2de787b3c700323333b6e78ed45d04a0d2a4)
 SET(centos-7-ROOT 54298aa5f13dc2942925c10d755768f81f53d7135ac1a3e698e9b7ef1a3dfd1e)
 
-SET(almalinux-9.3-ROOT 9231fdebcce4794623bfa4f703ad7ba51da01acf6ed3ccfa8fe65bf26e5958ef)
-SET(almalinux-9.3-aarch64-ROOT f72e4abbfcaeca16cba862310d4dada2d6a7eda16e1044bcdaea9321e50ae48a)
+SET(almalinux-9-ROOT xxx)
+SET(almalinux-9-aarch64-ROOT xxx)

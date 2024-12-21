@@ -34,38 +34,14 @@ sudo dnf -y update
 # Install required packages
 sudo dnf -y --enablerepo=crb install epel-release
 sudo dnf -y --enablerepo=crb install \
-  $(cat $BDM_PROJECT_DIR/util/installation/almalinux-9.3/package_list_required)
-
-if [ -n "${PYENV_ROOT}" ]; then
-  unset PYENV_ROOT
-fi
-
-# If PyEnv is not installed, install it
-if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
-  echo "PyEnv was not found. Installing now..."
-  curl https://pyenv.run | bash
-fi
-export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init --path)"
-eval "$(pyenv init -)"
-pyenv update
-
-PYVERS=3.9.1
-
-# If Python $PYVERS is not installed, install it
-if [ ! -f  "$HOME/.pyenv/versions/$PYVERS/lib/libpython3.so" ]; then
-  echo "Python $PYVERS was not found. Installing now..."
-  /usr/bin/env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install -f $PYVERS
-fi
-pyenv shell $PYVERS
+  $(cat $BDM_PROJECT_DIR/util/installation/almalinux-9/package_list_required)
 
 # Install optional packages
 if [ $1 == "all" ]; then
-  python -m pip install --upgrade pip
+  python3 -m pip install --upgrade pip
   PIP_PACKAGES="markupsafe==2.0.1 nbformat jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6"
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
-  python -m pip install $PIP_PACKAGES
+  python3 -m pip install $PIP_PACKAGES
   # SBML integration
   #sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
 #[SCL-core]
@@ -76,7 +52,7 @@ if [ $1 == "all" ]; then
 #gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
 #EOF'
   sudo dnf -y --enablerepo=crb install --nogpgcheck \
-    $(cat $BDM_PROJECT_DIR/util/installation/almalinux-9.3/package_list_extra)
+    $(cat $BDM_PROJECT_DIR/util/installation/almalinux-9/package_list_extra)
 fi
 
 exit 0

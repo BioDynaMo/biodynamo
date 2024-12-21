@@ -27,3 +27,7 @@ libffi-devel
 findutils
 patch
 which
+perl-Digest-SHA
+xorg-x11-server-Xvfb
+fontconfig
+mesa-dri-drivers
