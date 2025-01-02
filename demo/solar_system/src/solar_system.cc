@@ -11,7 +11,7 @@
 // regarding copyright ownership.
 //
 // -----------------------------------------------------------------------------
-#include "mars.h"
+#include "solar_system.h"
 
 int main(int argc, const char** argv) {
   return bdm::astrophysics::Simulate(argc, argv);
