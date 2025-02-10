@@ -63,3 +63,20 @@ bdm run
 bdm view
 ```
 In order to clearly observe the planets and the sun, feel free to scale up the diameter or volume of the satellites in the simulation.
+
+## Verify the Results
+
+By running the following commands:
+
+```bash
+pip install vtk 
+```
+
+```bash
+cd [path_to_biodynamo]/demos/SolarSystem
+python3 check_results.py
+```
+
+You can verify the accuracy of the simulation by comparing the time it takes for a celestial object to complete a full rotation.
+
+The data were acquired from the [NASA Planetary Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/), which provides real-world orbital and rotational period measurements.
