@@ -39,7 +39,7 @@ inline int Simulate(int argc, const char** argv) {
   // To define how are cells will look like we will create a construct in the
   // form of a C++ lambda as follows.
   auto construct = [&](const Real3& position) {
-    size_t diameter_min =  5;
+    size_t diameter_min = 5;
     size_t diameter_max = 10;
     real_t growth_ratio = 50;
 

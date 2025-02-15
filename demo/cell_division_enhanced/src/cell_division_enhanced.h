@@ -22,11 +22,13 @@
 #ifndef DEMO_CELL_DIVISION_ENHANCED_H_
 #define DEMO_CELL_DIVISION_ENHANCED_H_
 
-#include "biodynamo.h"
 #include <random>
+#include "biodynamo.h"
 
 template <class T>
-inline int signum (const T& x) { return (x >= 0 ? 1 : -1); }
+inline int signum(const T& x) {
+  return (x >= 0 ? 1 : -1);
+}
 
 namespace bdm {
 
@@ -34,7 +36,6 @@ class MyCell : public Cell {
   BDM_AGENT_HEADER(MyCell, Cell, 1);
 
  public:
-
   MyCell() : Cell() { UpdateVolume(); }
 
   explicit MyCell(real_t diameter) : Cell(diameter) { UpdateVolume(); }
@@ -56,11 +57,11 @@ class MyCell : public Cell {
 
       std::random_device rd;
       std::mt19937 gen(rd());
-      std::uniform_int_distribution<> distro(-1,1);
+      std::uniform_int_distribution<> distro(-1, 1);
 
       real_t radius = mother->GetDiameter() * real_t(0.5);
-      real_t theta = bdm::Math::ToRadian(distro(gen)*45.0);
-      real_t phi   = bdm::Math::ToRadian(distro(gen)*45.0);
+      real_t theta = bdm::Math::ToRadian(distro(gen) * 45.0);
+      real_t phi = bdm::Math::ToRadian(distro(gen) * 45.0);
 
       // define an axis for division (along which the nuclei will move)
       real_t x_coord = std::cos(theta) * std::sin(phi);
@@ -70,17 +71,17 @@ class MyCell : public Cell {
       real_t total_length_of_displacement = radius / real_t(1.5);
 
       Real3 axis_of_division = total_length_of_displacement *
-          (coords.EntryWiseProduct(mother->kXAxis) +
-           coords.EntryWiseProduct(mother->kYAxis) +
-           coords.EntryWiseProduct(mother->kZAxis));
+                               (coords.EntryWiseProduct(mother->kXAxis) +
+                                coords.EntryWiseProduct(mother->kYAxis) +
+                                coords.EntryWiseProduct(mother->kZAxis));
 
-      real_t d_ = real_t(0.5) * total_length_of_displacement *
-          signum(distro(gen));
+      real_t d_ =
+          real_t(0.5) * total_length_of_displacement * signum(distro(gen));
 
       // set position of mother and daughter cell
       auto xyz = mother->GetPosition();
-      daughter->SetPosition(xyz + (d_*axis_of_division));
-      mother->SetPosition(xyz - (d_*axis_of_division));
+      daughter->SetPosition(xyz + (d_ * axis_of_division));
+      mother->SetPosition(xyz - (d_ * axis_of_division));
 
       // copy properties from mother to daughter cell
       daughter->SetAdherence(mother->GetAdherence());
@@ -88,8 +89,8 @@ class MyCell : public Cell {
 
       // update volume of mother and daughter cell
       real_t mother_volume = mother->GetVolume();
-      daughter->SetVolume(real_t(0.5)*mother_volume);
-      mother->SetVolume(real_t(0.5)*mother_volume);
+      daughter->SetVolume(real_t(0.5) * mother_volume);
+      mother->SetVolume(real_t(0.5) * mother_volume);
     }
   }
 };
@@ -108,7 +109,7 @@ inline int Simulate(int argc, const char** argv) {
   // To define how are cells will look like we will create a construct in the
   // form of a C++ lambda as follows.
   auto construct = [&](const Real3& position) {
-    size_t diameter_min =  5;
+    size_t diameter_min = 5;
     size_t diameter_max = 10;
     real_t growth_ratio = 50;
 
