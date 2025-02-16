@@ -1,7 +1,8 @@
 # Demo: `cell_division`
 
-This demo demonstrates shows 64 agents that are evenly distributed in three-dimensional space.
-The agents (cells) grow in size whereas when the reach a maximum value in their diameter, they split in two to generate new agents - this in principle aims to represent the process of cell division (mitosis in biology).
+This demo aims to demonstrate cell division, i.e., mitosis in biology.
+The demo shows 64 cells (agents) that are evenly distributed in three-dimensional space.
+The cells grow in size whereas when they reach a maximum value in diameter, they split in two (cell division) to generate new cells.
 
 ## 0. Source BioDynaMo
 
