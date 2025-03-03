@@ -32,6 +32,7 @@ cd multi_simulation
 cmake .
 make -j4
 
+# Legacy code, CentOS no longer supported but kept for reference.
 # CentOS Github Action runner uses a root user to execute the mpirun command 
 # below, giving a fatal warning. We understand this warning and allow mpirun to
 # be executed as root
