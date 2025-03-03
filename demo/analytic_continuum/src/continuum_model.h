@@ -23,7 +23,7 @@ namespace bdm {
 /// We define a custom analytic continuum model. We inherit form BioDynaMo's
 /// base class `ScalarField` to obey the API. We implement the function:
 /// f(x,y,z,t) = (1-e^{-t}) sin(w_x*x) * sin(w_y*y)
-class AnalyticContinuum : public ScalarField {
+class AnalyticContinuum final : public ScalarField {
  public:
   AnalyticContinuum() = default;
   explicit AnalyticContinuum(const TRootIOCtor *) {}
