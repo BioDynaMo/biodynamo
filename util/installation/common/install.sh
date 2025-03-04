@@ -34,7 +34,7 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
-# Custom instructions for CentOS
+# Custom instructions for CentOS (deprecated)
 set +e
 if [ $BDM_OS = "centos-7" ]; then
   # Turn of NUMA for Github Actions CentOS runner, because we get "mbind

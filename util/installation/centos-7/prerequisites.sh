@@ -13,6 +13,10 @@
 #
 # -----------------------------------------------------------------------------
 
+## ----------------------------------------------------------------------------
+## !! CENTOS is not supported anymore. This script is kept for reference !!
+## --------------------------------------------------------------------------
+
 # This script installs the required packages
 if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.

@@ -117,7 +117,7 @@ sudo apt-get install -y valgrind \
 sudo apt-get install -y kcov
 ```
 
-## CentOS 7
+## CentOS 7 (deprecated; no longer officially supported)
 
 ### Required Packages
 

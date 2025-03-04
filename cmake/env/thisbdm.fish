@@ -421,7 +421,7 @@ function source_thisbdm
         # Nothing for now
         true
     else # GNU/Linux
-        # CentOS specifics
+        # CentOS specifics (no longer officially supported)
         set -l os_id (grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"'); or return 1
         if test "$os_id" = 'centos'
             set -gx MESA_GL_VERSION_OVERRIDE "3.3"
