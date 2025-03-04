@@ -1,8 +1,7 @@
-# Demo: `cell_division`
+# Demo: `cell_division_enhanced`
 
-This demo aims to demonstrate cell division, i.e., mitosis in biology.
-The demo shows 64 cells (agents) that are evenly distributed in three-dimensional space.
-The cells grow in size whereas when they reach a maximum value in diameter, they split in two (cell division) to generate new cells.
+This demo extends from the `cell_division` demo, in such that it demonstrates a customized version of cell division (mitosis in biology).
+Be advised to study the `cell_division` demo first and then revisit the present one, `cell_division_enhanced`.
 
 ## 0. Source BioDynaMo
 
@@ -30,10 +29,10 @@ Note: the above command automatically executes `biodynamo build` before running 
 
 ## 3. Visualize the simulation results
 
-Open Paraview in the project directory (i.e., `<path>/cell_division`) by executing the following command in the terminal:
+Open Paraview in the project directory (i.e., `<path>/cell_division_enhanced`) by executing the following command in the terminal:
 ```bash
 paraview &
 ```
-Then, follow these steps in Paraview: `Menu: File -> Load State -> "output/cell_division/cell_division.pvsm -> OK`. 
+Then, to visualize the simulation results follow these steps in Paraview: `Menu: File -> Load State -> "output/cell_division_enhanced/cell_division_enhanced.pvsm -> OK`.
 You should now be able to see 64 spheres that represent the cells (agents) at the start of the simulation and at the end of the simulation, left and right respectively, as illustrated in the following image.
 ![](thumbnail.png "View from Paraview")
