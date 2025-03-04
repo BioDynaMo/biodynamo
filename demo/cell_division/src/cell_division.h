@@ -35,21 +35,24 @@ inline int Simulate(int argc, const char** argv) {
   // the spacing between the cells, and each cell's diameter.
   size_t cells_per_dim = 4;
   size_t spacing = 20;
-  size_t diameter = 10;
 
   // To define how are cells will look like we will create a construct in the
   // form of a C++ lambda as follows.
   auto construct = [&](const Real3& position) {
+    size_t diameter_min = 5;
+    size_t diameter_max = 10;
+    real_t growth_ratio = 50;
+
     Cell* cell = new Cell(position);
-    cell->SetDiameter(diameter);
+    cell->SetDiameter(diameter_min);
     // Add the "grow and divide" behavior to each cell
-    cell->AddBehavior(new GrowthDivision());
+    cell->AddBehavior(new GrowthDivision(diameter_max, growth_ratio));
     return cell;
   };
   ModelInitializer::Grid3D(cells_per_dim, spacing, construct);
 
-  // Run simulation for one timestep
-  simulation.GetScheduler()->Simulate(1);
+  // Run simulation for a few time-steps
+  simulation.GetScheduler()->Simulate(111);
 
   std::cout << "Simulation completed successfully!" << std::endl;
   return 0;
