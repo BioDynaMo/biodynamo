@@ -33,11 +33,10 @@ inline int Simulate(int argc, const char** argv) {
 
   LoadDataFromFile(filename, data);
 
-  constexpr real_t kDiameterScalingFactor = 10;
-  SetUnits('M');
+  SetUnits('G');
 
   // create sun
-  Star* sun = new Star(1392.7 * kDiameterScalingFactor);
+  Star* sun = new Star(109);
   sun->SetPosition({0, 0, 0});
   sun->SetMass(1988400e+24);
   sun->AddBehavior(new Gravity);
@@ -45,7 +44,7 @@ inline int Simulate(int argc, const char** argv) {
 
   // read data from .txt file and create the planets
   for (auto object : data) {
-    auto* planet = new Planet(object.diameter * kDiameterScalingFactor);
+    auto* planet = new Planet(object.diameter);
     planet->SetMass(object.mass * 1e+24);
     planet->SetPosition({object.distance_from_parent, 0, 0});
     Real3 v = RotateVector({0, object.orbital_velocity, 0}, object.angle, 'x');
