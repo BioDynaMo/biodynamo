@@ -168,31 +168,6 @@ class Planet : public CelestialObject {
   ~Planet() override = default;
 };
 
-// Satellite subclass
-class Satellite : public CelestialObject {
-  BDM_AGENT_HEADER(Satellite, CelestialObject, 1);
-
- public:
-  Satellite() : CelestialObject() {}
-
-  explicit Satellite(real_t diameter) : CelestialObject(diameter) {}
-
-  explicit Satellite(const Real3 position) : CelestialObject(position) {}
-
-  explicit Satellite(const Planet* main_planet, real_t diameter,
-                     real_t distance, real_t initial_speed) {
-    Real3 pos = main_planet->GetPosition();
-    pos[0] += distance;
-    Real3 initial_velocity = {0, initial_speed, 0};
-    this->SetVelocity(main_planet->GetVelocity() + initial_velocity);
-
-    this->SetPosition(pos);
-    this->SetDiameter(diameter);
-  }
-
-  ~Satellite() override = default;
-};
-
 }  // namespace astrophysics
 }  // namespace bdm
 

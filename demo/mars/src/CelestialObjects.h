@@ -130,20 +130,6 @@ class CelestialObject : public Agent {
   Real3 velocity_ = {0, 0, 0};
 };
 
-// Star subclass
-class Star : public CelestialObject {
-  BDM_AGENT_HEADER(Star, CelestialObject, 1);
-
- public:
-  Star() : CelestialObject() {}
-
-  explicit Star(real_t diameter) : CelestialObject(diameter) {}
-
-  explicit Star(const Real3 position) : CelestialObject(position) {}
-
-  ~Star() override = default;
-};
-
 // Planet subclass
 class Planet : public CelestialObject {
   BDM_AGENT_HEADER(Planet, CelestialObject, 1);
@@ -154,16 +140,6 @@ class Planet : public CelestialObject {
   explicit Planet(real_t diameter) : CelestialObject(diameter) {}
 
   explicit Planet(const Real3 position) : CelestialObject(position) {}
-
-  explicit Planet(const Star* main_star, real_t diameter, real_t distance,
-                  real_t initial_speed) {
-    Real3 pos = main_star->GetPosition();
-    pos[0] += distance;
-    Real3 initial_velocity = {0, initial_speed, 0};
-    this->SetVelocity(main_star->GetVelocity() + initial_velocity);
-    this->SetPosition(pos);
-    this->SetDiameter(diameter);
-  }
 
   ~Planet() override = default;
 };
