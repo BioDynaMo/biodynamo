@@ -35,5 +35,10 @@ Open Paraview in the project directory (i.e., `<path>/cell_division`) by executi
 paraview &
 ```
 Then, to visualize the simulation results follow these steps in Paraview: `Menu: File -> Load State -> "output/cell_division/cell_division.pvsm -> OK`.
+Alternatively, you could executing the following equivalent command in the terminal:
+```bash
+biodynamo view
+```
 You should now be able to see 64 spheres that represent the cells (agents) at the start of the simulation and at the end of the simulation, left and right respectively, as illustrated in the following image.
 ![](thumbnail.png "View from Paraview")
+To visualize the color contour of the diameter for each cell, make sure to set view-on the 'MyCells' dataset from the Pipeline Browser of Paraview, and subsequently select for coloring the `diameter_` nodal data.
