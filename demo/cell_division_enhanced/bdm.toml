@@ -1,0 +1,10 @@
+[simulation]
+time_step = 0.1
+max_displacement = 12.3
+
+[visualization]
+export = true
+interval = 1
+
+[[visualize_agent]]
+name = "MyCell"
