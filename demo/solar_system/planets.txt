@@ -1,0 +1,10 @@
+Planet   Mass(10^24kg)  Diameter(relative_to_earth)  OrbitalVelocity(Tm/s)     Distance_from_parent(Tm) Angle(deg)
+MERCURY     0.330            0.383                        0.0000474                   57.90                7.0
+VENUS       4.87             0.949                        0.0000350                   108.2                3.4
+EARTH       5.97             1                            0.0000298                   149.6                0.0
+MARS        0.642            0.2724                       0.0000241                   227.9                1.8
+JUPITER     1898             11.21                        0.0000131                   778.5                1.3
+SATURN      568              9.45                         0.0000097                   1432.0               2.5
+URANUS      86.8             4.01                         0.0000068                   2871.0               1.8
+NEPTUNE     102              3.88                         0.0000054                   4495.0               0.8
+PLUTO       0.0130           0.187                        0.0000047                   5906.0               17.2
