@@ -548,7 +548,7 @@ _source_thisbdm()
     # Nothing for now
     true
   else # GNU/Linux
-    # CentOS specifics
+    # CentOS specifics (no longer officially supported)
     local os_id
     os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"') || return 1
     if [ "$os_id" = 'centos' ]; then

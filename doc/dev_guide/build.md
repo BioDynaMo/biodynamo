@@ -86,7 +86,7 @@ eval "$(pyenv init -)"
 Once finished, we hope that you want to contribute your code changes back to the BioDynaMo project. 
 For more info on how to contribute with your code, please consult out guidelines from [here](https://github.com/BioDynaMo/biodynamo/blob/master/doc/dev_guide/contribute.md).
 
-## CentOS 7
+## CentOS 7 (deprecated)
 
 For CentOS 7, you will need to run the following commands before actually calling `cmake`. 
 This is because CentOS do not provide by default the correct C++ compilers and the correct python interpreter. 

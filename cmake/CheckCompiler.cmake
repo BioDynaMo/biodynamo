@@ -22,6 +22,7 @@ if(CMAKE_CXX_COMPILER)
 else()
     # Manually set the g++ compiler that we need for CentOS.
     # We also set the various link directories needed.
+    # Remark: Legacy code; CENTOS 7 is not supported anymore.
     IF(${DETECTED_OS} MATCHES "centos.*")
         if (NOT DEFINED ENV{CXX})
             UNSET(CMAKE_CXX_COMPILER CACHE)
@@ -43,7 +44,7 @@ endif()
 if(CMAKE_C_COMPILER)
     enable_language(C)
 else()
-    # Force the
+    # Remark: Legacy code; CENTOS 7 is not supported anymore.
     IF(${DETECTED_OS} MATCHES "centos.*")
         if (NOT DEFINED ENV{CC})
             UNSET(CMAKE_C_COMPILER CACHE)
