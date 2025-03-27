@@ -34,9 +34,15 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 # include util functions
 . $BDM_PROJECT_DIR/util/installation/common/util.sh
 
+BDM_SPECIFIC_OS=$(DetectOs)
+if [ $BDM_OS = "rhel" ]; then
+  . /etc/profile.d/modules.sh
+  module load mpi
+fi
+
 # Custom instructions for CentOS
 set +e
-if [ $BDM_OS = "centos-7" ]; then
+if [ $BDM_SPECIFIC_OS = "centos-7" ]; then
   # Turn of NUMA for Github Actions CentOS runner, because we get "mbind
   # operation not permitted errors", due to docker security constraints
   if [ ! -z ${GITHUB_ACTIONS+x} ]; then

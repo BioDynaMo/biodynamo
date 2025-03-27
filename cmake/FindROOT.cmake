@@ -16,9 +16,16 @@
 # Updated by K. Smith (ksmith37@nd.edu) to properly handle
 #  dependencies in ROOT_GENERATE_DICTIONARY
 
+if(NOT DEFINED ENV{ROOTSYS})
+SET(ENV{ROOTSYS} "${CMAKE_SOURCE_DIR}/third_party/root")
+elseif("$ENV{ROOTSYS}" STREQUAL "")
+SET(ENV{ROOTSYS} "${CMAKE_SOURCE_DIR}/third_party/root")
+endif()
+
 find_program(ROOT_CONFIG_EXECUTABLE NAMES root-config
   HINTS "$ENV{ROOTSYS}/bin" "$ENV{BDM_ROOT_DIR}/bin" "${CMAKE_THIRD_PARTY_DIR}/root/bin")
-
+  
+  
 execute_process(
     COMMAND ${ROOT_CONFIG_EXECUTABLE} --prefix
     OUTPUT_VARIABLE ROOTSYS

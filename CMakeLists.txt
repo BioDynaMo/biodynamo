@@ -13,7 +13,6 @@
 # -----------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.19.3 FATAL_ERROR)
-
 set(policy_new CMP0072 CMP0077)
 foreach(policy ${policy_new})
   if(POLICY ${policy})
@@ -98,6 +97,7 @@ set(CMAKE_INSTALL_DATADIR       "${CMAKE_INSTALL_ROOT}/share")
 set(CMAKE_INSTALL_CMAKEDATADIR  "${CMAKE_INSTALL_DATADIR}/cmake")
 set(CMAKE_INSTALL_THIRDPARTY    "${CMAKE_INSTALL_ROOT}")
 
+
 # It is used by format/style checks. It needs to be defined here such
 # to enable relocation of the scripts.
 set(BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/util/housekeeping")
@@ -137,7 +137,13 @@ option(jemalloc  "Use jemalloc for memory allocations." OFF)
 option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
+option(nest	 "Install The Neural Simulation Tool (NEST) for spiking neural network models." ON) 
 option(real_t    "Define data type for real numbers. Currently supported: float, double" double)
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/gcc")
+    	file(COPY "${CMAKE_SOURCE_DIR}/third_party/gcc" DESTINATION "${CMAKE_SOURCE_DIR}/build/third_party")
+endif()
+
 
 if(APPLE)
   # ParaView on Apple devices
@@ -416,12 +422,30 @@ endif()
 
 if(sbml)
   if(APPLE)
-    message(FATAL_ERROR "Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).")
+  	SET(LLRR_BLD_SCRIPT_LOCATION "${CMAKE_SOURCE_DIR}/util/build-third-party")
+    	if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/install_roadrunner")
+		file(COPY "${CMAKE_SOURCE_DIR}/third_party/install_roadrunner" DESTINATION "${CMAKE_SOURCE_DIR}/build/third_party")
+	else()
+		execute_process(COMMAND bash ${LLRR_BLD_SCRIPT_LOCATION}/build-roadrunner_new.sh ${CMAKE_SOURCE_DIR} RESULT_VARIABLE LLRR_DOWNLOAD_OR_BUILD)
+		file(COPY "${CMAKE_SOURCE_DIR}/third_party/install_roadrunner" DESTINATION "${CMAKE_SOURCE_DIR}/build/third_party")
+	endif()
+	find_package(Libroadrunner)
+        #message(FATAL_ERROR "Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).")
   endif()
   find_package(Libroadrunner)
   if(NOT Libroadrunner_FOUND)
     include(external/Libroadrunner)
     find_package(Libroadrunner)
+  endif()
+endif()
+
+if(nest)
+  if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/nest")
+    	file(COPY "${CMAKE_SOURCE_DIR}/third_party/nest" DESTINATION "${CMAKE_SOURCE_DIR}/build/third_party")
+  else()
+        SET(NEST_BLD_SCRIPT_LOCATION "${CMAKE_SOURCE_DIR}/util/build-third-party")
+        execute_process(COMMAND bash ${NEST_BLD_SCRIPT_LOCATION}/build-nest_new.sh ${CMAKE_SOURCE_DIR} RESULT_VARIABLE NEST_DOWNLOAD_OR_BUILD) 
+        file(COPY "${CMAKE_SOURCE_DIR}/third_party/nest" DESTINATION "${CMAKE_SOURCE_DIR}/build/third_party")
   endif()
 endif()
 

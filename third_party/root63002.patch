@@ -1,0 +1,87 @@
+From a028d13255f0c2d0c84f2e1b99ccb6a112598e0c Mon Sep 17 00:00:00 2001
+From: silverweed <giacomo.parolini@cern.ch>
+Date: Thu, 17 Oct 2024 16:34:59 +0200
+Subject: [PATCH] [graf3d] use the proper (unsigned) type in FTContour
+
+Freetype 2.13.3 changed the type of a data member from char* to
+unsigned char*, so we need to pass the correct type to FTContour to
+avoid compiler warnings
+---
+ graf3d/ftgl/inc/FTContour.h      | 11 ++++++++++-
+ graf3d/ftgl/src/FTContour.cxx    | 10 +++++-----
+ graf3d/ftgl/src/FTVectoriser.cxx |  2 +-
+ 3 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/graf3d/ftgl/inc/FTContour.h b/graf3d/ftgl/inc/FTContour.h
+index 8eb5132165f7b..15d7e0ccc42c7 100644
+--- a/graf3d/ftgl/inc/FTContour.h
++++ b/graf3d/ftgl/inc/FTContour.h
+@@ -18,6 +18,15 @@
+ class FTGL_EXPORT FTContour
+ {
+     public:
++ #define FREETYPE_VER_HEX ((FREETYPE_MAJOR << 16) | (FREETYPE_MINOR << 8) | (FREETYPE_PATCH))
++ #if FREETYPE_VER_HEX >= 0x20d03
++    // enabled from 2.13.3
++    using PointTag_t = unsigned char;
++ #else
++    using PointTag_t = char;
++ #endif
++ #undef FREETYPE_VER_HEX
++
+         /**
+          * Constructor
+          *
+@@ -25,7 +34,7 @@ class FTGL_EXPORT FTContour
+          * @param pointTags
+          * @param numberOfPoints
+          */
+-        FTContour( FT_Vector* contour, char* pointTags, unsigned int numberOfPoints);
++        FTContour( FT_Vector* contour, PointTag_t* pointTags, unsigned int numberOfPoints);
+ 
+         /**
+          * Destructor
+diff --git a/graf3d/ftgl/src/FTContour.cxx b/graf3d/ftgl/src/FTContour.cxx
+index 76ada3c9c7353..4234cdebe336b 100644
+--- a/graf3d/ftgl/src/FTContour.cxx
++++ b/graf3d/ftgl/src/FTContour.cxx
+@@ -70,11 +70,11 @@ void FTContour::evaluateCubicCurve()
+ }
+ 
+ 
+-FTContour::FTContour( FT_Vector* contour, char* pointTags, unsigned int numberOfPoints)
++FTContour::FTContour( FT_Vector* contour, PointTag_t* pointTags, unsigned int numberOfPoints)
+ {
+     for( unsigned int pointIndex = 0; pointIndex < numberOfPoints; ++ pointIndex)
+     {
+-        char pointTag = pointTags[pointIndex];
++        PointTag_t pointTag = pointTags[pointIndex];
+ 
+         if( pointTag == FT_Curve_Tag_On || numberOfPoints < 2)
+         {
+@@ -93,9 +93,9 @@ FTContour::FTContour( FT_Vector* contour, char* pointTags, unsigned int numberOf
+ 
+         if( pointTag == FT_Curve_Tag_Conic)
+         {
+-            char nextPointTag = ( pointIndex == numberOfPoints - 1)
+-                                ? pointTags[0]
+-                                : pointTags[pointIndex + 1];
++            PointTag_t nextPointTag = ( pointIndex == numberOfPoints - 1)
++                                      ? pointTags[0]
++                                      : pointTags[pointIndex + 1];
+ 
+             while( nextPointTag == FT_Curve_Tag_Conic)
+             {
+diff --git a/graf3d/ftgl/src/FTVectoriser.cxx b/graf3d/ftgl/src/FTVectoriser.cxx
+index df32ac2f8300c..0b1f3c0fd3aca 100644
+--- a/graf3d/ftgl/src/FTVectoriser.cxx
++++ b/graf3d/ftgl/src/FTVectoriser.cxx
+@@ -140,7 +140,7 @@ void FTVectoriser::ProcessContours()
+     for( short contourIndex = 0; contourIndex < ftContourCount; ++contourIndex)
+     {
+         FT_Vector* pointList = &outline.points[startIndex];
+-        char* tagList = &outline.tags[startIndex];
++        auto* tagList = &outline.tags[startIndex];
+ 
+         endIndex = outline.contours[contourIndex];
+         contourLength =  ( endIndex - startIndex) + 1;

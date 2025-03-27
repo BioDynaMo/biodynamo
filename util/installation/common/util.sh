@@ -17,6 +17,7 @@
 # (Thus reducing code duplication)
 
 SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SPECIFIC_OSES_SUPPORTED="ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, centos-7"
 
 #include echo.sh
 . $SCRIPTPATH/echo.sh
@@ -58,6 +59,29 @@ function DetectOs {
   fi
 }
 
+function DetectOs2 {
+  # detect operating system
+  if [ `uname` = "Linux" ]; then
+    # linux
+     PROCVERSION=$(cat /proc/version)
+     if echo "$PROCVERSION" | grep -Eiq 'Red Hat' ; then
+	echo rhel;
+     elif echo "$PROCVERSION" | grep -Eiq 'debian|buntu|mint' ; then
+     	echo debian;
+     elif echo "$PROCVERSION" | grep -Eiq 'SUSE|suse' ; then
+     	echo suse;
+     else
+     	echo other_distro;
+     fi
+  elif [ `uname` = "Darwin" ]; then
+    # macOS
+    echo osx
+  else
+    echo "ERROR: Operating system `uname` is not supported."
+    exit 1
+  fi
+}
+
 # This function checks if the given operating system is supported. If not, it
 # prints an error message, a list of supported systems; and exits the script.
 # Arguments:
@@ -71,10 +95,14 @@ function CheckOsSupported {
 
   local BDM_INSTALL_SRC=$1
   local BDM_OS=$2
+  local BDM_INSTALL_OS_SRC=""
+  local SPECIFIC_BDM_OS=$(DetectOs)
 
-  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS
-
-  if [ ! -d "$BDM_INSTALL_OS_SRC" ]; then
+  if echo "$SPECIFIC_OSES_SUPPORTED" | grep -Eiq "$SPECIFIC_BDM_OS" ;  then
+  	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/$SPECIFIC_BDM_OS
+  elif [ "$BDM_OS" == "osx" ] || [ "$BDM_OS" == "rhel" ] || [ "$BDM_OS" == "debian" ] || [ "$BDM_OS" == "suse" ] ; then
+    	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/common
+  else
     echo "ERROR: This operating system (${BDM_OS}) is not supported"
     echo "Supported operating systems are: "
     pushd $BDM_INSTALL_SRC > /dev/null
@@ -108,12 +136,23 @@ function CompileListOfPackages {
   local BDM_INSTALL_SRC="$2"
   local LOCAL_OS=$3
 
+ local SPECIFIC_BDM_OS=$(DetectOs)
+ local BDM_OS=$(DetectOs2)
   # The list of packages on Ubuntu 20.04 is identical to Ubuntu 18.04
-  if [ $LOCAL_OS == "ubuntu-20.04" ]; then
-    LOCAL_OS="ubuntu-18.04"
+  if [ $SPECIFIC_BDM_OS == "ubuntu-20.04" ]; then
+    SPECIFIC_BDM_OS="ubuntu-18.04"
   fi
 
-  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$LOCAL_OS
+  local BDM_INSTALL_OS_SRC=""
+
+  if echo "$SPECIFIC_OSES_SUPPORTED" | grep -Eiq "$SPECIFIC_BDM_OS" ;  then
+  	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/$SPECIFIC_BDM_OS
+  elif [ "$BDM_OS" == "osx" ] || [ "$BDM_OS" == "rhel" ] || [ "$BDM_OS" == "debian" ] || [ "$BDM_OS" == "suse" ]; then
+    	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/common
+  else
+    echo "ERROR: This operating system (${BDM_OS}) is not supported"
+    exit 1;
+  fi
 
   BDM_PKG_LIST=""
   if [ $1 == "all" ]; then
@@ -179,7 +218,84 @@ function CleanBuild {
   else
     mkdir -p $BUILD_DIR
   fi
+  cd $BDM_PROJECT_DIR
+  BDM_PROJECT_DIR_2=$(pwd)
   cd $BUILD_DIR
+
+  GCC_VER=$(gcc --version | grep gcc | awk '{print $NF}' | cut -d '.' -f 1-2)
+
+  if (echo "$GCC_VER >= 12" | bc -q > /dev/null)  ||  (echo "$GCC_VER < 8" | bc -q > /dev/null); then
+
+
+    if  $(command -v gcc-11 > /dev/null)  &&  $(command -v g++-11 > /dev/null)  &&  $(command -v gfortran-11 > /dev/null); then
+
+      echo "******************************************************************"
+      echo "Found suitable gcc version installed (gcc-11) via your
+distribution's package manager.
+Using that."
+      echo "******************************************************************";
+
+      export CC=gcc-11
+      export CXX=g++-11
+      export FC=gfortran-11
+      export OMPI_CC=gcc-11
+      export OMPI_CXX=g++-11
+      export OMPI_FC=gfortran-11
+
+
+    elif [ -d $BDM_PROJECT_DIR_2/third_party/gcc ]; then
+
+        echo "******************************************************************"
+        echo "Found suitable gcc version installed in the
+third party directory.
+Using that."
+        echo "******************************************************************"
+
+        export CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
+        export CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+        export FC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gfortran
+        export OMPI_CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
+        export OMPI_CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+        export OMPI_FC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gfortran
+
+    else
+
+      echo "******************************************************************"
+      echo "Warning: Selected GCC Version ($GCC_VER) is incompatible with
+         the project and can cause installation issues.
+         It is recommended that you install a compatible version
+         of GCC that is provided with this installation.
+         
+*Note*   It is possible that you are using a legacy but still
+         supported version of an operating system 
+         ex. Ubuntu-18.04. In this case is is possible
+         to compile BioDynaMo itself but requirements 
+         such as ROOT, QT and Paraview must be downloaded."
+      echo "******************************************************************"
+
+      cd $BDM_PROJECT_DIR_2/util/build-third-party/
+      ./build-gcc_new.sh $BDM_PROJECT_DIR_2
+      cd $BUILD_DIR
+      if [ -d $BDM_PROJECT_DIR_2/third_party/gcc ]; then
+
+        echo "******************************************************************"
+        echo "Found suitable gcc version installed in the
+third party directory.
+Using that."
+        echo "******************************************************************"
+        export CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
+        export CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+        export FC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gfortran
+        export OMPI_CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
+        export OMPI_CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+        export OMPI_FC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gfortran
+      fi
+    fi
+
+
+
+  fi
+
   echo "CMAKEFLAGS $BDM_CMAKE_FLAGS"
   cmake $BDM_CMAKE_FLAGS ..
   make -j$(CPUCount) && make install
@@ -217,15 +333,24 @@ function CallOSSpecificScript {
   shift
   local BDM_SCRIPT_FILE="$1"
   shift
-  local BDM_LOCAL_OS=$(DetectOs)
+  local SPECIFIC_BDM_OS=$(DetectOs)
+  local BDM_OS=$(DetectOs2)
   local BDM_SCRIPT_ARGUMENTS=$@
   local BDM_INSTALL_SRC=$BDM_PROJECT_DIR/util/installation
 
   # detect os
-  local BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_LOCAL_OS
+  local BDM_INSTALL_OS_SRC=""
+
+  if echo "$SPECIFIC_OSES_SUPPORTED" | grep -Eiq "$SPECIFIC_BDM_OS" ;  then
+  	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/$SPECIFIC_BDM_OS
+  elif [ "$BDM_OS" == "osx" ] || [ "$BDM_OS" == "rhel" ] || [ "$BDM_OS" == "debian" ] || [ "$BDM_OS" == "suse" ]; then
+    	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/common
+  else
+    echo "ERROR: This operating system (${BDM_OS}) is not supported"
+    exit 1;
+  fi
 
   # check if this system is supported
-  CheckOsSupported $BDM_INSTALL_SRC $BDM_LOCAL_OS
 
   # check if script exists for the detected OS
   local BDM_SCRIPTPATH=$BDM_INSTALL_OS_SRC/$BDM_SCRIPT_FILE
@@ -390,7 +515,7 @@ function EchoFinishInstallation {
   EchoNewStep "For other shells, or for more information, see:"
   EchoNewStep "   ${BDM_ECHO_UNDERLINE}https://biodynamo.org/docs/userguide/first_steps/"
   echo
-  # any warnings about users' post-install shell 
+  # any warnings about users' post-install shell
   # configuration may be added to the function called below
   WarnPossibleBadShellConfigs || true
 }

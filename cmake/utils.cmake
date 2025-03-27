@@ -59,6 +59,7 @@ endfunction()
 # If a user installed ROOT is found we will check if ROOT
 # was compiled using c++17.
 function(verify_ROOT)
+
     if(ROOT_FOUND AND CMAKE_THIRD_PARTY_DIR)
         # check if found ROOT is BDM installed (matchres > -1)
         string(FIND ${ROOT_INCLUDE_DIRS} ${CMAKE_THIRD_PARTY_DIR} matchres)
@@ -93,12 +94,12 @@ function(verify_ROOT)
         endif()
     endif()
     if(NOT ROOT_FOUND)
-        print_warning()
-        message("We did not find any ROOT installed on the system. We will proceed to download it. "
+    	print_warning()
+	message("We did not find any ROOT installed on the system. We will proceed to build or download it."
         "ROOT will be installed in the location ${CMAKE_THIRD_PARTY_DIR}/root.")
-        print_line()
+	print_line()
         include(external/ROOT)
-
+        
         # Propagate the needed variables to the parent
         SET(ROOT_FOUND ${ROOT_FOUND} PARENT_SCOPE)
         SET(ROOT_VERSION ${ROOT_VERSION} PARENT_SCOPE)
@@ -120,6 +121,10 @@ function(verify_ROOT)
 
         if (NOT DEFINED ROOTSYS OR NOT DEFINED ${ROOTSYS})
           # Set ROOTSYS variable
+          if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/root")
+             file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/build/third_party")
+	     file(COPY "${CMAKE_SOURCE_DIR}/third_party/root" DESTINATION "${CMAKE_SOURCE_DIR}/build/third_party")
+          endif()
           string(REGEX REPLACE "/include$" "" TMP_ROOT_PATH ${ROOT_INCLUDE_DIRS})
           set(ENV{ROOTSYS} ${TMP_ROOT_PATH})
         endif()
@@ -226,6 +231,7 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             GLOB "*.h" "*.cl" "*.py"
             )
+
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             ${CMAKE_SOURCE_DIR}/third_party/omp/omp.h

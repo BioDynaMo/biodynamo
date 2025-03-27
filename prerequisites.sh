@@ -49,7 +49,7 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Detect the OS
 if [ -z $2 ]; then
-    BDM_DETECTED_OS=$(DetectOs)
+    BDM_DETECTED_OS=$(DetectOs2)
 else
     BDM_DETECTED_OS=$2
 fi

@@ -109,7 +109,7 @@ _source_thisbdm()
     # silent->quiet
     export BDM_THISBDM_LOGLEVEL=0 # disable everything
   fi
-  
+
   if [ "$BDM_THISBDM_LOGLEVEL" -le 2 ]; then
     export BDM_THISBDM_NOPROMPT=true
   else
@@ -135,7 +135,7 @@ _source_thisbdm()
     return 1
   fi
   ########
-  
+
   local old_bdmsys
   if [ -n "${BDMSYS}" ]; then
      old_bdmsys=${BDMSYS}
@@ -232,7 +232,7 @@ _source_thisbdm()
         LD_LIBRARY_PATH=$_newpath
       fi
     fi
-  fi    
+  fi
 
   # If we run on macOS, we add the following exports for libomp support
   if [ "$(uname)" = "Darwin" ]; then
@@ -542,6 +542,33 @@ _source_thisbdm()
   # OpenMP
   export OMP_PROC_BIND=true
 
+  #Select (export) the correct compiler version
+  GCC_VER=$(gcc --version | grep gcc | awk '{print $NF}' | cut -d '.' -f 1-2)
+
+  if (echo "$GCC_VER >= 12" | bc -q > /dev/null)  ||  (echo "$GCC_VER < 8" | bc -q > /dev/null); then
+
+
+    if  $(command -v gcc-11 > /dev/null)  &&  $(command -v g++-11 > /dev/null)  &&  $(command -v gfortran-11 > /dev/null); then
+
+      export CC=gcc-11
+      export CXX=g++-11
+      export FC=gfortran-11
+      export OMPI_CC=gcc-11
+      export OMPI_CXX=g++-11
+      export OMPI_FC=gfortran-11
+
+    elif [ -d $BDMSYS/third_party/gcc ]; then
+
+      export CC=$BDMSYS/third_party/gcc/bin/gcc
+      export CXX=$BDMSYS/third_party/gcc/bin/g++
+      export FC=$BDMSYS/third_party/gcc/bin/gfortran
+      export OMPI_CC=$BDMSYS/third_party/gcc/bin/gcc
+      export OMPI_CXX=$BDMSYS/third_party/gcc/bin/g++
+      export OMPI_FC=$BDMSYS/third_party/gcc/bin/gfortran
+
+    fi
+  fi
+
   ###### Platform-specific Configuration
   # Apple specific
   if [ "$(uname)" = 'Darwin' ]; then
@@ -556,8 +583,6 @@ _source_thisbdm()
         if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
             . scl_source enable devtoolset-10 || return 1
         fi
-        . /etc/profile.d/modules.sh || return 1
-        module load mpi || return 1
 
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
@@ -565,9 +590,20 @@ _source_thisbdm()
         fi
     fi
   fi
+
+  #LOAD MPI SUPPORT MODULE FOR ALL RHEL DISTROS
+  if [ "$(uname)" = "Linux" ]; then
+     # linux
+     PROCVERSION=$(cat /proc/version)
+     if echo "$PROCVERSION" | grep -Eiq 'Red Hat' ; then
+        . /etc/profile.d/modules.sh || return 1
+     	module load mpi || return 1
+     fi
+  fi
+
   #######
 
-  # completions for bash: really primitive (but useful nonetheless) 
+  # completions for bash: really primitive (but useful nonetheless)
   if [ -n "$BASH_VERSION" ]; then
     complete -W "new build clean run demo" biodynamo
   fi
@@ -624,6 +660,9 @@ _source_thisbdm()
       zsh)  export PROMPT="[bdm-$bdm_major_minor] $__bdm_sh_prompt_original" ;;
     esac
   fi
+
+
+
 
   return 0
 }

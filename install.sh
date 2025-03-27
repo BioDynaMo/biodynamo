@@ -33,16 +33,16 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Detect the OS (or get the one the user specified)
 if [ -z $1 ]; then
-    BDM_DETECTED_OS=$(DetectOs)
+    BDM_DETECTED_GEN_OS=$(DetectOs2)
 else
-    BDM_DETECTED_OS=$1
+    BDM_DETECTED_GEN_OS=$1
 fi
 
 # Install all prerequisites
-$BDM_PROJECT_DIR/prerequisites.sh all ${BDM_DETECTED_OS}
+$BDM_PROJECT_DIR/prerequisites.sh all ${BDM_DETECTED_GEN_OS}
 if [ $? != 0 ]; then
    exit 1
 fi
 
 # call install script for the detected OS
-$BDM_PROJECT_DIR/util/installation/common/install.sh ${BDM_DETECTED_OS}
+$BDM_PROJECT_DIR/util/installation/common/install.sh ${BDM_DETECTED_GEN_OS}

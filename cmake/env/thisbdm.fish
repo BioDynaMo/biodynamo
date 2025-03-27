@@ -101,7 +101,7 @@ function source_thisbdm
 
     set -l curr_filename (status --current-filename)
     set -gx BDMSYS (fish -c "cd (dirname $curr_filename)/..; and pwd"); or return 1
-    
+
     if test -n "$old_bdmsys"; and test "$old_bdmsys" != "$BDMSYS"
         _bdm_warn "[WARN] You've already sourced another 'thisbdm' in your current shell session."
         _bdm_warn "       -> prev. installation='$old_bdmsys'"
@@ -252,7 +252,7 @@ function source_thisbdm
         end
 
         pyenv init --path $PYENV_NO_REHASH | source; or return 1
-        pyenv init - $PYENV_NO_REHASH | source; or return 1        
+        pyenv init - $PYENV_NO_REHASH | source; or return 1
         pyenv shell @pythonvers@; or return 1
 
         # Location of jupyter executable (installed with `pip install` command)
@@ -269,7 +269,7 @@ function source_thisbdm
     end
     ########
 
-    #### ROOT Specific Configurations ####    
+    #### ROOT Specific Configurations ####
     if test -z "$BDM_CUSTOM_ROOT"
         if test -z "$ROOTSYS"
             set -gx BDM_CUSTOM_ROOT false
@@ -278,7 +278,7 @@ function source_thisbdm
         end
     end
 
-    if  begin; 
+    if  begin;
             test -z "$BDM_ROOT_DIR"; and test -z "$ROOTSYS";
         end; or test "$BDM_CUSTOM_ROOT" = false
         set -gx BDM_ROOT_DIR "$BDMSYS/third_party/root"
@@ -322,13 +322,13 @@ function source_thisbdm
                 set -gx BDM_CUSTOM_PV true
             end
         end
-    
+
         if test "$BDM_CUSTOM_PV" = false; or test -z "$ParaView_DIR"
             set -gx ParaView_DIR "$BDMSYS/third_party/paraview"
         else
             _bdm_info "[INFO] Custom ParaView 'ParaView_DIR=$ParaView_DIR'"
         end
-     
+
         if not test -d "$ParaView_DIR"
             _bdm_err "[ERR] We are unable to find ParaView! Please make sure it is installed"
             _bdm_err "      on your system! You can manually specify its location by executing"
@@ -377,7 +377,7 @@ function source_thisbdm
                 set -gx BDM_CUSTOM_QT true
             end
         end
-        
+
         if test "$BDM_CUSTOM_QT" = false; or test -z "$Qt5_DIR"
             set -gx Qt5_DIR "$BDMSYS/third_party/qt"
         else
@@ -415,6 +415,26 @@ function source_thisbdm
     # OpenMP
     set -gx OMP_PROC_BIND true
 
+
+    #Select (export) the correct compiler version
+    if test (echo "$GCC_VER >= 12" | bc -q) -eq 1 || test (echo "$GCC_VER < 8" | bc -q) -eq 1
+      if command -q gcc-11 && command -q g++-11 && command -q gfortran-11
+          set -gx CC gcc-11
+          set -gx CXX g++-11
+          set -gx FC gfortran-11
+          set -gx OMPI_CC gcc-11
+          set -gx OMPI_CXX g++-11
+          set -gx OMPI_FC gfortran-11
+      else if test -d "$BDMSYS/third_party/gcc"
+          set -gx CC "$BDMSYS/third_party/gcc/bin/gcc"
+          set -gx CXX "$BDMSYS/third_party/gcc/bin/g++"
+          set -gx FC "$BDMSYS/third_party/gcc/bin/gfortran"
+          set -gx OMPI_CC "$BDMSYS/third_party/gcc/bin/gcc"
+          set -gx OMPI_CXX "$BDMSYS/third_party/gcc/bin/g++"
+          set -gx OMPI_FC "$BDMSYS/third_party/gcc/bin/gfortran"
+      end
+    end
+
     ###### Platform-specific Configuration
     # Apple specific
     if test (uname) = 'Darwin'
@@ -429,14 +449,20 @@ function source_thisbdm
                 . scl_source enable devtoolset-10; or return 1
             end
 
-            . /etc/profile.d/modules.sh; or return 1
-            module load mpi; or return 1
-
             # load llvm 6 required for libroadrunner
             if test -d "$BDMSYS"/third_party/libroadrunner
                 . scl_source enable llvm-toolset-7; or return 1
             end
         end
+    end
+
+    #LOAD MPI SUPPORT MODULE FOR ALL RHEL DISTROS
+    if test (uname) = "Linux"
+    	set PROCVERSION (cat /proc/version)
+    	if string match -iq '*Red Hat*' -- $PROCVERSION
+        	source /etc/profile.d/modules.sh; or return 1
+        	module load mpi; or return 1
+    	end
     end
     #######
 
