@@ -37,7 +37,7 @@ else()
   		${PARAVIEW_SHA}
 		)
 
-	if(${PARAVIEW_DOWNLOAD_OR_BUILD} EQUAL 0)
+	elseif(${PARAVIEW_DOWNLOAD_OR_BUILD} EQUAL 0)
 		if(NOT EXISTS "${CMAKE_SOURCE_DIR}/build/third_party")
 			file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/build/third_party")
 		endif()
