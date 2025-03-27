@@ -39,10 +39,10 @@ ROOT_INSTALL_DIR=$BDM_PROJECT_DIR/third_party/root
 ROOT_TGZ_FILE=$BDM_PROJECT_DIR/third_party/$ROOT_VERSION_TGZ.source.tar.gz
 
 build_root(){
-BDM_OS=$(DetectOS2)
+BDM_OS=$(DetectOs2)
 PYTH=""
 FEATURES=""
-if [ $BDM_OS = "osx" ]; then
+if [ $BDM_OS == "osx" ]; then
 
   if [ $brewpy == "yes" ]; then
   	 	 PYTH="$(brew --prefix)/bin/python${PYV2}"
