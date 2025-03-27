@@ -79,7 +79,4 @@ if [ $1 == "all" ]; then
     $(cat $BDM_PROJECT_DIR/util/installation/suse/common/package_list_extra)
 fi
 
-
-gcc --version | awk '/gcc/ && ($3+0)>11{print "WARNING: Selected GCC Version is greater than 11, This can cause installation problems. Installing an older gcc version is recomended."}'
-
 exit 0

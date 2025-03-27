@@ -116,6 +116,4 @@ fi
 . /etc/profile.d/modules.sh
 module load mpi/openmpi-x86_64
 
-gcc --version | awk '/gcc/ && ($3+0)>11{print "WARNING: Selected GCC Version is greater than 11, This can cause installation problems. Installing an older gcc version is recomended."}'
-
 exit 0
