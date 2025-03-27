@@ -69,7 +69,7 @@ mkdir -p $PARAVIEW_INSTALL_DIR/catalyst
 tar -xvzf $CATALYST_TGZ_FILE -C $DEST_DIR/catalyst --strip-components=1
 tar -Jxvf $PARAVIEW_TXZ_FILE -C $DEST_DIR --strip-components=1
 if [ $BDM_OS == "osx" ]; then
-	if [ -d $BDM_PROJECT_DIR/build/third_party/qt ]
+	if [ -d $BDM_PROJECT_DIR/build/third_party/qt ]; then
 		export Qt5_DIR=$BDM_PROJECT_DIR/build/third_party/qt
 	else
 		export Qt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5
