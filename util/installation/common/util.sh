@@ -346,7 +346,11 @@ function CallOSSpecificScript {
   local BDM_INSTALL_OS_SRC=""
 
   if echo "$SPECIFIC_OSES_SUPPORTED" | grep -Eiq "$SPECIFIC_BDM_OS" ;  then
-  	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/$SPECIFIC_BDM_OS
+        if [ "$BDM_OS" == "osx" ]; then
+          	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/common
+        else
+  		BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/$SPECIFIC_BDM_OS
+  	fi
   elif [ "$BDM_OS" == "osx" ] || [ "$BDM_OS" == "rhel" ] || [ "$BDM_OS" == "debian" ] || [ "$BDM_OS" == "suse" ]; then
     	BDM_INSTALL_OS_SRC=$BDM_INSTALL_SRC/$BDM_OS/common
   else
