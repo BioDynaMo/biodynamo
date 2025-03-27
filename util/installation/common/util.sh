@@ -17,7 +17,7 @@
 # (Thus reducing code duplication)
 
 SCRIPTPATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SPECIFIC_OSES_SUPPORTED="ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, centos-7 osx"
+SPECIFIC_OSES_SUPPORTED="ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, centos-7"
 
 #include echo.sh
 . $SCRIPTPATH/echo.sh

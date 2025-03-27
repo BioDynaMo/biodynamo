@@ -41,7 +41,7 @@ PYTH=""
 BDM_OS=$(DetectOs2)
 
 
-if [ $BDM_OS = "osx" ]; then
+if [ $BDM_OS == "osx" ]; then
 
   if [ $brewpy == "yes" ]; then
   	 	 PYTH="$(brew --prefix)/bin/python${PYV2}"
@@ -68,7 +68,15 @@ mkdir -p $PARAVIEW_INSTALL_DIR
 mkdir -p $PARAVIEW_INSTALL_DIR/catalyst
 tar -xvzf $CATALYST_TGZ_FILE -C $DEST_DIR/catalyst --strip-components=1
 tar -Jxvf $PARAVIEW_TXZ_FILE -C $DEST_DIR --strip-components=1
-export Qt5_DIR=$BDM_PROJECT_DIR/build/third_party/qt
+if [ $BDM_OS == "osx" ]; then
+	if [ -d $BDM_PROJECT_DIR/build/third_party/qt ]
+		export Qt5_DIR=$BDM_PROJECT_DIR/build/third_party/qt
+	else
+		export Qt5_DIR=$(brew --prefix qt5)/lib/cmake/Qt5
+	fi
+else 
+	export Qt5_DIR=$BDM_PROJECT_DIR/build/third_party/qt
+fi
 cd $DEST_DIR/catalyst
 mkdir obj
 cd obj
