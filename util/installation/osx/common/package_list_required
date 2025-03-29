@@ -7,3 +7,4 @@ cmake
 ninja
 bash
 qt@5
+gcc@11
