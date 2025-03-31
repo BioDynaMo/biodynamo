@@ -44,6 +44,8 @@ sudo subscription-manager repos --enable *powertools*
 
 sudo subscription-manager repos --enable *codeready*
 
+sudo subscription-manager repos --disable "codeready-builder-for-rhel-*-x86_64-eus*"
+
 sudo yum update -y
 
 sudo yum install -y --nogpgcheck --skip-broken epel-release
