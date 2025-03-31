@@ -42,6 +42,10 @@ build_root(){
 BDM_OS=$(DetectOs2)
 PYTH=""
 FEATURES=""
+brewpy=no
+if [ $BDM_OS == "osx" ]; then
+  brewpy=yes
+fi
 if [ $BDM_OS == "osx" ]; then
 
   if [ $brewpy == "yes" ]; then
