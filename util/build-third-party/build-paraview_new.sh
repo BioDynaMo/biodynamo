@@ -39,10 +39,10 @@ build_paraview(){
 FEATURES=""
 PYTH=""
 BDM_OS=$(DetectOs2)
-
+brewpy=no
 
 if [ $BDM_OS == "osx" ]; then
-
+  brewpy=yes
   if [ $brewpy == "yes" ]; then
   	 	 PYTH="$(brew --prefix)/bin/python${PYV2}"
 	else
