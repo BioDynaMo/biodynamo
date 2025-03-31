@@ -42,8 +42,9 @@ build_NEST(){
 BDM_OS=$(DetectOs2)
 PYTH=""
 FEATURES=""
+brewpy=no
 if [ $BDM_OS == "osx" ]; then
-
+  brewpy=yes
   if [ $brewpy == "yes" ]; then
   	 	 PYTH="$(brew --prefix)/bin/python${PYV2}"
 	else
