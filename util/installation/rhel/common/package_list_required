@@ -88,3 +88,5 @@ mesa-libGL-devel
 tslib
 tslib-devel
 devtoolset-10-gcc*
+devtoolset-11-gcc*
+gcc-toolset-11*

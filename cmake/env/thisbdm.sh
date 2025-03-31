@@ -542,33 +542,7 @@ _source_thisbdm()
   # OpenMP
   export OMP_PROC_BIND=true
 
-  #Select (export) the correct compiler version
-  GCC_VER=$(gcc --version | grep gcc | awk '{print $NF}' | cut -d '.' -f 1-2)
-
-  if (echo "$GCC_VER >= 12" | bc -q > /dev/null)  ||  (echo "$GCC_VER < 8" | bc -q > /dev/null); then
-
-
-    if  $(command -v gcc-11 > /dev/null)  &&  $(command -v g++-11 > /dev/null)  &&  $(command -v gfortran-11 > /dev/null); then
-
-      export CC=gcc-11
-      export CXX=g++-11
-      export FC=gfortran-11
-      export OMPI_CC=gcc-11
-      export OMPI_CXX=g++-11
-      export OMPI_FC=gfortran-11
-
-    elif [ -d $BDMSYS/third_party/gcc ]; then
-
-      export CC=$BDMSYS/third_party/gcc/bin/gcc
-      export CXX=$BDMSYS/third_party/gcc/bin/g++
-      export FC=$BDMSYS/third_party/gcc/bin/gfortran
-      export OMPI_CC=$BDMSYS/third_party/gcc/bin/gcc
-      export OMPI_CXX=$BDMSYS/third_party/gcc/bin/g++
-      export OMPI_FC=$BDMSYS/third_party/gcc/bin/gfortran
-
-    fi
-  fi
-
+ 
   ###### Platform-specific Configuration
   # Apple specific
   if [ "$(uname)" = 'Darwin' ]; then
@@ -596,9 +570,71 @@ _source_thisbdm()
      # linux
      PROCVERSION=$(cat /proc/version)
      if echo "$PROCVERSION" | grep -Eiq 'Red Hat' ; then
+     	. scl_source enable gcc-toolset-10 > /dev/null 2> /dev/null  || true
+  	. scl_source enable devtoolset-10  > /dev/null 2> /dev/null  || true
+  	. scl_source enable gcc-toolset-11 > /dev/null 2> /dev/null  || true
+  	. scl_source enable devtoolset-11  > /dev/null 2> /dev/null  || true
         . /etc/profile.d/modules.sh || return 1
      	module load mpi || return 1
      fi
+  fi
+
+  #Select (export) the correct compiler version
+  GCC_VER=$(gcc --version | grep gcc)
+  if [ -n "${GCC_VER}" ]; then
+  	read -ra tokens <<< $GCC_VER
+  	result=()
+  	current_token=""
+	for token in "${tokens[@]}"; do
+	    if [[ -n $current_token ]]; then 
+			current_token+=" $token"
+		if [[ $current_token == *')' ]]; then
+			result+=("$current_token")
+			current_token=""
+		fi
+	    else
+		if [[ $token == '('* && $token != *')' ]]; then
+			current_token="$token"
+                else
+			result+=("$token")
+		fi
+	   fi
+	done 
+        if [[ -n $current_token ]]; then
+		result+=("$current_token")
+	fi 
+        GCC_VER=${result[2]}
+        GCC_VER=$( echo $GCC_VER | cut -d '.' -f 1-2)
+  fi
+
+  if [ -z "${GCC_VER}" ] || [ `echo "$GCC_VER >= 12" | bc -q` -ne 0 ]  ||  [ `echo "$GCC_VER < 9" | bc -q` -ne 0 ]; then
+
+
+    if  $(command -v gcc-11 > /dev/null)  &&  $(command -v g++-11 > /dev/null)  &&  $(command -v gfortran-11 > /dev/null); then
+
+      export CC=gcc-11
+      export CXX=g++-11
+      export FC=gfortran-11
+      export OMPI_CC=gcc-11
+      export OMPI_CXX=g++-11
+      export OMPI_FC=gfortran-11
+      export QMAKE_CC=gcc-11
+      export QMAKE_CXX=g++-11
+      export LINK=g++-11
+
+    elif [ -d $BDMSYS/third_party/gcc ]; then
+
+      export CC=$BDMSYS/third_party/gcc/bin/gcc
+      export CXX=$BDMSYS/third_party/gcc/bin/g++
+      export FC=$BDMSYS/third_party/gcc/bin/gfortran
+      export OMPI_CC=$BDMSYS/third_party/gcc/bin/gcc
+      export OMPI_CXX=$BDMSYS/third_party/gcc/bin/g++
+      export OMPI_FC=$BDMSYS/third_party/gcc/bin/gfortran
+      export QMAKE_CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
+      export QMAKE_CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+      export LINK=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+
+    fi
   fi
 
   #######

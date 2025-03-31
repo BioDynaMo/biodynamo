@@ -230,9 +230,42 @@ function CleanBuild {
   BDM_PROJECT_DIR_2=$(pwd)
   cd $BUILD_DIR
 
-  GCC_VER=$(gcc --version | grep gcc | awk '{print $NF}' | cut -d '.' -f 1-2)
+  CLEAN_BUILD_OS=$(DetectOs2)
+  if [ "$CLEAN_BUILD_OS" == "rhel" ]; then
+  	. scl_source enable gcc-toolset-10 > /dev/null 2> /dev/null  || true
+  	. scl_source enable devtoolset-10  > /dev/null 2> /dev/null  || true
+  	. scl_source enable gcc-toolset-11 > /dev/null 2> /dev/null  || true
+  	. scl_source enable devtoolset-11  > /dev/null 2> /dev/null  || true
+  fi
+  GCC_VER=$(gcc --version | grep gcc)
+  #GCC_VER=$(gcc --version | grep gcc | grep -oE ' |\S+' | awk '{print $NF}' | cut -d '.' -f 1-2)
+  if [ -n "${GCC_VER}" ]; then
+  	read -ra tokens <<< $GCC_VER
+  	result=()
+  	current_token=""
+	for token in "${tokens[@]}"; do
+	    if [[ -n $current_token ]]; then 
+			current_token+=" $token"
+		if [[ $current_token == *')' ]]; then
+			result+=("$current_token")
+			current_token=""
+		fi
+	    else
+		if [[ $token == '('* && $token != *')' ]]; then
+			current_token="$token"
+                else
+			result+=("$token")
+		fi
+	   fi
+	done 
+        if [[ -n $current_token ]]; then
+		result+=("$current_token")
+	fi 
+        GCC_VER=${result[2]}
+        GCC_VER=$( echo $GCC_VER | cut -d '.' -f 1-2)
+ fi
 
-  if (echo "$GCC_VER >= 12" | bc -q > /dev/null)  ||  (echo "$GCC_VER < 8" | bc -q > /dev/null); then
+  if [ -z "${GCC_VER}" ] || [ `echo "$GCC_VER >= 12" | bc -q` -ne 0 ]  ||  [ `echo "$GCC_VER < 9" | bc -q` -ne 0 ]; then
 
 
     if  $(command -v gcc-11 > /dev/null)  &&  $(command -v g++-11 > /dev/null)  &&  $(command -v gfortran-11 > /dev/null); then
@@ -249,6 +282,10 @@ Using that."
       export OMPI_CC=gcc-11
       export OMPI_CXX=g++-11
       export OMPI_FC=gfortran-11
+      export QMAKE_CC=gcc-11
+      export QMAKE_CXX=g++-11
+      export LINK=g++-11
+      
 
 
     elif [ -d $BDM_PROJECT_DIR_2/third_party/gcc ]; then
@@ -265,6 +302,9 @@ Using that."
         export OMPI_CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
         export OMPI_CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
         export OMPI_FC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gfortran
+        export QMAKE_CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
+        export QMAKE_CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+        export LINK=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
 
     else
 
@@ -297,6 +337,10 @@ Using that."
         export OMPI_CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
         export OMPI_CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
         export OMPI_FC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gfortran
+	export QMAKE_CC=$BDM_PROJECT_DIR_2/third_party/gcc/bin/gcc
+        export QMAKE_CXX=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+        export LINK=$BDM_PROJECT_DIR_2/third_party/gcc/bin/g++
+       
       fi
     fi
 
