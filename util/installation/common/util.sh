@@ -237,7 +237,7 @@ function CleanBuild {
   	. scl_source enable gcc-toolset-11 > /dev/null 2> /dev/null  || true
   	. scl_source enable devtoolset-11  > /dev/null 2> /dev/null  || true
   fi
-  GCC_VER=$(gcc --version | grep gcc)
+  GCC_VER=$(gcc --version | grep gcc) || true
   #GCC_VER=$(gcc --version | grep gcc | grep -oE ' |\S+' | awk '{print $NF}' | cut -d '.' -f 1-2)
   if [ -n "${GCC_VER}" ]; then
   	read -ra tokens <<< $GCC_VER
