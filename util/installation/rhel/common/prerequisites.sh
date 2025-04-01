@@ -40,6 +40,8 @@ sudo yum config-manager --enable *crb*
 
 sudo yum config-manager --enable *powertools*
 
+sudo yum config-manager --enable *extras*
+
 sudo subscription-manager repos --enable *powertools*
 
 sudo subscription-manager repos --enable *codeready*
