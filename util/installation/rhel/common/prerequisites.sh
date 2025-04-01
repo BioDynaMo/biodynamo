@@ -48,14 +48,14 @@ sudo subscription-manager repos --enable *codeready*
 
 sudo subscription-manager repos --disable "codeready-builder-for-rhel-*-x86_64-eus*"
 
+sudo yum update -y
+
+sudo yum install -y --nogpgcheck --skip-broken epel-release
+
 if $( cat /etc/os-release | grep -q 'PRETTY_NAME="Red Hat Enterprise Linux 9"' ); then 
 	sudo dnf install \
 https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 fi
-
-sudo yum update -y
-
-sudo yum install -y --nogpgcheck --skip-broken epel-release
 
 sudo yum update -y
 
