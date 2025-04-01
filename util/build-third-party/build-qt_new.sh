@@ -69,7 +69,7 @@ SPECIFIC_BDM_OS=$(DetectOs)
 DEFAULT_QTBD_OPTION="Yes"
 
 if echo "$SPECIFIC_OSES_SUPPORTED" | grep -Eiq "$SPECIFIC_BDM_OS" ;  then
-	DEFAULT_ROOTBD_OPTION="No"
+	DEFAULT_QTBD_OPTION="No"
 fi
 
 while true; do
