@@ -31,12 +31,6 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../.."
 sudo apt-get update
 sudo apt-get install apt-transport-https
 
-# Add ppa for newer CMake version
-wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
-REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
-sudo apt-add-repository "$REPO"
-
 # Update
 sudo apt-get update
 sudo apt install -y cmake-data=3.22.1-1ubuntu1.22.04.1
@@ -44,6 +38,10 @@ sudo apt install -y cmake-data=3.22.1-1ubuntu1.22.04.1
 # Install required packages
 sudo apt-get install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/debian/ubuntu-22.04/package_list_required)
+
+curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
+chmod +x cmake-3.19.3-Linux-x86_64.sh
+sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
