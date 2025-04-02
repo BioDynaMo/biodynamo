@@ -554,10 +554,7 @@ _source_thisbdm()
     os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"') || return 1
     if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
-        if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
-            . scl_source enable devtoolset-10 || return 1
-        fi
-
+        
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
           . scl_source enable llvm-toolset-7 || return 1
