@@ -1,8 +1,8 @@
 class OpenMpi < Formula
   desc "High performance message passing library"
   homepage "https://www.open-mpi.org/"
-  url "https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.5.tar.bz2"
-  sha256 "c58f3863b61d944231077f344fe6b4b8fbb83f3d1bc93ab74640bf3e5acac009"
+  url "https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.7.tar.bz2"
+  sha256 "7d3ecc8389161eb721982c855f89c25dca289001577a01a439ae97ce872be997"
   license "BSD-3-Clause"
 
   livecheck do
