@@ -84,6 +84,12 @@ else
   echo "log and make sure your homebrew works properly."
 fi
 
+# install old brew formulae from source and pin them
+  brew install -s $BDM_PROJECT_DIR/third_party/brew_formulae/cmake.rb
+  brew pin cmake
+  brew install -s $BDM_PROJECT_DIR/third_party/brew_formulae/open-mpi.rb
+  brew pin open-mpi
+
 # Test installation of optional brew formulae.
 if [ $1 == "all" ]; then
   # Test if all extra  packages were really successfully installed.
