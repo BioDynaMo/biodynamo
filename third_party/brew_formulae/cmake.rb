@@ -18,7 +18,6 @@ class Cmake < Formula
     sha256 cellar: :any_skip_relocation, mojave:        "2b2cee31bfce62a116567bc295eca855b008630aafee860051aaa599eac7d657"
   end
 
-  depends_on "sphinx-doc" => :build
 
   uses_from_macos "ncurses"
 
@@ -40,9 +39,6 @@ class Cmake < Formula
       --datadir=/share/cmake
       --docdir=/share/doc/cmake
       --mandir=/share/man
-      --sphinx-build=#{Formula["sphinx-doc"].opt_bin}/sphinx-build
-      --sphinx-html
-      --sphinx-man
     ]
     on_macos do
       args += %w[

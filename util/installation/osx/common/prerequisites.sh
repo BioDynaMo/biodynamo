@@ -85,6 +85,8 @@ else
 fi
 
 # install old brew formulae from source and pin them
+  export HOMEBREW_CC=gcc-11
+  export HOMEBREW_CXX=g++-11
   brew install -s $BDM_PROJECT_DIR/third_party/brew_formulae/open-mpi.rb
   brew pin open-mpi
   brew remove cmake
