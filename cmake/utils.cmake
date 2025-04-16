@@ -23,11 +23,16 @@ function(detect_os)
         execute_process(COMMAND sw_vers "-productVersion"
                         COMMAND cut -d . -f 1-2
                         OUTPUT_VARIABLE MACOS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+        execute_process(COMMAND sw_vers -productVersion 
+       			COMMAND cut -d . -f 1 
+        		COMMAND awk '{print $1 ".0"}'
+        		OUTPUT_VARIABLE MACOS_VERSION_GENERAL OUTPUT_STRIP_TRAILING_WHITESPACE)
         execute_process(COMMAND arch
                         OUTPUT_VARIABLE MACOS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
         set(BDM_OS "osx")
         set(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
         set(DETECTED_ARCH "${MACOS_ARCH}" PARENT_SCOPE)
+        set(DETECTED_OS_VERS_GENERAL "${BDM_OS}-${MACOS_VERSION_GENERAL}-${MACOS_ARCH}" PARENT_SCOPE)
         set(DETECTED_OS_VERS "${BDM_OS}-${MACOS_VERSION}-${MACOS_ARCH}" PARENT_SCOPE)
     else()
         set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
