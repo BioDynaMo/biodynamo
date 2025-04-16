@@ -265,7 +265,7 @@ function CleanBuild {
         GCC_VER=$( echo $GCC_VER | cut -d '.' -f 1-2)
  fi
 
-  if [ -z "${GCC_VER}" ] || [ `echo "$GCC_VER >= 12" | bc -q` -ne 0 ]  ||  [ `echo "$GCC_VER < 9" | bc -q` -ne 0 ]; then
+  if [ "${CLEAN_BUILD_OS}"!="osx" ] || [ -z "${GCC_VER}" ] || [ `echo "$GCC_VER >= 12" | bc -q` -ne 0 ]  ||  [ `echo "$GCC_VER < 9" | bc -q` -ne 0 ]; then
 
 
     if  $(command -v gcc-11 > /dev/null)  &&  $(command -v g++-11 > /dev/null)  &&  $(command -v gfortran-11 > /dev/null); then
