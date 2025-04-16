@@ -66,7 +66,7 @@ function DetectOs2 {
      PROCVERSION=$(cat /proc/version)
      if echo "$PROCVERSION" | grep -Eiq 'Red Hat' ; then
 	echo rhel;
-     elif echo "$PROCVERSION" | grep -Eiq 'debian|buntu|mint' ; then
+     elif echo "$PROCVERSION" | grep -Eiq 'debian|buntu|mint|eepin' ; then
      	echo debian;
      elif echo "$PROCVERSION" | grep -Eiq 'SUSE|suse' ; then
      	echo suse;
