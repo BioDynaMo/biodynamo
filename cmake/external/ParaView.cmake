@@ -10,7 +10,9 @@ endif()
 if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/paraview")
 			file(COPY "${CMAKE_SOURCE_DIR}/third_party/paraview" DESTINATION "${CMAKE_SOURCE_DIR}/build/third_party")
 			if(APPLE)
+			  if (NOT EXISTS "${CMAKE_SOURCE_DIR}/third_party/paraview/include/paraview-3.10")
 				set(CMAKE_BDM_PVVERSION "5.9")
+			  endif()
 			endif()
 
 else()
@@ -40,6 +42,7 @@ else()
   		${PARAVIEW_SOURCE_DIR}
   		${PARAVIEW_SHA}
 		)
+		file(COPY "${CMAKE_SOURCE_DIR}/build/third_party/paraview" DESTINATION "${CMAKE_SOURCE_DIR}/third_party/paraview")
 
 	elseif(${PARAVIEW_DOWNLOAD_OR_BUILD} EQUAL 0)
 		if(NOT EXISTS "${CMAKE_SOURCE_DIR}/build/third_party")
