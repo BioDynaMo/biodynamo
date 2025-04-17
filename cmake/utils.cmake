@@ -25,7 +25,7 @@ function(detect_os)
                         OUTPUT_VARIABLE MACOS_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
         execute_process(COMMAND sw_vers -productVersion 
        			COMMAND cut -d . -f 1 
-        		COMMAND awk '{print $1 ".0"}'
+        		COMMAND awk \'{print $1 ".0"}\'
         		OUTPUT_VARIABLE MACOS_VERSION_GENERAL OUTPUT_STRIP_TRAILING_WHITESPACE)
         execute_process(COMMAND arch
                         OUTPUT_VARIABLE MACOS_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
