@@ -85,8 +85,6 @@ else
 fi
 
 # install old brew formulae from source and pin them
-  brew install -s $BDM_PROJECT_DIR/third_party/brew_formulae/open-mpi.rb
-  brew pin open-mpi
   brew remove cmake
   brew install -s $BDM_PROJECT_DIR/third_party/brew_formulae/cmake.rb
   brew pin cmake
