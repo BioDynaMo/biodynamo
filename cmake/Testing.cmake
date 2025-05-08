@@ -15,7 +15,8 @@
 # setup google test
 ExternalProject_Add(
   gtest
-  URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.17.0.zip"
+  #URL "${CMAKE_SOURCE_DIR}/third_party/gtest-1.11.0.zip"
+  URL "${CMAKE_SOURCE_DIR}/third_party/v1.17.0.zip"
   PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gtest"
   CMAKE_ARGS
     -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
