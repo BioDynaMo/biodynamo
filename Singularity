@@ -53,7 +53,7 @@ From:ubuntu:20.04
   python3 -m pip install --upgrade pip
   python3 -m pip install numpy
 
-  pip install cmake --upgrade
+  # pip install cmake --upgrade
   pyenv global 3.9.1
   
   git config --system user.name "Test User"
@@ -66,6 +66,13 @@ From:ubuntu:20.04
 
   mkdir build
   cd build
+
+  echo "==> Installing CMake 3.27.9 to /usr/local"
+  CMAKE_VER=3.27.9
+  CMAKE_SH="cmake-${CMAKE_VER}-linux-x86_64.sh"
+  wget -q https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
+  sudo bash "${CMAKE_SH}" --prefix=/usr/local --skip-license
+  rm "${CMAKE_SH}"
 
   cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
   
