@@ -45,6 +45,16 @@ sudo apt install -y cmake-data=3.22.1-1ubuntu1.22.04.1
 sudo apt-get install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-22.04/package_list_required)
 
+
+echo "==> Installing CMake 3.27.9 to /usr/local"
+CMAKE_VER=3.27.9
+CMAKE_SH="cmake-${CMAKE_VER}-linux-x86_64.sh"
+wget -q https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
+sudo bash "${CMAKE_SH}" --prefix=/usr/local --skip-license
+rm "${CMAKE_SH}"
+
+
+
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
 fi
