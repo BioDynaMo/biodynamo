@@ -52,6 +52,7 @@ if __name__ == '__main__':
     parser.add_argument('--bdm-source', action='store', type=str, required=False, help='Source directory of BioDynaMo for bdm build.')
     parser.add_argument('--include-dirs', nargs='+', type=str, required=True, help='At least one directory that contains the header files.')
     parser.add_argument('--headers', nargs='+', type=str, required=True, help='At least one header file containing biodynamo definitions.')
+    parser.add_argument('--cxxmodules', action='store_true', help='Generate bdm dictionary for a C++ Modules enabled installation.')
 
     args = parser.parse_args()
 
@@ -116,8 +117,10 @@ static struct BioDynaMoDictInit {
                   AppendPrefix(id, prefixes)
                   f.write('    idirs << {0} << ":";\n'.format(id_processed))
         
-        for h in args.headers:
-            f.write('    bdm::JitHeaders::Register("{0}");\n'.format(RemoveLongestPrefix(h, prefixes)))
+        # We don't need to pass the headers to the interpreter since we use modules
+        if not args.cxxmodules:
+            for h in args.headers:
+                    f.write('    bdm::JitHeaders::Register("{0}");\n'.format(RemoveLongestPrefix(h, prefixes)))
 
         f.write("""
     AppendEnvVar(idirs, "ROOT_INCLUDE_PATH", "");
