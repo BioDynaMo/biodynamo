@@ -1,0 +1,6 @@
+[visualization]
+export = true
+interval = 1
+
+[[visualize_agent]]
+name = "CelestialObject"
