@@ -32,17 +32,25 @@ sudo apt-get update
 sudo apt-get install apt-transport-https
 
 # Add ppa for newer CMake version
-wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
-REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
-sudo apt-add-repository "$REPO"
+#wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+#CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
+#REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
+#sudo apt-add-repository "$REPO"
 
 # Update
 sudo apt-get update
 
+
 # Install required packages
 sudo apt-get install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/package_list_required)
+  
+CMAKE_VER=3.19.3
+CMAKE_SH="cmake-${CMAKE_VER}-linux-x86_64.sh"
+curl -L -O  https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
+sudo bash "${CMAKE_SH}" --prefix=/usr/local --skip-license
+rm "${CMAKE_SH}"
+
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
