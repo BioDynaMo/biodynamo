@@ -47,7 +47,7 @@ sudo apt-get install -y \
   
 CMAKE_VER=3.19.3
 CMAKE_SH="cmake-${CMAKE_VER}-linux-x86_64.sh"
-wget -q https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
+curl -L -O  https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
 sudo bash "${CMAKE_SH}" --prefix=/usr/local --skip-license
 rm "${CMAKE_SH}"
 
