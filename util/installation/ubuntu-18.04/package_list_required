@@ -1,4 +1,3 @@
-cmake
 curl
 freeglut3-dev
 g++
