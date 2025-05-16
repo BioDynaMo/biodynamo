@@ -84,11 +84,6 @@ else
   echo "log and make sure your homebrew works properly."
 fi
 
-# install old brew formulae from source and pin them
- brew remove cmake
- brew install -s $BDM_PROJECT_DIR/third_party/brew_formulae/cmake.rb
- brew pin cmake
-  
 
 # Test installation of optional brew formulae.
 if [ $1 == "all" ]; then
@@ -110,10 +105,17 @@ if [ $1 == "all" ]; then
   fi
 fi
 
+# install old brew formulae from source and pin them
+ brew remove cmake
+ brew install -s $BDM_PROJECT_DIR/third_party/brew_formulae/cmake.rb
+ brew pin cmake
+
+
 # Recommend user to upgrade to the latest package versions
 echo ""
 echo "Maybe you have seen errors of the type 'Error: <package> is already" 
 echo "installed'. If such an error occured in the context of one of the packages"
 echo "listed on top, consider upgrading with 'brew upgrade <package>'."
+
 
 exit 0
