@@ -40,9 +40,12 @@ sudo apt-get install apt-transport-https
 # Update
 sudo apt-get update
 
+CMAKE_VERSION=3.19.3
+
 curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
-chmod +x cmake-3.19.3-Linux-x86_64.sh
-sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh
+sudo ./cmake-$CMAKE_VERSION-Linux-x86_64.sh --skip-license --prefix=/usr/local
+rm -rf cmake-$CMAKE_VERSION-Linux-x86_64.sh
 
 # Install required packages
 sudo apt-get install -y \

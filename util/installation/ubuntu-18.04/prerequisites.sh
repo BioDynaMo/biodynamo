@@ -45,9 +45,12 @@ sudo apt-get update
 sudo apt-get install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/package_list_required)
   
+CMAKE_VERSION=3.19.3
+
 curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
-chmod +x cmake-3.19.3-Linux-x86_64.sh
-sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+chmod +x cmake-$CMAKE_VERSION-Linux-x86_64.sh
+sudo ./cmake-$CMAKE_VERSION-Linux-x86_64.sh --skip-license --prefix=/usr/local
+rm -rf cmake-$CMAKE_VERSION-Linux-x86_64.sh
 
 
 if [ -n "${PYENV_ROOT}" ]; then
