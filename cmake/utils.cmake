@@ -13,10 +13,11 @@
 # -----------------------------------------------------------------------------
 
 # Detect the system flavour and version. Generate variables
-# called DETECTED_OS (ubuntu-18.04, ubuntu-20.04, centos-7, osx)
-# and DETECTED_OS_VERS (ubuntu-18.04, ubuntu-20.04, centos-7 or osx-11.2-i386).
+# called DETECTED_OS (ubuntu-18.04, ubuntu-20.04, almalinux-9, osx)
+# and DETECTED_OS_VERS (ubuntu-18.04, ubuntu-20.04, almalinux-9 or
+# osx-11.2-i386).
 # In case the Linux arch is aarch64, the DETECTED_OS_VERS ends in -aarch64,
-# like ubuntu-23.10-aarch64. For backward compatibility reasons we don't
+# like ubuntu-24.04-aarch64. For backward compatibility reasons we don't
 # add -x86_64.
 function(detect_os)
     if(APPLE)
@@ -32,12 +33,20 @@ function(detect_os)
     else()
         set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
         set(GET_OS_VERSION "echo $(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '\"')")
+        set(GET_ALMA_OS_VERSION "echo $(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '\"' | cut -d . -f 1)")
         execute_process(COMMAND bash -c "${GET_OS_ID}"
                         OUTPUT_VARIABLE DISTRO_NAME
                         OUTPUT_STRIP_TRAILING_WHITESPACE)
-        execute_process(COMMAND bash -c "${GET_OS_VERSION}"
-                        OUTPUT_VARIABLE DISTRO_VERSION
-                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+        if("${DISTRO_NAME}" STREQUAL "almalinux")
+          # strip of minor version number 9.5 -> 9
+          execute_process(COMMAND bash -c "${GET_ALMA_OS_VERSION}"
+                          OUTPUT_VARIABLE DISTRO_VERSION
+                          OUTPUT_STRIP_TRAILING_WHITESPACE)
+        else()
+          execute_process(COMMAND bash -c "${GET_OS_VERSION}"
+                          OUTPUT_VARIABLE DISTRO_VERSION
+                          OUTPUT_STRIP_TRAILING_WHITESPACE)
+        endif()
         execute_process(COMMAND arch
                         OUTPUT_VARIABLE DISTRO_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
         set(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
