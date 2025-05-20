@@ -1,4 +1,4 @@
-cmake
+
 curl
 freeglut3-dev
 g++
@@ -15,7 +15,7 @@ libpthread-stubs0-dev
 make
 wget
 zlib1g-dev
-
+python3-dev
 libbz2-dev
 libffi-dev
 liblzma-dev
@@ -26,3 +26,4 @@ python3-openssl
 tk-dev
 xz-utils
 zlib1g-dev
+
