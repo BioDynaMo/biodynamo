@@ -30,8 +30,12 @@ jobs:
     - name: Install dependencies
       run: |
         export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-        brew install libomp open-mpi python@3.9 wget cmake@3.19 ninja qt@5 libgit2
+        brew install libomp open-mpi python@3.9 wget ninja qt@5 libgit2
 
+        wget https://cmake.org/files/v3.19/cmake-3.19.3-macos-universal.tar.gz
+        tar -xzf cmake-3.19.3-macos-universal.tar.gz
+        sudo mv cmake-3.19.3-macos-universal/CMake.app /Applications/
+        sudo ln -sf /Applications/CMake.app/Contents/bin/cmake /usr/local/bin/cmake
     - name: Checkout BioDynaMo
       uses: actions/checkout@v4
       with:

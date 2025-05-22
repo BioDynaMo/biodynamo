@@ -3,7 +3,7 @@ libomp
 open-mpi
 python@3.9
 wget
-cmake@3.19
+cmake
 ninja
 bash
 qt@5
