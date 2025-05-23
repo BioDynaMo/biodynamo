@@ -54,6 +54,11 @@ fi
 brew install \
   $(cat $BDM_PROJECT_DIR/util/installation/osx/package_list_required) || true
 
+wget https://cmake.org/files/v3.24/cmake-3.24.1-macos-universal.tar.gz
+tar -xzf cmake-3.24.1-macos-universal.tar.gz
+sudo mv cmake-3.24.1-macos-universal/CMake.app /Applications/
+sudo ln -sf /Applications/CMake.app/Contents/bin/cmake /usr/local/bin/cmake
+
 # Install the optional packages
 if [ $1 == "all" ]; then
     # Fix jinja2 version because of failing build target `notebooks` on 
