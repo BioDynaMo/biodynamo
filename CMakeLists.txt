@@ -415,7 +415,7 @@ if(paraview)
 endif()
 
 if(sbml)
-  if(APPLE)
+  if(APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
     message(FATAL_ERROR "Currently SBML is not supported on MacOS (see https://trello.com/c/vKPbh4iG).")
   endif()
   find_package(Libroadrunner)
