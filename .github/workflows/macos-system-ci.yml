@@ -21,19 +21,11 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-13, macos-14, macos-15]
+        os: [macos-14, macos-15]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Make sure Xcode 15.2 is used on macOS 13 as the default /Application/Xcode.app
-      shell: bash
-      run: |
-        sudo mv /Applications/Xcode.app /Applications/Xcode.app-
-        sudo ln -s /Applications/Xcode_15.2.app /Applications/Xcode.app
-        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-      if: matrix.os == 'macos-13'
-
     - name: Set GHA_BRANCH_NAME
       run: |
         if [ "${{ github.event_name }}" = "push" ]; then
