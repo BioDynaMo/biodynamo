@@ -1,0 +1,12 @@
+[visualization]
+export = true
+interval = 1
+
+[simulation]
+time_step = 86400
+
+[[visualize_agent]]
+name = "Planet"
+
+[[visualize_agent]]
+name = "Star"
