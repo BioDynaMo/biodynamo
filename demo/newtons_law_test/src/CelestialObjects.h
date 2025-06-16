@@ -28,12 +28,12 @@ class CelestialObject : public Cell {
   // constructors
   CelestialObject() { UpdateVolume(); }
 
-  explicit CelestialObject(real_t diameter){
+  explicit CelestialObject(real_t diameter) {
     this->SetDiameter(diameter);
     UpdateVolume();
   }
 
-  explicit CelestialObject(const Real3& position){
+  explicit CelestialObject(const Real3& position) {
     this->SetPosition(position);
     UpdateVolume();
   }
