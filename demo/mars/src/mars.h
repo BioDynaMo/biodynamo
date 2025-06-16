@@ -62,7 +62,7 @@ inline int Simulate(int argc, const char** argv) {
   rm->AddAgent(deimos);
 
   simulation.GetScheduler()->Simulate(500);
-
+  std::cout << "Simulation completed successfully!\n";
   return 0;
 }
 

@@ -54,6 +54,7 @@ inline int Simulate(int argc, const char** argv) {
   }
 
   simulation.GetScheduler()->Simulate(900);
+  std::cout << "Simulation completed successfully!\n";
   return 0;
 }
 
