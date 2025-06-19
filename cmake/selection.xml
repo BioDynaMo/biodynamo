@@ -6,14 +6,51 @@
     <class pattern="std::vector<bdm::*>" />
   </selection>
   <exclusion>
+    <class pattern="vector<bdm::OptimizationParamType*>" />
+    <class pattern="*bdm::OptimizationParamType*"/>
+    <class pattern="*bdm::OptimizationParam*"/>
     <class pattern="bdm::OpenCLState*"/>
     <class name="bdm::ParallelResizeVector<pair<unsigned int,const bdm::UniformGridEnvironment::Box*> >" />
-    <class name="bdm::OptimizationParam" />
-    <class name="bdm::OptimizationParamType"/>
+    <class name="bdm::FixedSizeVector<pair<unsigned int,const bdm::UniformGridEnvironment::Box*> >" />
+    <class name="bdm::FixedSizeVector<const bdm::UniformGridEnvironment::Box*, 27>" />
+    <class pattern="bdm::UniformGridEnvironment::*" />
+    <class pattern="bdm::AgentFlatIdxMap*" />
+    <class pattern="bdm::AgentVector*"  />
+    <class pattern="bdm::NanoFlannAdapter*"  />
+    <class pattern="bdm::MortonOrder*"  />
+    <class pattern="bdm::AgentContainer*"  />
+    <class pattern="bdm::Exporter*"  />
+    <class pattern="bdm::BasicExporter*"  />
+    <class pattern="bdm::MatlabExporter*" />
+    <class pattern="bdm::NeuroMLExporter*"  />
+    <class pattern="bdm::ParaviewExporter*"  />
+    <class pattern="bdm::GpuHelper*"  />
+    <class pattern="bdm::MechanicalForcesOpCudaKernel*" />
+    <class pattern="bdm::experimental::Algorithm*"  />
+    <class name="bdm::SumReduction<unsigned long>" />
+    <class pattern="bdm::experimental::AlgorithmRegistry*"  />
+    <class pattern="bdm::experimental::Database*" />
+    <class pattern="bdm::experimental::MultiSimulation*"  />
+    <class pattern="bdm::experimental::MultiSimulationManager*" />
+    <class pattern="bdm::experimental::Worker*" />
+    <class name="bdm::VisualizationAdaptor" />
+    <class pattern="bdm::ContinuumOp*"  />
+    <class pattern="bdm::LoadBalancingOp*"  />
+    <class pattern="bdm::MechanicalForcesOpCuda*" />
+    <class pattern="bdm::MechanicalForcesOpOpenCL*" />
+    <class pattern="bdm::VisualizationOp*"  />
+    <class name="bdm::CSVReader"  />
+    <class name="bdm::JitForEachDataMemberFunctor"  />
+    <class name="bdm::JitHeaders" />
+    <class name="bdm::VTuneTask"  />
+    <class name="vector<bdm::experimental::Status>" />
+    <class pattern="*vector<bdm::AgentPointer<bdm::neuroscience::NeuriteElement>>*"  />
+    <class pattern="*bdm::AgentPointer<bdm::neuroscience::NeuriteElement>*"  />
     <class name="bdm::SetParam"/>
     <class name="bdm::ParticleSwarmParam"/>
     <class name="bdm::LogRangeParam"/>
     <class name="bdm::RangeParam"/>
+    <class name="vector<bdm::UniformGridEnvironment::GridNeighborMutexBuilder::MutexWrapper>" />
     <class name="bdm::experimental::MPIObject" />
     <class name="bdm::OperationImpl" />
     <class pattern="cl::*" />
@@ -86,7 +123,7 @@
     <class name="bdm::InlineVector<bdm::Behavior*, 2>" noStreamer="true" />
     <class name="bdm::InlineVector<bdm::Behavior*, 3>" noStreamer="true" />
     <class name="bdm::VectorTypeWrapper<bdm::Behavior*>" />
-    <class name="bdm::experimental::TimeSeries" />
+    <class pattern="*bdm::experimental::TimeSeries*" />
     <class name="bdm::experimental::DataTransformer" />
     <class name="bdm::experimental::LinearTransformer" />
     <class name="bdm::experimental::TimeSeries::Data" />
