@@ -125,4 +125,4 @@ jobs:
         cmake --build . --target show-format || true
         cmake --build . --target show-tidy || true
         cmake --build . --target check-cpplint || true
-      if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-20.04'
+      if: github.event_name == 'pull_request' && matrix.os == 'ubuntu-22.04'
