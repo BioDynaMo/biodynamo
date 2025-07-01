@@ -13,11 +13,7 @@
 #
 # -----------------------------------------------------------------------------
 
-## ----------------------------------------------------------------------------
-## !! CENTOS is not supported anymore. This script is kept for reference !!
-## --------------------------------------------------------------------------
-
-# This script installs the required packages
+#This script installs the required packages
 if [[ $# -ne 1 ]]; then
   echo "ERROR: Wrong number of arguments.
 Description:
@@ -29,23 +25,32 @@ Arguments:
   exit 1
 fi
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../.."
 
-sudo -v
+# Required to add Kitware ppa below
+sudo apt-get update
+sudo apt-get install apt-transport-https
 
-sudo yum update -y
+# Add ppa for newer CMake version
+#wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+#CODENAME=$(grep -oP '(?<=^UBUNTU_CODENAME=).+' /etc/os-release | tr -d '"')
+#REPO="deb https://apt.kitware.com/ubuntu/ ${CODENAME} main"
+#sudo apt-add-repository "$REPO"
 
-# Install repositories
-sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm \
-  epel-release centos-release-scl
+# Update
+sudo apt-get update
+
 
 # Install required packages
-sudo yum install -y \
-  $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_required)
+sudo apt-get install -y \
+  $(cat $BDM_PROJECT_DIR/util/installation/debian/ubuntu-18.04/package_list_required)
+  
+CMAKE_VER=3.19.3
+CMAKE_SH="cmake-${CMAKE_VER}-linux-x86_64.sh"
+curl -L -O  https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
+sudo bash "${CMAKE_SH}" --prefix=/usr/local --skip-license
+rm "${CMAKE_SH}"
 
-curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
-chmod +x cmake-3.19.3-Linux-x86_64.sh
-./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
@@ -56,6 +61,7 @@ if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
   echo "PyEnv was not found. Installing now..."
   curl https://pyenv.run | bash
 fi
+
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init --path)"
@@ -73,20 +79,11 @@ pyenv shell $PYVERS
 
 # Install optional packages
 if [ $1 == "all" ]; then
-  PIP_PACKAGES="markupsafe==2.0.1 nbformat jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6"
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
-  python -m pip install $PIP_PACKAGES
-  # SBML integration
-  sudo bash -c 'cat << EOF  > /etc/yum.repos.d/springdale-7-SCL.repo
-[SCL-core]
-name=Springdale SCL Base 7.6 - x86_64
-mirrorlist=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64/mirrorlist
-#baseurl=http://springdale.princeton.edu/data/springdale/SCL/7.6/x86_64
-gpgcheck=1
-gpgkey=http://springdale.math.ias.edu/data/puias/7.6/x86_64/os/RPM-GPG-KEY-puias
-EOF'
-  sudo yum install -y --nogpgcheck \
-    $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_extra)
+  python -m pip install -r $BDM_PROJECT_DIR/util/installation/debian/ubuntu-18.04/pip_packages.txt
+
+  sudo apt-get install -y \
+    $(cat $BDM_PROJECT_DIR/util/installation/debian/ubuntu-18.04/package_list_extra)
 fi
 
 exit 0
