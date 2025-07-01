@@ -27,7 +27,7 @@ fi
 
 set -e
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../.."
 
 #wget https://apt.llvm.org/llvm-snapshot.gpg.key
 #sudo apt-key add llvm-snapshot.gpg.key
@@ -38,7 +38,7 @@ BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
 #   Add ppa for newer CMake version
 
 # use ubuntu-18.04 prerequisites script
-. $BDM_PROJECT_DIR/util/installation/ubuntu-18.04/prerequisites.sh $1
+. $BDM_PROJECT_DIR/util/installation/debian/ubuntu-18.04/prerequisites.sh $1
 
 if [ $1 == "all" ]; then
   sudo apt-get install -y kcov
