@@ -65,6 +65,20 @@ endif()
 message(STATUS "Detected OS: ${DETECTED_OS_VERS}")
 
 if(APPLE)
+  if(NOT CMAKE_OSX_SYSROOT OR CMAKE_OSX_SYSROOT STREQUAL "")
+    execute_process(COMMAND xcrun --sdk macosx --show-sdk-path
+      OUTPUT_VARIABLE SDK_PATH
+      ERROR_QUIET
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    if(NOT EXISTS "${SDK_PATH}")
+      message(FATAL_ERROR "Could not detect macOS SDK path")
+    endif()
+
+    set(CMAKE_OSX_SYSROOT "${SDK_PATH}" CACHE PATH "SDK path" FORCE)
+  endif()
+  message(STATUS "Using SDK path: ${CMAKE_OSX_SYSROOT}")
+
   find_program(BREW_BIN brew)
   if(BREW_BIN)
     execute_process(COMMAND ${BREW_BIN} --prefix
