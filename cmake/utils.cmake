@@ -108,7 +108,6 @@ function(verify_ROOT)
         SET(ROOT_ETC_DIR ${ROOT_ETC_DIR} PARENT_SCOPE)
         SET(ROOT_CONFIG_EXECUTABLE ${ROOT_CONFIG_EXECUTABLE} PARENT_SCOPE)
         SET(ROOTCLING_EXECUTABLE ${ROOTCLING_EXECUTABLE} PARENT_SCOPE)
-        SET(GENREFLEX_EXECUTABLE ${GENREFLEX_EXECUTABLE} PARENT_SCOPE)
     else()
         # When ROOT is found, but it's not C++17 compliant, we exit the installation, because ROOT needs
         # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
@@ -268,6 +267,7 @@ function(install_inside_build)
     # Copy some cmake files
     add_copy_files(copy_files_bdm
             DESTINATION ${CMAKE_INSTALL_CMAKEDATADIR}
+            ${CMAKE_SOURCE_DIR}/cmake/RootMacros.cmake
             ${CMAKE_SOURCE_DIR}/cmake/BioDynaMoConfig.cmake
             ${CMAKE_SOURCE_DIR}/cmake/BioDynaMo.cmake
             ${CMAKE_SOURCE_DIR}/cmake/SetCompilerFlags.cmake
@@ -400,7 +400,7 @@ function(install_inside_build)
     endif()
 
     add_custom_target(copy_files_bdm ALL DEPENDS ${artifact_files_builddir})
-    add_dependencies(copy_files_bdm biodynamo)
+    add_dependencies(biodynamo copy_files_bdm)
 endfunction()
 
 # This function add a description to the packages which will be displayed
