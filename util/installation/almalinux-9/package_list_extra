@@ -1,0 +1,11 @@
+doxygen
+graphviz
+libxml2-devel
+fontconfig-devel
+freetype-devel
+llvm-devel
+clang-devel
+clang-tools-extra
+valgrind
+gsl-devel
+atlas-devel

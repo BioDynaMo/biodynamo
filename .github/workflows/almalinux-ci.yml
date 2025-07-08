@@ -1,0 +1,102 @@
+name: AlmaLinux CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: almalinux:9.5
+
+    steps:
+    - name: Install dependencies
+      run: |
+        dnf -y update
+        dnf -y --enablerepo=crb install epel-release
+        dnf -y --enablerepo=crb install \
+          lsb_release cmake git gcc g++ wget man make ninja-build \
+          bzip2-devel freeglut-devel libXext-devel libXt-devel libXpm-devel \
+          libXft-devel numactl-devel openmpi-devel zlib-devel lapack-devel \
+          blas-devel readline-devel sqlite-devel openssl-devel xz-devel \
+          libffi-devel findutils patch which perl-Digest-SHA \
+          xorg-x11-server-Xvfb fontconfig mesa-dri-drivers
+        
+    - name: Start Xvfb
+      run: |
+        set -e
+        XVFBARGS=":99 -ac -screen 0 2560x1440x24"
+        /usr/bin/Xvfb $XVFBARGS >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+        sleep 3
+
+    - name: Set OSVERS
+      run: |
+        ID=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
+        VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
+        echo "OSVERS=$ID-$VERSION" >> $GITHUB_ENV
+
+    - name: Cache pyenv
+      uses: actions/cache@v4
+      id: pyenv-cache
+      with:
+        path: ~/.pyenv
+        key: ${{ env.OSVERS }}-pyenv-3.9.1
+
+    - name: Install pyenv dependency
+      if: steps.pyenv-cache.outputs.cache-hit != 'true'
+      run: |
+        if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
+          curl https://pyenv.run | bash
+        fi
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
+        pyenv shell 3.9.1
+
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Cache Third Party Packages
+      uses: actions/cache@v4
+      with:
+        path: build/third_party
+        key: ${{ env.OSVERS }}-third-party-${{ hashFiles('cmake/external/SHA256Digests.cmake') }}
+
+    - name: Build BioDynaMo
+      shell: bash
+      run: |
+        export PATH="$HOME/.pyenv/bin:$PATH"
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        pyenv shell 3.9.1
+        . /etc/profile.d/modules.sh || true
+        module load mpi
+        cmake -G Ninja \
+          -Dparaview=OFF \
+          -Dbenchmark=ON \
+          -Dlibgit2=ON \
+          -Dnuma=OFF \
+          -DCMAKE_BUILD_TYPE=Release \
+          -B build
+        cmake --build build --parallel --config Release
+
+    - name: Unit tests BioDynaMo
+      shell: bash
+      working-directory: build
+      run: |
+        . bin/thisbdm.sh
+        bdm config
+        export DISPLAY=:99.0
+        sleep 3
+        ninja run-unit-tests
