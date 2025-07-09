@@ -21,7 +21,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -113,6 +113,9 @@ jobs:
           echo "REALT=float" >> $GITHUB_ENV
         fi
         if [ "${{ env.OSVERS }}" = "ubuntu-22.04" ]; then
+          echo "REALT=double" >> $GITHUB_ENV
+        fi
+        if [ "${{ env.OSVERS }}" = "ubuntu-24.04" ]; then
           echo "REALT=double" >> $GITHUB_ENV
         fi
 

@@ -597,3 +597,28 @@
    fun:start_thread
    fun:clone
 }
+
+{
+   ignore_memory_leak_ubuntu_24_04
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create@@GLIBC_2.34
+   obj:/usr/lib/x86_64-linux-gnu/libgomp.so.1.0.0
+   fun:GOMP_parallel
+   fun:_ZN3bdm10ThreadInfo11GetInstanceEv
+   fun:_ZN3bdm18MechanicalForcesOpC1Ev
+   fun:_Z41__static_initialization_and_destruction_0v
+   fun:call_init.part.0
+   fun:call_init
+   fun:_dl_init
+   obj:/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
