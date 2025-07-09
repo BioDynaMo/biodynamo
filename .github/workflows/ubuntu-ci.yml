@@ -14,7 +14,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-22.04, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -26,11 +26,14 @@ jobs:
         if [ "${{ env.OSVERS }}" = "ubuntu-22.04" ]; then
           echo "PYOPENSSL=python3-openssl" >> $GITHUB_ENV
         fi
+        if [ "${{ env.OSVERS }}" = "ubuntu-24.04" ]; then
+          echo "PYOPENSSL=python3-openssl" >> $GITHUB_ENV
+        fi
         
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libopenmpi-dev libomp5 libomp-dev libnuma-dev freeglut3-dev \
+        sudo apt-get install -y libopenmpi-dev gcc-11 g++-11 libomp5 libomp-dev libnuma-dev freeglut3-dev \
           libreadline-dev libsqlite3-dev tk-dev ${{ env.PYOPENSSL }} ninja-build libblas-dev liblapack-dev libgit2-dev
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
         chmod +x cmake-3.19.3-Linux-x86_64.sh
