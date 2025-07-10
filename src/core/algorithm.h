@@ -47,15 +47,12 @@ void InPlaceParallelPrefixSum(T& v, uint64_t n) {
       // At this point: d < logn - 1, so d <= logn - 2
       // Therefore: logn >= d + 2
       // This guarantees: logn - d - 1 >= 1 and logn - d - 2 >= 0
-      
       uint64_t shift_amount1 = logn - d - 1;
       uint64_t shift_amount2 = logn - d - 2;
-      
       // Prevent undefined behavior from large shift amounts (>= 64)
       if (shift_amount1 >= 64 || shift_amount2 >= 64) {
         break;
       }
-      
       uint64_t stride = 1ULL << shift_amount1;
       uint64_t delta = 1ULL << shift_amount2;
 
