@@ -32,8 +32,8 @@ void InPlaceParallelPrefixSum(T& v, uint64_t n) {
   // upsweep
   uint64_t logn = static_cast<uint64_t>(std::ceil(std::log2(n)));
   for (uint64_t d = 0; d < logn; ++d) {
-    uint64_t stride = 1 << (d + 1);
-    uint64_t delta = 1 << d;
+    uint64_t stride = 1ULL << (d + 1);
+    uint64_t delta = 1ULL << d;
 
 #pragma omp parallel for
     for (uint64_t i = delta - 1; i < n - delta; i += stride) {
@@ -42,13 +42,27 @@ void InPlaceParallelPrefixSum(T& v, uint64_t n) {
   }
 
   // downsweep
-  for (uint64_t d = 0; d < logn - 1; ++d) {
-    uint64_t stride = 1 << (logn - d - 1);
-    uint64_t delta = 1 << (logn - d - 2);
+  if (logn >= 2) {  // Only execute if logn >= 2 to ensure no underflow
+    for (uint64_t d = 0; d < logn - 1; ++d) {
+      // At this point: d < logn - 1, so d <= logn - 2
+      // Therefore: logn >= d + 2
+      // This guarantees: logn - d - 1 >= 1 and logn - d - 2 >= 0
+      
+      uint64_t shift_amount1 = logn - d - 1;
+      uint64_t shift_amount2 = logn - d - 2;
+      
+      // Prevent undefined behavior from large shift amounts (>= 64)
+      if (shift_amount1 >= 64 || shift_amount2 >= 64) {
+        break;
+      }
+      
+      uint64_t stride = 1ULL << shift_amount1;
+      uint64_t delta = 1ULL << shift_amount2;
 
 #pragma omp parallel for
-    for (uint64_t i = stride - 1; i < n - delta; i += stride) {
-      v[i + delta] += v[i];
+      for (uint64_t i = stride - 1; i < n - delta; i += stride) {
+        v[i + delta] += v[i];
+      }
     }
   }
 }
