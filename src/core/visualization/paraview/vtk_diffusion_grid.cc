@@ -42,8 +42,10 @@ VtkDiffusionGrid::VtkDiffusionGrid(const std::string& name,
   if (param->export_visualization) {
     auto* tinfo = ThreadInfo::GetInstance();
     data_.resize(tinfo->GetMaxThreads());
+    piece_boxes_z_.resize(tinfo->GetMaxThreads());
   } else {
     data_.resize(1);
+    piece_boxes_z_.resize(1);
   }
 
 #pragma omp parallel for schedule(static, 1)
@@ -146,22 +148,20 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
     return;
   }
 
-#pragma omp parallel for schedule(static, 1)
-  for (uint64_t i = 0; i < num_pieces_; ++i) {
+  // #pragma omp parallel for schedule(static, 1)
+  for (uint64_t i = 0; i < piece_boxes_z_.size(); ++i) {
     uint64_t piece_elements;
     auto* e = piece_extents_[i].data();
-    if (i < num_pieces_ - 1) {
-      piece_elements = piece_boxes_z_ * xy_num_boxes;
-      data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_);
-      data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
-                          e[4] + piece_boxes_z_ - 1);
-    } else {
-      piece_elements = piece_boxes_z_last_ * xy_num_boxes;
-      data_[i]->SetDimensions(num_boxes[0], num_boxes[1], piece_boxes_z_last_);
-      data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
-                          e[4] + piece_boxes_z_last_ - 1);
-    }
-    real_t piece_origin_z = origin_z + box_length * piece_boxes_z_ * i;
+    piece_elements = piece_boxes_z_[i] * xy_num_boxes;
+    data_[i]->SetDimensions(static_cast<int>(num_boxes[0]),
+                            static_cast<int>(num_boxes[1]),
+                            static_cast<int>(piece_boxes_z_[i]));
+    data_[i]->SetExtent(e[0], e[1], e[2], e[3], e[4],
+                        e[4] + static_cast<int>(piece_boxes_z_[i]) - 1);
+    // Compute partial sum of boxes until index i
+    auto sum =
+        std::accumulate(piece_boxes_z_.begin(), piece_boxes_z_.begin() + i, 0);
+    real_t piece_origin_z = origin_z + box_length * sum;
     data_[i]->SetOrigin(origin_x, origin_y, piece_origin_z);
     data_[i]->SetSpacing(box_length, box_length, box_length);
 
@@ -170,18 +170,15 @@ void VtkDiffusionGrid::Update(const DiffusionGrid* grid) {
       auto elements = static_cast<vtkIdType>(piece_elements);
       auto* array = static_cast<vtkRealArray*>(
           data_[i]->GetPointData()->GetArray(concentration_array_idx_));
-      if (i < num_pieces_ - 1) {
-        array->SetArray(co_ptr + (elements * i), elements, 1);
-      } else {
-        array->SetArray(co_ptr + total_boxes - elements, elements, 1);
-      }
+      auto offset = sum * xy_num_boxes;
+      array->SetArray(co_ptr + offset, elements, 1);
     }
     if (gradient_array_idx_ != -1) {
       auto gr_ptr = const_cast<real_t*>(grid->GetAllGradients());
       auto elements = static_cast<vtkIdType>(piece_elements * 3);
       auto* array = static_cast<vtkRealArray*>(
           data_[i]->GetPointData()->GetArray(gradient_array_idx_));
-      if (i < num_pieces_ - 1) {
+      if (i < piece_boxes_z_.size() - 1) {
         array->SetArray(gr_ptr + (elements * i), elements, 1);
       } else {
         array->SetArray(gr_ptr + total_boxes - elements, elements, 1);
@@ -196,47 +193,58 @@ void VtkDiffusionGrid::WriteToFile(uint64_t step) const {
   auto filename_prefix = Concat(name_, "-", step);
 
   ParallelVtiWriter writer;
-  writer(sim->GetOutputDir(), filename_prefix, data_, num_pieces_,
+  writer(sim->GetOutputDir(), filename_prefix, data_, piece_boxes_z_.size(),
          whole_extent_, piece_extents_);
 }
 
 // -----------------------------------------------------------------------------
 void VtkDiffusionGrid::Dissect(uint64_t boxes_z, uint64_t num_pieces_target) {
-  if (num_pieces_target == 1) {
-    piece_boxes_z_last_ = boxes_z;
-    piece_boxes_z_ = 1;
-    num_pieces_ = 1;
-  } else if (boxes_z <= num_pieces_target) {
-    piece_boxes_z_last_ = 2;
-    piece_boxes_z_ = 1;
-    num_pieces_ = std::max<unsigned long long>(1ULL, boxes_z - 1);
-  } else {
-    auto boxes_per_piece = static_cast<real_t>(boxes_z) / num_pieces_target;
-    piece_boxes_z_ = static_cast<uint64_t>(std::ceil(boxes_per_piece));
-    num_pieces_ = boxes_z / piece_boxes_z_;
-    piece_boxes_z_last_ = boxes_z - (num_pieces_ - 1) * piece_boxes_z_;
+  // The following lines are used to reduce the number of pieces such that every
+  // .vti file contains at least 2 boxes in the z direction. For unknown reason,
+  // the .pvti file does not load correctly if we export 6 slices with 6
+  // threads, e.g. write each slice to a separate .vti file.
+  if (num_pieces_target > boxes_z / 2 && num_pieces_target > 1) {
+    num_pieces_target =
+        static_cast<uint64_t>(std::floor(static_cast<float>(boxes_z) / 2));
+    num_pieces_target += (num_pieces_target == 0) ? 1 : 0;
   }
-  assert(num_pieces_ > 0);
-  assert(piece_boxes_z_last_ >= 1);
-  assert((num_pieces_ - 1) * piece_boxes_z_ + piece_boxes_z_last_ == boxes_z);
+  piece_boxes_z_.resize(num_pieces_target);
+
+  // Compute the number of boxes in each piece
+  auto boxes_per_piece = static_cast<real_t>(boxes_z) / num_pieces_target;
+  auto min_slices = static_cast<uint64_t>(std::floor(boxes_per_piece));
+  auto leftover = boxes_z % num_pieces_target;
+
+  // Distribute default slices and leftover slices
+  for (uint64_t i = 0; i < piece_boxes_z_.size(); ++i) {
+    piece_boxes_z_[i] = min_slices;
+    if (leftover > 0) {
+      piece_boxes_z_[i]++;
+      leftover--;
+    }
+  }
+
+  // Check dissection
+  assert(boxes_z ==
+         std::accumulate(piece_boxes_z_.begin(), piece_boxes_z_.end(), 0));
 }
 
 // -----------------------------------------------------------------------------
 void VtkDiffusionGrid::CalcPieceExtents(
     const std::array<size_t, 3>& num_boxes) {
-  piece_extents_.resize(num_pieces_);
-  if (num_pieces_ == 1) {
+  piece_extents_.resize(piece_boxes_z_.size());
+  if (piece_boxes_z_.size() == 1) {
     piece_extents_[0] = whole_extent_;
     return;
   }
-  int c = piece_boxes_z_;
+  auto c = static_cast<int>(piece_boxes_z_[0]);
   piece_extents_[0] = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
                         static_cast<int>(num_boxes[1]) - 1, 0, c}};
-  for (uint64_t i = 1; i < num_pieces_ - 1; ++i) {
+  for (uint64_t i = 1; i < piece_boxes_z_.size() - 1; ++i) {
     piece_extents_[i] = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
                           static_cast<int>(num_boxes[1]) - 1, c,
-                          c + static_cast<int>(piece_boxes_z_)}};
-    c += piece_boxes_z_;
+                          c + static_cast<int>(piece_boxes_z_[i])}};
+    c += static_cast<int>(piece_boxes_z_[i]);
   }
   piece_extents_.back() = {{0, static_cast<int>(num_boxes[0]) - 1, 0,
                             static_cast<int>(num_boxes[1]) - 1, c,
