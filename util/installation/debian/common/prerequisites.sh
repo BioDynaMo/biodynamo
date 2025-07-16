@@ -25,7 +25,7 @@ Arguments:
   exit 1
 fi
 
-BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../.."
+BDM_PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../../../.."
 
 # Required to add Kitware ppa below
 sudo apt-get update
@@ -48,7 +48,7 @@ rm "${CMAKE_SH}"
 
 # Install required packages
 sudo apt-get install -y \
-  $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-22.04/package_list_required)
+  $(cat $BDM_PROJECT_DIR/util/installation/debian/common/package_list_required)
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
@@ -78,10 +78,10 @@ pyenv shell $PYVERS
 # Install optional packages
 if [ $1 == "all" ]; then
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
-  python -m pip install -r $BDM_PROJECT_DIR/util/installation/ubuntu-22.04/pip_packages.txt
+  python -m pip install -r $BDM_PROJECT_DIR/util/installation/debian/common/pip_packages.txt
 
   sudo apt-get install -y \
-    $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-22.04/package_list_extra)
+    $(cat $BDM_PROJECT_DIR/util/installation/debian/common/package_list_extra)
 fi
 
 exit 0
