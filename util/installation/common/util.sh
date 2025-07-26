@@ -52,7 +52,7 @@ function DetectOs {
 		OS="ubuntu-24.04"
     elif echo "$DISTRIBUTOR" | grep -Eiq 'buntu' ; then
     		OS="ubuntu-${RELEASE}"
-        if echo "$OS" | grep -Eiq 'buntu-24|buntu-25|buntu-26'; then
+        if echo "$OS" | grep -Eiq 'buntu-24|buntu-25|buntu-26' ; then
           OS="ubuntu-24.04"
         fi
     fi
