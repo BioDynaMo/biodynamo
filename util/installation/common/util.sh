@@ -48,6 +48,11 @@ function DetectOs {
     DISTRIBUTOR=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
     RELEASE=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"')
     OS="${DISTRIBUTOR}-${RELEASE}"
+	if echo "$OS" | grep -Eiq 'debian|mint|eepin' ; then
+		OS="ubuntu-24.04"
+    elif echo "$DISTRIBUTOR" | grep -Eiq 'buntu' ; then
+    		OS="ubuntu-${RELEASE}"
+    fi
     echo $OS | awk '{print tolower($0)}'
   elif [ `uname` = "Darwin" ]; then
     # macOS
