@@ -16,6 +16,7 @@
 #define NEUROSCIENCE_NEW_AGENT_EVENT_SPLIT_NEURITE_ELEMENT_EVENT_H_
 
 #include "core/agent/new_agent_event.h"
+#include "core/real_t.h"
 
 namespace bdm {
 namespace neuroscience {

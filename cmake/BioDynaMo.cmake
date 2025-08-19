@@ -108,9 +108,25 @@ function(build_shared_library TARGET)
   # We always need dictionaries for the plugins (plugin manager requires class
   # information)
   if(dict OR DEFINED ARG_PLUGIN)
-    # generate dictionary using genreflex
+    # generate dictionary using rootcling reflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
+    set(ROOT_HEADERS)
+    string(REPLACE "${CMAKE_SOURCE_DIR}/src/" "" ROOT_HEADERS_TEMP "${ARG_HEADERS}")
+    string(REPLACE "${CMAKE_SOURCE_DIR}/test/" "" ROOT_HEADERS "${ROOT_HEADERS_TEMP}")
+
+
+    if (runtime_cxxmodules)
+      set(MODULEMAP "--moduleMapFile=${CMAKE_BINARY_DIR}/include/module.modulemap")
+    else()
+      set(NO_MODULE "NO_CXXMODULE")
+    endif()
+
+    if (NOT ${TARGET} STREQUAL "biodynamo")
+      #set(DEPENDENCY_OPTION "-m ${CMAKE_CURRENT_BINARY_DIR}/lib/biodynamo.pcm")
+      #set(NO_MODULE "NO_CXXMODULE")
+      #set(MODULEMAP)
+    endif()
 
     # Since the location of the CMake files differ in the build and installation
     # directory, we check if BDM_CMAKE_DIR is already set (in build directory
@@ -118,7 +134,7 @@ function(build_shared_library TARGET)
     if(NOT DEFINED BDM_CMAKE_DIR)
       set(BDM_CMAKE_DIR $ENV{BDMSYS}/share/cmake)
     endif()
-    REFLEX_GENERATE_DICTIONARY(${DICT_FILE} ${ARG_HEADERS} SELECTION ${BDM_CMAKE_DIR}/${ARG_SELECTION})
+    ROOT_GENERATE_DICTIONARY(${DICT_FILE} ${ROOT_HEADERS} MODULE ${TARGET} LINKDEF ${BDM_CMAKE_DIR}/${ARG_SELECTION} REFLEX ${NO_MODULE} OPTIONS ${DEPENDENCY_OPTION} -I src --inlineInputHeader --noIncludePaths ${MODULEMAP})
     if (BDM_OUT_OF_SOURCE)
       set(BDM_DICT_BIN_PATH "$ENV{BDMSYS}/bin")
     else()
@@ -130,8 +146,11 @@ function(build_shared_library TARGET)
     else()
       set(BDM_OUT_OF_SRC_ARG --bdm-source ${CMAKE_SOURCE_DIR})
     endif()
+    if (BDM_CXXMODULES)
+      set(BDM_CXX_MODULES_ARG "--cxxmodules")
+    endif()
     add_custom_command(OUTPUT "${BDM_DICT_FILE}"
-                       COMMAND ${Python_EXECUTABLE} ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_OUT_OF_SRC_ARG} --output ${BDM_DICT_FILE} --include-dirs ${INCLUDE_DIRS} --headers ${ARG_HEADERS}
+      COMMAND ${Python_EXECUTABLE} ${BDM_DICT_BIN_PATH}/bdm-dictionary ${BDM_OUT_OF_SRC_ARG} ${BDM_CXX_MODULES_ARG} --output ${BDM_DICT_FILE} --include-dirs ${INCLUDE_DIRS} --headers ${ARG_HEADERS}
                        DEPENDS ${ARG_HEADERS} ${BDM_DICT_BIN_PATH}/bdm-dictionary)
     # generate shared library
     add_library(${TARGET} SHARED ${ARG_SOURCES} ${DICT_FILE}.cc ${BDM_DICT_FILE})
@@ -140,9 +159,9 @@ function(build_shared_library TARGET)
     endif()
     target_link_libraries(${TARGET} ${ARG_LIBRARIES})
     if (DEFINED CMAKE_INSTALL_LIBDIR)
-      add_custom_command(TARGET ${TARGET}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
+      # add_custom_command(TARGET ${TARGET}
+      #      POST_BUILD
+      #     COMMAND ${CMAKE_COMMAND} -E copy ${DICT_FILE}_rdict.pcm ${CMAKE_INSTALL_LIBDIR})
     endif()
   else()
     add_library(${TARGET} SHARED ${ARG_SOURCES})
