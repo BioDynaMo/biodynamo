@@ -44,6 +44,9 @@ jobs:
       shell: zsh {0}
       run: |
         brew install curl
+        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912)
+        brew uninstall --force cmake || true
+        brew untap local/pinned || true
         curl https://raw.githubusercontent.com/${GHA_REPOSITORY}/${GHA_BRANCH_NAME}/util/install | bash
         # remove whole bidynamo repository to catch errors related to paths pointing into the build dir
         mktemp -d
