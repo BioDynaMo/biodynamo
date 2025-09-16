@@ -24,7 +24,7 @@ keywords:
 This page lists the prerequisite packages that need to be installed in order to build correctly BioDynaMo.
 BioDynaMo provides also an automated procedure to install all the needed libraries.
 
-## Ubuntu 20.04 and 22.04
+## Ubuntu 20.04, 22.04 and 24.04
 
 ### Required Packages
 
@@ -90,7 +90,7 @@ your system's Python installation. On Ubuntu 20.04, run
 sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
   libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
 ```
-On Ubuntu 22.04, run
+On Ubuntu 22.04 and 24.04, run
 ```bash
 sudo apt-get install -y libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
   libsqlite3-dev xz-utils tk-dev libffi-dev liblzma-dev python3-openssl
