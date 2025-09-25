@@ -47,6 +47,7 @@ jobs:
           -Dbenchmark=ON \
           -Dlibgit2=ON \
           -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror -fsanitize=address -fsanitize=undefined -Wno-error=unused-parameter" \
           -B build
         cmake --build build --parallel --config Release
 
