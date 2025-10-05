@@ -40,15 +40,17 @@ sudo apt-get install apt-transport-https
 # Update
 sudo apt-get update
 
+# Install required packages
+while read -r package; do
+  sudo apt-get install -y "$package"
+done < $BDM_PROJECT_DIR/util/installation/ubuntu-24.04/package_list_required
+
+# Install CMAKE
 CMAKE_VER=3.19.3
 CMAKE_SH="cmake-${CMAKE_VER}-linux-x86_64.sh"
 curl -L -O  https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
 sudo bash "${CMAKE_SH}" --prefix=/usr/local --skip-license
 rm "${CMAKE_SH}"
-
-# Install required packages
-sudo apt-get install -y \
-  $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-24.04/package_list_required)
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
@@ -80,8 +82,10 @@ if [ $1 == "all" ]; then
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
   python -m pip install -r $BDM_PROJECT_DIR/util/installation/ubuntu-24.04/pip_packages.txt
 
-  sudo apt-get install -y \
-    $(cat $BDM_PROJECT_DIR/util/installation/ubuntu-24.04/package_list_extra)
+while read -r package; do
+  sudo apt-get install -y "$package"
+done < $BDM_PROJECT_DIR/util/installation/ubuntu-24.04/package_list_extra
+
 fi
 
 exit 0
