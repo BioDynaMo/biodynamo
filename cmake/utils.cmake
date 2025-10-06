@@ -31,9 +31,14 @@ function(detect_os)
         set(DETECTED_OS_VERS "${BDM_OS}-${MACOS_VERSION}-${MACOS_ARCH}" PARENT_SCOPE)
     else()
         set(GET_OS_ID "echo $(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '\"')")
+        set(GET_OS_ID_PROC "echo $(cat /proc/version)")
         set(GET_OS_VERSION "echo $(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '\"')")
+
         execute_process(COMMAND bash -c "${GET_OS_ID}"
                         OUTPUT_VARIABLE DISTRO_NAME
+                        OUTPUT_STRIP_TRAILING_WHITESPACE)
+        execute_process(COMMAND bash -c "${GET_OS_ID_PROC}"
+                        OUTPUT_VARIABLE DISTRO_NAME_PROC
                         OUTPUT_STRIP_TRAILING_WHITESPACE)
         execute_process(COMMAND bash -c "${GET_OS_VERSION}"
                         OUTPUT_VARIABLE DISTRO_VERSION
@@ -48,6 +53,9 @@ function(detect_os)
            if (BDM_OS MATCHES "buntu-24|buntu-25|buntu-26")
        	     set(BDM_OS "ubuntu-24.04")
            endif()
+        endif()
+        if(DISTRO_NAME_PROC MATCHES "Red Hat")
+          set(BDM_OS "centos-7")
         endif()
         set(DETECTED_OS "${BDM_OS}" PARENT_SCOPE)
         set(DETECTED_ARCH "${DISTRO_ARCH}" PARENT_SCOPE)
