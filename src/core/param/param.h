@@ -264,6 +264,14 @@ struct Param {
   ///     calculate_gradients = true
   bool calculate_gradients = true;
 
+  /// Scale agent's virtual radius to enable distant interactions.\n
+  /// TOML config file:
+  /// Default value: `"1.03"`\n TOML
+  ///
+  ///     [simulation]
+  ///     virtual_agent_radius_scale_factor = 1.03
+  real_t virtual_agent_radius_scale_factor = 1.03;
+
   /// List of thread-safety mechanisms \n
   /// `kNone`: \n
   /// `kUserSpecified`: The user has to define all agent that must
