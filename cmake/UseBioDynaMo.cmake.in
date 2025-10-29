@@ -107,6 +107,7 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set(BDM_OUT_OF_SOURCE true)
+set(BDM_CXXMODULES @runtime_cxxmodules@)
 
 if(real_t)
   message(STATUS "BioDynaMo real_t set to: ${real_t}")
@@ -332,6 +333,7 @@ endfunction(bdm_add_test)
 
 # -------------------- includes -----------------------------------------------
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${BDMSYS}/share/cmake")
+include("${BDMSYS}/share/cmake/RootMacros.cmake")
 include("${BDMSYS}/share/cmake/BioDynaMo.cmake")
 include(${ROOT_USE_FILE})
 
