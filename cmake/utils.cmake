@@ -41,7 +41,7 @@ function(detect_os)
         execute_process(COMMAND arch
                         OUTPUT_VARIABLE DISTRO_ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
         set(BDM_OS "${DISTRO_NAME}-${DISTRO_VERSION}")
-	      if(BDM_OS MATCHES "debian|mint|eepin")
+	      if(BDM_OS MATCHES "debian|mint|eepin|pop|neon")
 		       set(BDM_OS "ubuntu-24.04")
         elseif (BDM_OS MATCHES "buntu")
        	   set(BDM_OS "ubuntu-${DISTRO_VERSION}")
