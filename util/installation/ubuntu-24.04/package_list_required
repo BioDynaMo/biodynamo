@@ -4,9 +4,6 @@ freeglut3-dev
 g++
 gcc
 gfortran
-g++-11
-gcc-11
-gfortran-11
 patch
 git
 doxygen
