@@ -348,6 +348,10 @@ function(install_inside_build)
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpptoml
             ${CMAKE_SOURCE_DIR}/third_party/cpptoml/cpptoml.h
             )
+    add_copy_files(copy_files_bdm
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/tomlplusplus
+            ${CMAKE_SOURCE_DIR}/third_party/tomlplusplus/toml.hpp
+            )
 
     # Simulation and demos
     add_copy_directory(copy_files_bdm
