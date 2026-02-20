@@ -15,6 +15,7 @@
 #ifndef CORE_MULTI_SIMULATION_OPTIMIZATION_PARAM_TYPE_LOG_RANGE_PARAM_H_
 #define CORE_MULTI_SIMULATION_OPTIMIZATION_PARAM_TYPE_LOG_RANGE_PARAM_H_
 
+#include <cmath>
 #include <string>
 
 #include "core/multi_simulation/optimization_param_type/optimization_param_type.h"
