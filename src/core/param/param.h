@@ -645,7 +645,7 @@ struct Param {
   bool plot_memory_layout = false;
 
   /// Assign values from config file to variables
-  void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
+  void AssignFromConfig(const toml::table&);
 
  private:
   friend class DiffusionTest_CopyOldData_Test;

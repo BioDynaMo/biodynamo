@@ -146,78 +146,67 @@ void Param::MergeJsonPatch(const std::string& patch) {
 }
 
 // -----------------------------------------------------------------------------
-void AssignThreadSafetyMechanism(const std::shared_ptr<cpptoml::table>& config,
-                                 Param* param) {
-  const std::string config_key = "simulation.thread_safety_mechanism";
-  if (config->contains_qualified(config_key)) {
-    auto value = config->get_qualified_as<std::string>(config_key);
-    if (!value) {
-      return;
-    }
-    auto str_value = *value;
-    if (str_value == "none") {
-      param->thread_safety_mechanism = Param::ThreadSafetyMechanism::kNone;
-    } else if (str_value == "user-specified") {
-      param->thread_safety_mechanism =
-          Param::ThreadSafetyMechanism::kUserSpecified;
-    } else if (str_value == "automatic") {
-      param->thread_safety_mechanism = Param::ThreadSafetyMechanism::kAutomatic;
-    }
+void AssignThreadSafetyMechanism(const toml::table& config, Param* param) {
+  auto value =
+      config.at_path("simulation.thread_safety_mechanism").value<std::string>();
+  if (!value) {
+    return;
+  }
+  auto str_value = *value;
+  if (str_value == "none") {
+    param->thread_safety_mechanism = Param::ThreadSafetyMechanism::kNone;
+  } else if (str_value == "user-specified") {
+    param->thread_safety_mechanism =
+        Param::ThreadSafetyMechanism::kUserSpecified;
+  } else if (str_value == "automatic") {
+    param->thread_safety_mechanism = Param::ThreadSafetyMechanism::kAutomatic;
   }
 }
 
 // -----------------------------------------------------------------------------
-void AssignMappedDataArrayMode(const std::shared_ptr<cpptoml::table>& config,
-                               Param* param) {
-  const std::string config_key = "performance.mapped_data_array_mode";
-  if (config->contains_qualified(config_key)) {
-    auto value = config->get_qualified_as<std::string>(config_key);
-    if (!value) {
-      return;
-    }
-    auto str_value = *value;
-    if (str_value == "zero-copy") {
-      param->mapped_data_array_mode = Param::MappedDataArrayMode::kZeroCopy;
-    } else if (str_value == "cache") {
-      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCache;
-    } else if (str_value == "copy") {
-      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCopy;
-    } else {
-      Log::Fatal(
-          "Param",
-          Concat(
-              "Parameter mapped_data_array_mode was set to an invalid value (",
-              str_value, ")."));
-    }
+void AssignMappedDataArrayMode(const toml::table& config, Param* param) {
+  auto value =
+      config.at_path("performance.mapped_data_array_mode").value<std::string>();
+  if (!value) {
+    return;
+  }
+  auto str_value = *value;
+  if (str_value == "zero-copy") {
+    param->mapped_data_array_mode = Param::MappedDataArrayMode::kZeroCopy;
+  } else if (str_value == "cache") {
+    param->mapped_data_array_mode = Param::MappedDataArrayMode::kCache;
+  } else if (str_value == "copy") {
+    param->mapped_data_array_mode = Param::MappedDataArrayMode::kCopy;
+  } else {
+    Log::Fatal(
+        "Param",
+        Concat("Parameter mapped_data_array_mode was set to an invalid value (",
+               str_value, ")."));
   }
 }
 
 // -----------------------------------------------------------------------------
-void AssignBoundSpaceMode(const std::shared_ptr<cpptoml::table>& config,
-                          Param* param) {
-  const std::string config_key = "simulation.bound_space";
-  if (config->contains_qualified(config_key)) {
-    auto value = config->get_qualified_as<std::string>(config_key);
-    if (!value) {
-      return;
-    }
-    auto str_value = *value;
-    if (str_value == "open") {
-      param->mapped_data_array_mode = Param::MappedDataArrayMode::kZeroCopy;
-    } else if (str_value == "closed") {
-      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCache;
-    } else if (str_value == "torus") {
-      param->mapped_data_array_mode = Param::MappedDataArrayMode::kCopy;
-    } else {
-      Log::Fatal("Param",
-                 Concat("Parameter bound_space was set to an invalid value (",
-                        str_value, ")."));
-    }
+void AssignBoundSpaceMode(const toml::table& config, Param* param) {
+  auto value = config.at_path("simulation.bound_space").value<std::string>();
+  if (!value) {
+    return;
+  }
+  auto str_value = *value;
+  if (str_value == "open") {
+    param->mapped_data_array_mode = Param::MappedDataArrayMode::kZeroCopy;
+  } else if (str_value == "closed") {
+    param->mapped_data_array_mode = Param::MappedDataArrayMode::kCache;
+  } else if (str_value == "torus") {
+    param->mapped_data_array_mode = Param::MappedDataArrayMode::kCopy;
+  } else {
+    Log::Fatal("Param",
+               Concat("Parameter bound_space was set to an invalid value (",
+                      str_value, ")."));
   }
 }
 
 // -----------------------------------------------------------------------------
-void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
+void Param::AssignFromConfig(const toml::table& config) {
   // group parameters
   for (auto& el : groups_) {
     el.second->AssignFromConfig(config);
@@ -261,77 +250,67 @@ void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
                           "visualization.compress_pv_files");
 
   //   visualize_agents
-  auto visualize_agentstarr = config->get_table_array("visualize_agent");
-  if (visualize_agentstarr) {
-    for (const auto& table : *visualize_agentstarr) {
-      // We do a 'redundant' check here, because `get_as` on Mac OS does not
-      // catch the exception when the "name" is not defined in the bdm.toml
-      // Same goes for all the other redundant checks
-      if (table->contains("name")) {
-        auto name = table->get_as<std::string>("name");
-        if (!name) {
-          Log::Warning("AssignFromConfig",
-                       "Missing name for attribute visualize_agent");
-          continue;
-        }
+  if (auto visualize_agentstarr = config["visualize_agent"].as_array()) {
+    for (auto& elem : *visualize_agentstarr) {
+      auto* table = elem.as_table();
+      if (!table) {
+        continue;
+      }
+      auto name = (*table)["name"].value<std::string>();
+      if (!name) {
+        Log::Warning("AssignFromConfig",
+                     "Missing name for attribute visualize_agent");
+        continue;
+      }
 
-        if (table->contains("additional_data_members")) {
-          auto dm_option =
-              table->get_array_of<std::string>("additional_data_members");
-
-          std::set<std::string> data_members;
-          for (const auto& val : *dm_option) {
-            data_members.insert(val);
+      std::set<std::string> data_members;
+      if (auto dm_arr = (*table)["additional_data_members"].as_array()) {
+        for (auto& dm : *dm_arr) {
+          if (auto s = dm.value<std::string>()) {
+            data_members.insert(*s);
           }
-          visualize_agents[*name] = data_members;
-        } else {
-          std::set<std::string> data_members;
-          visualize_agents[*name] = data_members;
         }
       }
+      visualize_agents[*name] = data_members;
     }
   }
 
   //   visualize_diffusion
-  auto visualize_diffusiontarr = config->get_table_array("visualize_diffusion");
-  if (visualize_diffusiontarr) {
-    for (const auto& table : *visualize_diffusiontarr) {
-      if (table->contains("name")) {
-        auto name = table->get_as<std::string>("name");
-        if (!name) {
-          Log::Warning("AssignFromConfig",
-                       "Missing name for attribute visualize_diffusion");
-          continue;
-        }
-
-        VisualizeDiffusion vd;
-        vd.name = *name;
-
-        if (table->contains("concentration")) {
-          auto concentration = table->get_as<bool>("concentration");
-          if (concentration) {
-            vd.concentration = *concentration;
-          }
-        }
-        if (table->contains("gradient")) {
-          auto gradient = table->get_as<bool>("gradient");
-          if (gradient) {
-            vd.gradient = *gradient;
-          }
-        }
-
-        visualize_diffusion.push_back(vd);
+  if (auto visualize_diffusiontarr = config["visualize_diffusion"].as_array()) {
+    for (auto& elem : *visualize_diffusiontarr) {
+      auto* table = elem.as_table();
+      if (!table) {
+        continue;
       }
+      auto name = (*table)["name"].value<std::string>();
+      if (!name) {
+        Log::Warning("AssignFromConfig",
+                     "Missing name for attribute visualize_diffusion");
+        continue;
+      }
+
+      VisualizeDiffusion vd;
+      vd.name = *name;
+
+      if (auto concentration = (*table)["concentration"].value<bool>()) {
+        vd.concentration = *concentration;
+      }
+      if (auto gradient = (*table)["gradient"].value<bool>()) {
+        vd.gradient = *gradient;
+      }
+
+      visualize_diffusion.push_back(vd);
     }
   }
 
   // unschedule_default_operations
-  if (config->get_table("simulation")) {
-    auto disabled_ops =
-        config->get_table("simulation")
-            ->get_array_of<std::string>("unschedule_default_operations");
-    for (const auto& op : *disabled_ops) {
-      unschedule_default_operations.push_back(op);
+  if (auto sim_tbl = config["simulation"].as_table()) {
+    if (auto ops_arr = (*sim_tbl)["unschedule_default_operations"].as_array()) {
+      for (auto& elem : *ops_arr) {
+        if (auto op = elem.value<std::string>()) {
+          unschedule_default_operations.push_back(*op);
+        }
+      }
     }
   }
 

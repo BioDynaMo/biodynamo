@@ -201,7 +201,7 @@ void CommandLineOptions::HandleCoreOptions() {
       Log::Fatal("CommandLineOptions::HandleCoreOptions",
                  "Specified TOML file (", toml_file, ") does not exist.");
     }
-    auto toml = cpptoml::parse_file(toml_file);
+    auto toml = toml::parse_file(toml_file);
     Param param;
     param.AssignFromConfig(toml);
     std::cout << param.ToJsonString() << std::endl;

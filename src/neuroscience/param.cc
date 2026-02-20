@@ -20,7 +20,7 @@ namespace neuroscience {
 
 const ParamGroupUid Param::kUid = ParamGroupUidGenerator::Get()->NewUid();
 
-void Param::AssignFromConfig(const std::shared_ptr<cpptoml::table>& config) {
+void Param::AssignFromConfig(const toml::table& config) {
   BDM_ASSIGN_CONFIG_VALUE(neurite_default_actual_length,
                           "neuroscience.neurite_default_actual_length");
   BDM_ASSIGN_CONFIG_VALUE(neurite_default_density,

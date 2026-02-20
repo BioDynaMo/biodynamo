@@ -17,7 +17,7 @@
 
 #include <memory>
 #include "core/util/root.h"
-#include "cpptoml/cpptoml.h"
+#include "tomlplusplus/toml.hpp"
 
 namespace bdm {
 
@@ -52,7 +52,7 @@ struct ParamGroup {
  protected:
   /// Assign values from a toml config file.\n
   /// Can be omitted if toml file support is not required.
-  virtual void AssignFromConfig(const std::shared_ptr<cpptoml::table>&);
+  virtual void AssignFromConfig(const toml::table&);
 
  private:
   friend struct Param;
