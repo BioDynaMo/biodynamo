@@ -60,7 +60,7 @@ void CommandLineOptions::Parse() {
     argv_copy[i] = (char*)malloc(length);
     memcpy(argv_copy[i], argv_[i], length);
   }
-  argv_copy[argc_] = NULL;
+  argv_copy[argc_] = nullptr;
 
   // Perform parsing (consumes argc_copy and argv_copy)
   if (parser_) {
