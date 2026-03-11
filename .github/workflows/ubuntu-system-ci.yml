@@ -34,7 +34,7 @@ jobs:
           echo "GHA_BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
         fi
 
-        echo "GHA_REPOSITORY=${{ github.repository }}" >> $GITHUB_ENV
+        echo "GHA_REPOSITORY=${{ github.event.pull_request.head.repo.full_name || github.repository }}" >> $GITHUB_ENV
 
     - name: Set OSVERS
       run: |
