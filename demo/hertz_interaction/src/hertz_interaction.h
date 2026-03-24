@@ -15,14 +15,13 @@
 #ifndef HERTZ_INTERACTION_H_
 #define HERTZ_INTERACTION_H_
 
-#include "biodynamo.h"
-#include "extended_hertz_force.h"
-#include "core/environment/uniform_grid_environment.h"
-#include "core/interaction_force.h"
-#include "core/operation/mechanical_forces_op.h"
-#include "sim_param.h"
-#include "custom_ops.h"
-#include "moving_cell.h"
+#include <omp.h>
+#include <algorithm>
+#include <cctype>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "TAxis.h"
 #include "TCanvas.h"
 #include "TGaxis.h"
@@ -32,13 +31,14 @@
 #include "TLine.h"
 #include "TPad.h"
 #include "TStyle.h"
-#include <algorithm>
-#include <cctype>
-#include <limits>
-#include <omp.h>
-#include <sstream>
-#include <string>
-#include <vector>
+#include "biodynamo.h"
+#include "core/environment/uniform_grid_environment.h"
+#include "core/interaction_force.h"
+#include "core/operation/mechanical_forces_op.h"
+#include "custom_ops.h"
+#include "extended_hertz_force.h"
+#include "moving_cell.h"
+#include "sim_param.h"
 
 namespace bdm {
 
@@ -85,9 +85,8 @@ inline bool PlotDistanceAndForceFromCsv(const std::string& position_csv,
     const double x2 = values[4];
     const double y2 = values[5];
     const double z2 = values[6];
-    const double dist =
-        std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) +
-                  (z1 - z2) * (z1 - z2));
+    const double dist = std::sqrt(
+        (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2));
     time_distance.push_back(values[0]);
     distance.push_back(dist);
   }
@@ -146,11 +145,11 @@ inline bool PlotDistanceAndForceFromCsv(const std::string& position_csv,
   pad_distance->Draw();
   pad_distance->cd();
 
-  auto* distance_graph =
-      new TGraph(static_cast<int>(time_distance.size()), time_distance.data(),
-                 distance.data());
+  auto* distance_graph = new TGraph(static_cast<int>(time_distance.size()),
+                                    time_distance.data(), distance.data());
   distance_graph->SetTitle(
-      "Cell Distance and Force vs Time;Time index;Distance between centers [#mum]");
+      "Cell Distance and Force vs Time;Time index;Distance between centers "
+      "[#mum]");
   distance_graph->SetLineColor(kBlue + 1);
   distance_graph->SetLineWidth(3);
   distance_graph->GetXaxis()->SetLimits(x_min, x_max);
@@ -216,8 +215,8 @@ inline bool PlotDistanceAndForceFromCsv(const std::string& position_csv,
 }
 
 inline int Simulate(int argc, const char** argv) {
-
-  // Set number of threads for OpenMP to 1 to avoid non-deterministic behavior due to the fact that we track the positions of the cells at every time step 
+  // Set number of threads for OpenMP to 1 to avoid non-deterministic behavior
+  // due to the fact that we track the positions of the cells at every time step
   // and thus have a data race
   omp_set_dynamic(0);
   omp_set_num_threads(1);
@@ -250,7 +249,8 @@ inline int Simulate(int argc, const char** argv) {
   Moving_cell* cell1 = new Moving_cell(sparam->cell1_position);
   Moving_cell* cell2 = new Moving_cell(sparam->cell2_position);
 
-  real_t const cell_volume = 4. / 3. * M_PI * pow(sparam->cell_diam / 2., 3);  // um^3
+  real_t const cell_volume =
+      4. / 3. * M_PI * pow(sparam->cell_diam / 2., 3);  // um^3
   real_t const cell_density = pow(10, -15);  // 1000 kg/m^3 = 10^-15kg/um^3
   real_t const cell_mass = cell_volume * cell_density;
   int number_of_cells = 2;
@@ -280,19 +280,26 @@ inline int Simulate(int argc, const char** argv) {
   auto* track_pos_op = NewOperation("track_position");
   track_pos_op->GetImplementation<TrackPosition>()->positions_ =
       &cell_positions;
-  track_pos_op->frequency_ = 1;  // every 1 -> timestep 0.1 min, every 10 -> timestep 0.01 min, every 100 -> timestep 0.001 min
+  track_pos_op->frequency_ =
+      1;  // every 1 -> timestep 0.1 min, every 10 -> timestep 0.01 min, every
+          // 100 -> timestep 0.001 min
   scheduler->ScheduleOp(track_pos_op);
 
   std::vector<Double4> forces;
   auto* track_force_op = NewOperation("track_force");
   track_force_op->GetImplementation<TrackForce>()->forces_ = &forces;
-  track_force_op->GetImplementation<TrackForce>()->agent1_uid_ = cell2->GetUid();
-  track_force_op->GetImplementation<TrackForce>()->agent2_uid_ = cell1->GetUid();
-  track_force_op->GetImplementation<TrackForce>()->interaction_force_ = custom_force;
-  track_force_op->frequency_ = 1;  // every 1 -> timestep 0.1 min, every 10 -> timestep 0.01 min, every 100 -> timestep 0.001 min
+  track_force_op->GetImplementation<TrackForce>()->agent1_uid_ =
+      cell2->GetUid();
+  track_force_op->GetImplementation<TrackForce>()->agent2_uid_ =
+      cell1->GetUid();
+  track_force_op->GetImplementation<TrackForce>()->interaction_force_ =
+      custom_force;
+  track_force_op->frequency_ =
+      1;  // every 1 -> timestep 0.1 min, every 10 -> timestep 0.01 min, every
+          // 100 -> timestep 0.001 min
   scheduler->ScheduleOp(track_force_op);
 
-// Run simulation
+  // Run simulation
   simulation.GetScheduler()->Simulate(time_steps);
   std::cout << "Simulation completed successfully!" << std::endl;
 
@@ -302,12 +309,13 @@ inline int Simulate(int argc, const char** argv) {
   }
 
   // Add initial positions
-  position_file << 0 << "\t " << sparam->cell2_position << "\t " << sparam->cell1_position << std::endl;
+  position_file << 0 << "\t " << sparam->cell2_position << "\t "
+                << sparam->cell1_position << std::endl;
 
-  for (size_t j = 0; j < cell_positions[0].size(); j++) { // time points
-    position_file << j+1 << "\t "; // time point
+  for (size_t j = 0; j < cell_positions[0].size(); j++) {  // time points
+    position_file << j + 1 << "\t ";                       // time point
     for (size_t i = 0; i < cell_positions.size(); i++) {
-      position_file  << "\t " << cell_positions[i][j];
+      position_file << "\t " << cell_positions[i][j];
     }
     position_file << std::endl;
   }
@@ -319,8 +327,8 @@ inline int Simulate(int argc, const char** argv) {
     force_file.open("cell_forces.csv");
   }
 
-  for (size_t j = 0; j < forces.size(); j++) { // time points
-    force_file << j+1 << "\t " << forces[j];
+  for (size_t j = 0; j < forces.size(); j++) {  // time points
+    force_file << j + 1 << "\t " << forces[j];
     force_file << std::endl;
   }
 
