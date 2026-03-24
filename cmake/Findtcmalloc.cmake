@@ -12,7 +12,7 @@
 #  TCMALLOC_LIBRARY_DIRS (not cached)
 #  PPROF_EXECUTABLE
 
-find_path(TCMALLOC_INCLUDE_DIR google/tcmalloc.h)
+find_path(TCMALLOC_INCLUDE_DIR NAMES gperftools/tcmalloc.h google/tcmalloc.h)
 foreach(component tcmalloc profiler)
   find_library(TCMALLOC_${component}_LIBRARY NAMES ${component})
   mark_as_advanced(TCMALLOC_${component}_LIBRARY)
