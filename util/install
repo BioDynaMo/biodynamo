@@ -5,7 +5,7 @@
 set -e
 
 if [ -z ${BDM_INSTALL} ]; then
-  export BDM_INSTALL=v1.04-patches
+  export BDM_INSTALL=master
 fi
 echo "BDM_INSTALL is set to: $BDM_INSTALL"
 
