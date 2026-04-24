@@ -34,11 +34,9 @@ class RegulatoryNetwork : public Behavior {
   virtual ~RegulatoryNetwork() = default;
 
   void Run(Agent* agent) override {};
-
 };
-}
+}  // namespace bdm
 
 #endif  // USE_BOOST
 
 #endif  // CORE_BEHAVIOR_REGULATORY_NETWORK_H_
-
