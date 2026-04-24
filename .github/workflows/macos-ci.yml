@@ -25,7 +25,7 @@ jobs:
         # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912)
         brew uninstall --force cmake || true
         brew untap local/pinned || true
-        brew install libomp open-mpi python@3.9 wget cmake ninja qt@5 libgit2
+        brew install libomp open-mpi python@3.9 wget cmake ninja qt@5 libgit2 boost
 
     - name: Checkout BioDynaMo
       uses: actions/checkout@v4
