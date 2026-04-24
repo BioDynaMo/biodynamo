@@ -19,9 +19,11 @@
 
 #include "core/behavior/behavior.h"
 
+#ifndef __ROOTCLING__
 #include "boost/numeric/odeint.hpp"
 #include "boost/phoenix/core.hpp"
 #include "boost/phoenix/operator.hpp"
+#endif
 
 namespace bdm {
 class RegulatoryNetwork : public Behavior {
