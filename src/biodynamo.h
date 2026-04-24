@@ -31,9 +31,6 @@
 #include "core/behavior/gene_regulation.h"
 #include "core/behavior/growth_division.h"
 #include "core/behavior/secretion.h"
-#ifdef USE_BOOST
-#include "core/behavior/regulatory_network.h"
-#endif
 #include "core/behavior/stateless_behavior.h"
 #include "core/environment/environment.h"
 #include "core/execution_context/copy_execution_context.h"
