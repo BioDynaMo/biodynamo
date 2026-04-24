@@ -15,6 +15,8 @@
 #ifndef CORE_BEHAVIOR_REGULATORY_NETWORK_H_
 #define CORE_BEHAVIOR_REGULATORY_NETWORK_H_
 
+#ifdef USE_BOOST
+
 #include "core/behavior/behavior.h"
 
 #include "boost/numeric/odeint.hpp"
@@ -33,6 +35,8 @@ class RegulatoryNetwork : public Behavior {
 
 };
 }
+
+#endif  // USE_BOOST
 
 #endif  // CORE_BEHAVIOR_REGULATORY_NETWORK_H_
 
