@@ -46,6 +46,7 @@ SET(tcmalloc_default @tcmalloc@)
 SET(jemalloc_default @jemalloc@)
 SET(test_default @test@)
 SET(real_t @real_t@)
+SET(boost_default @boost@)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(cuda      "Enable CUDA code generation for GPU acceleration" @cuda@)
@@ -57,6 +58,8 @@ option(vtune     "Enable VTune performance analysis" @vtune@)
 option(tcmalloc  "Use tcmalloc." @tcmalloc@)
 option(jemalloc  "Use jemalloc." @jemalloc@)
 option(test      "Build all tests for your simulation." @test@)
+option(boost     "Enable Boost-based behaviors (e.g. RegulatoryNetwork)." @boost@)
+
 
 if (cuda AND NOT cuda_default)
     MESSAGE(FATAL_ERROR "One of the option which you provided (-Dcuda=${cuda}) is not compatible with \
@@ -176,6 +179,17 @@ if (OpenMP_CXX_FOUND)
   get_filename_component(OpenMP_CXX_LIB_DIR "${OpenMP_CXX_LIBRARIES}" DIRECTORY)
   link_directories(${OpenMP_CXX_LIB_DIR})
   set(BDM_REQUIRED_LIBRARIES ${BDM_REQUIRED_LIBRARIES} OpenMP::OpenMP_CXX)
+endif()
+
+if(boost)
+  find_package(Boost)
+  if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    add_definitions("-DUSE_BOOST")
+  else()
+    message(WARNING "Boost not found. Boost-based behaviors (e.g. RegulatoryNetwork) will be disabled.")
+    set(boost OFF)
+  endif()
 endif()
 
 find_package(Git)

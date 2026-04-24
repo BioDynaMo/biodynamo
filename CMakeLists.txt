@@ -152,6 +152,7 @@ option(website   "Enable website generation (make website<-live>)." OFF)
 option(valgrind  "Enable valgrind tests and make build compatible with valgrind tool." ON)
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 option(real_t    "Define data type for real numbers. Currently supported: float, double" double)
+option(boost     "Enable Boost-based behaviors (e.g. RegulatoryNetwork)." ON)
 
 if(APPLE)
   # ParaView on Apple devices
@@ -189,6 +190,18 @@ else()
 endif()
 
 # -------------------- find packages ------------------------------------------
+if(boost)
+  find_package(Boost)
+  if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    add_definitions("-DUSE_BOOST")
+    message(STATUS "Boost found: ${Boost_INCLUDE_DIRS}")
+  else()
+    message(WARNING "Boost not found. Boost-based behaviors (e.g. RegulatoryNetwork) will be disabled. "
+                    "Install libboost-dev (apt), boost (brew), or boost-devel (yum) to enable, or disable with -Dboost=OFF.")
+    set(boost OFF)
+  endif()
+endif()
 if (tcmalloc)
   find_package(tcmalloc)
   if(NOT TCMALLOC_FOUND)
