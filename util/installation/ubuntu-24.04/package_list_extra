@@ -9,3 +9,4 @@ llvm-14-dev
 llvm-14-runtime
 valgrind
 libgsl-dev
+libboost-dev
