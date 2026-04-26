@@ -24,6 +24,9 @@
 #include "lorenz.h"
 #include "oscillator.h"
 
+#include "bdm_ex1.h"
+#include "bdm_ex2.h"
+
 namespace bdm {
 
 inline int Simulate(int argc, const char** argv) {
@@ -33,6 +36,11 @@ inline int Simulate(int argc, const char** argv) {
   if (lorenz::Simulate(argc, argv))
     return 1;
   if (oscillator::Simulate(argc, argv))
+    return 1;
+
+  if (bdm::ex1::Simulate(argc, argv))
+    return 1;
+  if (bdm::ex2::Simulate(argc, argv))
     return 1;
 
   std::cout << "Simulation completed successfully!\n";
