@@ -128,7 +128,7 @@ class RegulatoryNetwork : public Behavior {
 
       // set-up the Rosenbrock integrator
       auto stepper =
-          boost::numeric::odeint::make_dense_output<ode_int>(1e-6,1e-6);
+          boost::numeric::odeint::make_dense_output<ode_int>(1e-6, 1e-6);
 
       // perform the time-integration
       integrate_const(stepper, std::make_pair(ode_rhs_, ode_jacob_),
@@ -141,7 +141,7 @@ class RegulatoryNetwork : public Behavior {
 
       // set-up the Runge-Kutta integrator
       auto stepper =
-          boost::numeric::odeint::make_dense_output<ode_int>(1e-6,1e-6);
+          boost::numeric::odeint::make_dense_output<ode_int>(1e-6, 1e-6);
 
       // perform the time-integration
       integrate_const(stepper, ode_rhs_,

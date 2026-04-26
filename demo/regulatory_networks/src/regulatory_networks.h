@@ -30,7 +30,6 @@
 namespace bdm {
 
 inline int Simulate(int argc, const char** argv) {
-
   if (sine::Simulate(argc, argv))
     return 1;
   if (lorenz::Simulate(argc, argv))

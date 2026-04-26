@@ -27,8 +27,9 @@ struct ODE_system {
   const std::map<std::string, DiffusionGrid*>& mdg;
   const std::vector<real_t> param;
 
-  ODE_system(std::map<std::string, DiffusionGrid*>& m, const std::vector<real_t>& p)
-  : mdg(m), param(p) {}
+  ODE_system(std::map<std::string, DiffusionGrid*>& m,
+             const std::vector<real_t>& p)
+      : mdg(m), param(p) {}
 
   void operator()(const b_vector_t& x, b_vector_t& dxdt, real_t t,
                   Agent* agent) const {
@@ -46,11 +47,12 @@ struct ODE_jacobian {
   const std::map<std::string, DiffusionGrid*>& mdg;
   const std::vector<real_t> param;
 
-  ODE_jacobian(std::map<std::string, DiffusionGrid*>& m, const std::vector<real_t>& p)
-  : mdg(m), param(p) {}
+  ODE_jacobian(std::map<std::string, DiffusionGrid*>& m,
+               const std::vector<real_t>& p)
+      : mdg(m), param(p) {}
 
-  void operator()(const b_vector_t& x, b_matrix_t& jac, real_t t, b_vector_t& dfdt,
-                  Agent* agent) const {
+  void operator()(const b_vector_t& x, b_matrix_t& jac, real_t t,
+                  b_vector_t& dfdt, Agent* agent) const {
     // auto& xyz = agent->GetPosition();
     // auto dg = mdg.find("protein")->second;
     // const real_t protein = dg->GetValue(xyz);
@@ -70,8 +72,7 @@ struct ODE_jacobian {
 };
 
 struct ODE_output {
-  void operator()(const b_vector_t& x, real_t t,
-                  const Agent* agent) {
+  void operator()(const b_vector_t& x, real_t t, const Agent* agent) {
     auto& xyz = agent->GetPosition();
     std::clog << agent->GetUid()
               << ',' << xyz[0] << ',' << xyz[1] << ',' << xyz[2]
@@ -95,14 +96,14 @@ inline int Simulate(int argc, const char** argv) {
     param->output_dir = "ex1";
     param->use_progress_bar = false;
     param->bound_space = Param::BoundSpaceMode::kOpen;
-    param->min_bound =    0.0;
-    param->max_bound = +100.0;
+    param->min_bound = 0.0;
+    param->max_bound = 100.0;
     param->export_visualization = false;
     param->visualization_interval = 1;
-    param->visualize_agents["Cell"] = { "diameter_", "volume_" };
+    param->visualize_agents["Cell"] = {"diameter_", "volume_"};
     param->statistics = false;
     param->simulation_time_step = 1.0;
-    param->visualize_diffusion = { Param::VisualizeDiffusion{"cytokine", true, true} };
+    param->visualize_diffusion = {Param::VisualizeDiffusion{"cytokine", true, true}};
     param->calculate_gradients = false;
     param->diffusion_method = "euler";
   };
@@ -118,7 +119,7 @@ inline int Simulate(int argc, const char** argv) {
   // BioDynaMo's diffusion grid sample points in each dimension
   int n_DG = 51;
 
-  ModelInitializer::DefineSubstance(kProtein, "protein", 0.0/dt_BDM, 0.0/dt_BDM, n_DG);
+  ModelInitializer::DefineSubstance(kProtein, "protein", 0.0, 0.0, n_DG);
   ModelInitializer::AddBoundaryConditions(
       kProtein, BoundaryConditionType::kNeumann,
       std::make_unique<ConstantBoundaryCondition>(0));
@@ -133,13 +134,14 @@ inline int Simulate(int argc, const char** argv) {
     c->SetMass(1.0);
     c->SetPosition(xyz);
 #ifndef __ROOTCLING__
-    c->AddBehavior(new RegulatoryNetwork(dt_RN, 1000, {1., 5., 7.},
-                                         //ODE_solver::Euler,
-                                         //ODE_solver::Rosenbrock,
-                                         ODE_solver::RungeKutta,
-                                         ODE_system(dg_map,{0.2,0.1,3.0}),
-                                         ODE_jacobian(dg_map,{0.2,0.1,3.0}),
-                                         ODE_output()));
+    c->AddBehavior(new RegulatoryNetwork(
+        dt_RN, 1000, {1., 5., 7.},
+        // ODE_solver::Euler,
+        // ODE_solver::Rosenbrock,
+        ODE_solver::RungeKutta,
+        ODE_system(dg_map,{0.2,0.1,3.0}),
+        ODE_jacobian(dg_map,{0.2,0.1,3.0}),
+        ODE_output()));
 #endif
     return c;
   };
@@ -147,7 +149,7 @@ inline int Simulate(int argc, const char** argv) {
   int n_cells = 1;
   ModelInitializer::CreateAgentsRandom(0.0, 0.0001, n_cells, generate_cells);
 
-  for (int s=0; s<10; s++)
+  for (int s = 0; s < 10; s++)
     sim.GetScheduler()->Simulate(1);
 
   // restore the original buffer of std::clog
@@ -156,8 +158,8 @@ inline int Simulate(int argc, const char** argv) {
   return 0;
 }
 
-} // namespace ex1
+}  // namespace ex1
 
-} // namespace bdm
+}  // namespace bdm
 
-#endif // BDM_EX1_H_
+#endif  // BDM_EX1_H_

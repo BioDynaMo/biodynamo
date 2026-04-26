@@ -16,35 +16,35 @@
 
 #include "biodynamo.h"
 
-#include "core/behavior/regulatory_network.h"
 #include "core/agent/agent.h"
+#include "core/behavior/regulatory_network.h"
 
 namespace bdm {
 
 class MyCell : public Cell {
   BDM_AGENT_HEADER(MyCell, Cell, 1);
 
-  public:
-    MyCell() {}
-    explicit MyCell(const Real3& position) : Base(position), trail_(0.0) {}
-    virtual ~MyCell() {}
+ public:
+  MyCell() {}
+  explicit MyCell(const Real3& position) : Base(position), trail_(0.0) {}
+  virtual ~MyCell() {}
 
-    void Initialize(const NewAgentEvent& event) override {
-      Base::Initialize(event);
+  void Initialize(const NewAgentEvent& event) override {
+    Base::Initialize(event);
 
-      if (auto* mother = dynamic_cast<MyCell*>(event.existing_agent)) {
-        if (event.GetUid() == CellDivisionEvent::kUid) {
-          // copy properties from mother to daughter
-        }
+    if (auto* mother = dynamic_cast<MyCell*>(event.existing_agent)) {
+      if (event.GetUid() == CellDivisionEvent::kUid) {
+        // copy properties from mother to daughter
       }
     }
+  }
 
-    real_t GetTrail() const { return trail_; }
-    void SetTrail(real_t t) { trail_ += t; }
+  real_t GetTrail() const { return trail_; }
+  void SetTrail(real_t t) { trail_ += t; }
 
-  private:
-    /// keep track of the trail of the agent
-    real_t trail_;
+ private:
+  /// keep track of the trail of the agent
+  real_t trail_;
 };
 
 #ifndef __ROOTCLING__
@@ -62,12 +62,12 @@ struct Lorenz_rhs_ {
 };
 
 struct Lorenz_jac_ {
-  void operator()(const b_vector_t& x, b_matrix_t& jac, double t, b_vector_t& dfdt,
-                  Agent* agent) const {
+  void operator()(const b_vector_t& x, b_matrix_t& jac, double t,
+                  b_vector_t& dfdt, Agent* agent) const {
     jac(0, 0) = -sigma;
     jac(0, 1) = sigma;
     jac(0, 2) = 0.0;
-    jac(1, 0) = rho  - x[2];
+    jac(1, 0) = rho - x[2];
     jac(1, 1) = -1.0;
     jac(1, 2) = -x[0];
     jac(2, 0) = x[1];
@@ -83,8 +83,7 @@ struct Lorenz_jac_ {
 };
 
 struct Lorenz_out_ {
-  void operator()(const b_vector_t& x, real_t t, const
-                  Agent* agent) {
+  void operator()(const b_vector_t& x, real_t t, const Agent* agent) {
     auto& xyz = agent->GetPosition();
     std::clog << agent->GetUid()
               << ',' << xyz[0] << ',' << xyz[1] << ',' << xyz[2]
@@ -101,8 +100,8 @@ class Trajectory : public RegulatoryNetwork {
   Trajectory() { AlwaysCopyToNew(); }
 #ifndef __ROOTCLING__
   Trajectory(real_t dt, int n_dt, const std::vector<real_t>& x)
-    : RegulatoryNetwork(dt, n_dt, x, ODE_solver::Rosenbrock,
-                        Lorenz_rhs_(), Lorenz_jac_(), Lorenz_out_()) {}
+      : RegulatoryNetwork(dt, n_dt, x, ODE_solver::Rosenbrock,
+                          Lorenz_rhs_(), Lorenz_jac_(), Lorenz_out_()) {}
 #endif
   virtual ~Trajectory() = default;
 
@@ -113,7 +112,7 @@ class Trajectory : public RegulatoryNetwork {
   void Run(Agent* agent) override {
 #ifndef __ROOTCLING__
     Real3 xyz;
-    for (int i=0; i<3; i++)
+    for (int i = 0; i < 3; i++)
       xyz[i] = this->GetSpecie(i);
 
     if (auto* cell = dynamic_cast<MyCell*>(agent)) {
@@ -127,7 +126,6 @@ class Trajectory : public RegulatoryNetwork {
     }
 #endif
   }
-
 };
 
 namespace ex2 {
@@ -144,11 +142,11 @@ inline int Simulate(int argc, const char** argv) {
     param->output_dir = "ex2";
     param->use_progress_bar = false;
     param->bound_space = Param::BoundSpaceMode::kOpen;
-    param->min_bound =    0.0;
-    param->max_bound = +100.0;
+    param->min_bound = 0.0;
+    param->max_bound = 100.0;
     param->export_visualization = true;
     param->visualization_interval = 10;
-    param->visualize_agents["MyCell"] = { "diameter_", "volume_", "trail_" };
+    param->visualize_agents["MyCell"] = {"diameter_", "volume_", "trail_"};
     param->statistics = false;
     param->simulation_time_step = 1.0;
   };
@@ -173,7 +171,7 @@ inline int Simulate(int argc, const char** argv) {
     sim.GetExecutionContext()->AddAgent(c);
   }
 
-  for (int s=0; s<3000; s++)
+  for (int s = 0; s < 3000; s++)
     sim.GetScheduler()->Simulate(1);
 
   // restore the original buffer of std::clog
@@ -182,8 +180,8 @@ inline int Simulate(int argc, const char** argv) {
   return 0;
 }
 
-} // namespace ex2
+}  // namespace ex2
 
-} // namespace bdm
+}  // namespace bdm
 
-#endif // BDM_EX2_H_
+#endif  // BDM_EX2_H_

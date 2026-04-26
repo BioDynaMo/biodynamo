@@ -15,8 +15,8 @@
 #ifndef SINE_H_
 #define SINE_H_
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #ifndef __ROOTCLING__
 #include <boost/array.hpp>
@@ -26,8 +26,8 @@
 #endif
 
 #ifndef __ROOTCLING__
-typedef boost::numeric::ublas::vector<double>  b_vector_t;
-typedef boost::numeric::ublas::matrix<double>  b_matrix_t;
+typedef boost::numeric::ublas::vector<double> b_vector_t;
+typedef boost::numeric::ublas::matrix<double> b_matrix_t;
 #endif
 
 namespace sine {
@@ -35,7 +35,7 @@ namespace sine {
 #ifndef __ROOTCLING__
 struct ODE_system {
   void operator()(const b_vector_t& x, b_vector_t& dxdt, double t) const {
-    dxdt[0] = A*cos(t);
+    dxdt[0] = A * cos(t);
   }
   //
   const double A = 10.0;
@@ -62,8 +62,7 @@ inline int Simulate(int argc, const char** argv) {
   typedef boost::numeric::odeint::runge_kutta_dopri5<b_vector_t> ode_int;
 
   // set-up the Runge-Kutta integrator
-  auto stepper =
-      boost::numeric::odeint::make_dense_output<ode_int>(1e-6,1e-6);
+  auto stepper = boost::numeric::odeint::make_dense_output<ode_int>(1e-6, 1e-6);
 
   // perform the time-integration
   integrate_const(stepper, ODE_system(), x,
@@ -76,6 +75,6 @@ inline int Simulate(int argc, const char** argv) {
   return 0;
 }
 
-} // namespace sine
+}  // namespace sine
 
-#endif // SINE_H_
+#endif  // SINE_H_

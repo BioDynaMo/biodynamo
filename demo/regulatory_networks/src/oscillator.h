@@ -15,8 +15,8 @@
 #ifndef OSCILLATOR_H_
 #define OSCILLATOR_H_
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #ifndef __ROOTCLING__
 #include <boost/array.hpp>
@@ -26,8 +26,8 @@
 #endif
 
 #ifndef __ROOTCLING__
-typedef boost::numeric::ublas::vector<double>  b_vector_t;
-typedef boost::numeric::ublas::matrix<double>  b_matrix_t;
+typedef boost::numeric::ublas::vector<double> b_vector_t;
+typedef boost::numeric::ublas::matrix<double> b_matrix_t;
 #endif
 
 namespace oscillator {
@@ -43,7 +43,8 @@ struct ODE_system {
 };
 
 struct ODE_jacobian {
-  void operator()(const b_vector_t& x, b_matrix_t& jac, double t, b_vector_t& dfdt) const {
+  void operator()(const b_vector_t& x, b_matrix_t& jac, double t,
+                  b_vector_t& dfdt) const {
     jac(0, 0) = 0.0;
     jac(0, 1) = 1.0;
     jac(1, 0) = -2.0 * mu * x[0] * x[1] - 1.0;
@@ -77,12 +78,10 @@ inline int Simulate(int argc, const char** argv) {
   typedef boost::numeric::odeint::rosenbrock4<double> ode_int;
 
   // set-up the Rosenbrock integrator
-  auto stepper =
-      boost::numeric::odeint::make_dense_output<ode_int>(1e-6,1e-6);
+  auto stepper = boost::numeric::odeint::make_dense_output<ode_int>(1e-6, 1e-6);
 
   // perform the time-integration
-  integrate_const(stepper,
-                  std::make_pair(ODE_system(), ODE_jacobian()), xy,
+  integrate_const(stepper, std::make_pair(ODE_system(), ODE_jacobian()), xy,
                   0.0, 500.0, 1.0e-2, ODE_output());
 #endif
 
@@ -92,6 +91,6 @@ inline int Simulate(int argc, const char** argv) {
   return 0;
 }
 
-} // namespace oscillator
+}  // namespace oscillator
 
-#endif // OSCILLATOR_H_
+#endif  // OSCILLATOR_H_
