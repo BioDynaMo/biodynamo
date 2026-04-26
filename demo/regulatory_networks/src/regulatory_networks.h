@@ -20,9 +20,20 @@
 
 #include "biodynamo.h"
 
+#include "sine.h"
+#include "lorenz.h"
+#include "oscillator.h"
+
 namespace bdm {
 
 inline int Simulate(int argc, const char** argv) {
+
+  if (sine::Simulate(argc, argv))
+    return 1;
+  if (lorenz::Simulate(argc, argv))
+    return 1;
+  if (oscillator::Simulate(argc, argv))
+    return 1;
 
   std::cout << "Simulation completed successfully!\n";
   return 0;
