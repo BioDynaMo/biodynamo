@@ -20,9 +20,9 @@
 
 #include "biodynamo.h"
 
-#include "sine.h"
 #include "lorenz.h"
 #include "oscillator.h"
+#include "sine.h"
 
 #include "bdm_ex1.h"
 #include "bdm_ex2.h"

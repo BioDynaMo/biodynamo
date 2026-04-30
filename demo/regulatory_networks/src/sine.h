@@ -65,8 +65,8 @@ inline int Simulate(int argc, const char** argv) {
   auto stepper = boost::numeric::odeint::make_dense_output<ode_int>(1e-6, 1e-6);
 
   // perform the time-integration
-  integrate_const(stepper, ODE_system(), x,
-                  0.0, 12.5663706144, 0.001, ODE_output());
+  integrate_const(stepper, ODE_system(), x, 0.0, 12.5663706144, 0.001,
+                  ODE_output());
 #endif
 
   // restore the original buffer of std::clog

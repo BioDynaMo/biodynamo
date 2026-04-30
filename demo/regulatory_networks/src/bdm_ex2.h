@@ -85,9 +85,9 @@ struct Lorenz_jac_ {
 struct Lorenz_out_ {
   void operator()(const b_vector_t& x, real_t t, const Agent* agent) {
     auto& xyz = agent->GetPosition();
-    std::clog << agent->GetUid()
-              << ',' << xyz[0] << ',' << xyz[1] << ',' << xyz[2]
-              << ',' << t << ',' << x[0] << ',' << x[1] << ',' << x[2];
+    std::clog << agent->GetUid() << ',' << xyz[0] << ',' << xyz[1] << ','
+              << xyz[2] << ',' << t << ',' << x[0] << ',' << x[1] << ','
+              << x[2];
     std::clog << std::endl;
   }
 };
@@ -100,8 +100,8 @@ class Trajectory : public RegulatoryNetwork {
   Trajectory() { AlwaysCopyToNew(); }
 #ifndef __ROOTCLING__
   Trajectory(real_t dt, int n_dt, const std::vector<real_t>& x)
-      : RegulatoryNetwork(dt, n_dt, x, ODE_solver::Rosenbrock,
-                          Lorenz_rhs_(), Lorenz_jac_(), Lorenz_out_()) {}
+      : RegulatoryNetwork(dt, n_dt, x, ODE_solver::Rosenbrock, Lorenz_rhs_(),
+                          Lorenz_jac_(), Lorenz_out_()) {}
 #endif
   virtual ~Trajectory() = default;
 
