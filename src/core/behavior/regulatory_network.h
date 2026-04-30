@@ -42,8 +42,8 @@ class RegulatoryNetwork : public Behavior {
 #ifndef __ROOTCLING__
   RegulatoryNetwork(
       real_t dt, int n_dt, const std::vector<real_t>& x, ODE_solver m,
-      const std::function<void(const b_vector_t&, b_vector_t&, real_t,
-                               Agent*)>& rhs,
+      const std::function<void(const b_vector_t&, b_vector_t&, real_t, Agent*)>&
+          rhs,
       const std::function<void(const b_vector_t&, b_matrix_t&, real_t,
                                b_vector_t&, Agent*)>& jacob,
       const std::function<void(const b_vector_t&, real_t, Agent*)>& out) {
@@ -98,14 +98,11 @@ class RegulatoryNetwork : public Behavior {
     // update the previous solution
     previous_species_ = current_species_;
 
-    auto ode_rhs_ = [&](const b_vector_t& x, b_vector_t& dxdt,
-                        real_t t) {
+    auto ode_rhs_ = [&](const b_vector_t& x, b_vector_t& dxdt, real_t t) {
       rhs_(x, dxdt, t, agent);
     };
-    auto ode_jacob_ = [&](const b_vector_t& x, b_matrix_t& jac,
-                          real_t t, b_vector_t& dfdt) {
-      jacob_(x, jac, t, dfdt, agent);
-    };
+    auto ode_jacob_ = [&](const b_vector_t& x, b_matrix_t& jac, real_t t,
+                          b_vector_t& dfdt) { jacob_(x, jac, t, dfdt, agent); };
 
     // initialize the time-integration scheme
     if (ODE_solver::Euler == method_) {
@@ -132,10 +129,9 @@ class RegulatoryNetwork : public Behavior {
 
       // perform the time-integration
       integrate_const(stepper, std::make_pair(ode_rhs_, ode_jacob_),
-                      current_species_,
-                      current_time_, (current_time_ + time_step_),
-                      (time_step_/time_subdivision_)
-      );
+                      current_species_, current_time_,
+                      (current_time_ + time_step_),
+                      (time_step_ / time_subdivision_));
     } else if (ODE_solver::RungeKutta == method_) {
       typedef boost::numeric::odeint::runge_kutta_dopri5<b_vector_t> ode_int;
 
@@ -144,10 +140,9 @@ class RegulatoryNetwork : public Behavior {
           boost::numeric::odeint::make_dense_output<ode_int>(1e-6, 1e-6);
 
       // perform the time-integration
-      integrate_const(stepper, ode_rhs_,
-                      current_species_,
-                      current_time_, (current_time_ + time_step_),
-                      (time_step_/time_subdivision_));
+      integrate_const(stepper, ode_rhs_, current_species_, current_time_,
+                      (current_time_ + time_step_),
+                      (time_step_ / time_subdivision_));
     } else {
       Log::Fatal("RegulatoryNetwork::Run",
                  "invalid type of ODE solution method indicated");
@@ -192,9 +187,9 @@ class RegulatoryNetwork : public Behavior {
 #endif
 
 #ifndef __ROOTCLING__
-  std::function<void(const b_vector_t&, b_vector_t&, real_t, Agent*)>
-      rhs_;
-  std::function<void(const b_vector_t&, b_matrix_t&, real_t, b_vector_t&, Agent*)>
+  std::function<void(const b_vector_t&, b_vector_t&, real_t, Agent*)> rhs_;
+  std::function<void(const b_vector_t&, b_matrix_t&, real_t, b_vector_t&,
+                     Agent*)>
       jacob_;
   std::function<void(const b_vector_t&, real_t, Agent*)> out_;
 #endif
