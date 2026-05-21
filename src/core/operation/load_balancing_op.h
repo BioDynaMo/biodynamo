@@ -16,6 +16,7 @@
 #define CORE_OPERATION_LOAD_BALANCING_OP_H_
 
 #include "core/operation/operation.h"
+#include "core/operation/operation_registry.h"
 #include "core/resource_manager.h"
 #include "core/simulation.h"
 

@@ -17,6 +17,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include "core/real_t.h"
 #include "stdio.h"
 
 #ifdef USE_CUDA

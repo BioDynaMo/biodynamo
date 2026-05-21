@@ -16,7 +16,9 @@
 #define COUNT_NEIGHBOR_FUNCTOR_H_
 
 #include "core/agent/agent.h"
+#include "core/agent/cell.h"
 #include "core/functor.h"
+#include "core/resource_manager.h"
 #include "core/simulation.h"
 #include "gtest/gtest.h"
 

@@ -15,8 +15,16 @@
 #ifndef VALIDATION_CRITERION_H_
 #define VALIDATION_CRITERION_H_
 
+#include <cmath>
+#include <functional>
+#include <iostream>
 #include <vector>
 #include "biodynamo.h"
+#include "core/agent/agent.h"
+#include "core/container/math_array.h"
+#include "core/real_t.h"
+#include "core/resource_manager.h"
+#include "core/simulation.h"
 #include "my_cell.h"
 
 namespace bdm {
