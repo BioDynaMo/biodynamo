@@ -100,9 +100,8 @@ Real4 ExtendedHertzForce::Calculate(const Agent* lhs, const Agent* rhs) const {
   }
   // the force itself
 
-  real_t f = (4 * sparam->composite_young_modulus * std::sqrt(r_eff) *
-              std::pow(delta, 1.5)) /
-                 3 -
+  real_t f = (4 / 3) * (sparam->composite_young_modulus * std::sqrt(r_eff) *
+                        std::pow(delta, 1.5)) -
              M_PI * sparam->specific_adhesion_energy * r_eff;  // in N
 
   // std::cout << "Repulsive force: " << (4 * sparam->composite_young_modulus *

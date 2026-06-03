@@ -34,16 +34,20 @@ struct SimParam : public ParamGroup {
 
   // Extended Hertz force parameters
   real_t poisson_ratio = 0.4;
-  real_t young_modulus = 1e-9;  // 1000 Pa -> 1 Pa = 1 N/m^2 = 1 N/10^12 um^2 =
-                                // 10^-12 N/um^2 -> 1000 Pa = 10^-9 N/um^2
+  real_t young_modulus =
+      4.5e-10;  // 450 Pa -> 1 Pa = 1 N/m^2 = 1 N/10^12 um^2 =
+                // 10^-12 N/um^2 -> 450 Pa = 0.45e-9 N/um^2 = 4.5e-10 N/um^2
+
   real_t density_adhesion_molecules = 1e-7;  // 1e5 1/m^2 -> 1e-7 1/um^2
+  // real_t density_adhesion_molecules = 1e3;  // 1e15 1/m^2 -> 1e3 1/um^2
+
   real_t binding_energy_single_bond =
       8.28e-14;  // 20 k_b T = 20 * 1.380649 × 10-23 m2 kg s-2 K-1 * 300 K
                  // = 8.28e-20 J = 8.28e-20 N*m = 8.28e-14 N*um
 
   real_t composite_young_modulus =
-      (1 / ((1 - poisson_ratio * poisson_ratio) / young_modulus +
-            (1 - poisson_ratio * poisson_ratio) / young_modulus));
+      1 / (((1 - poisson_ratio * poisson_ratio) / young_modulus) *
+           2);  // for two identical cells
   real_t specific_adhesion_energy =
       density_adhesion_molecules * binding_energy_single_bond;
 };
