@@ -313,7 +313,7 @@ inline int Simulate(int argc, const char** argv) {
                 << sparam->cell1_position << std::endl;
 
   for (size_t j = 0; j < cell_positions[0].size(); j++) {  // time points
-    position_file << j + 1;                       // time point
+    position_file << j + 1;                                // time point
     for (size_t i = 0; i < cell_positions.size(); i++) {
       position_file << "\t " << cell_positions[i][j];
     }
