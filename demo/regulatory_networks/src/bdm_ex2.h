@@ -110,6 +110,8 @@ class Trajectory : public RegulatoryNetwork {
   }
 
   void Run(Agent* agent) override {
+    Base::Run(agent);
+
 #ifndef __ROOTCLING__
     Real3 xyz;
     for (int i = 0; i < 3; i++)
