@@ -98,7 +98,7 @@ inline int Simulate(int argc, const char** argv) {
     param->bound_space = Param::BoundSpaceMode::kOpen;
     param->min_bound = 0.0;
     param->max_bound = 100.0;
-    param->export_visualization = false;
+    param->export_visualization = true;
     param->visualization_interval = 1;
     param->visualize_agents["Cell"] = {"diameter_", "volume_"};
     param->statistics = false;
@@ -128,7 +128,9 @@ inline int Simulate(int argc, const char** argv) {
   std::map<std::string, DiffusionGrid*> dg_map;
   dg_map.insert(std::make_pair("protein", rm->GetDiffusionGrid("protein")));
 
-  auto generate_cells = [&](const Real3& xyz) {
+  {
+    Real3 xyz{0.0, 0.0, 0.0};
+
     Cell* c = new Cell();
     c->SetDiameter(1.0);
     c->SetAdherence(0.4);
@@ -142,11 +144,9 @@ inline int Simulate(int argc, const char** argv) {
         ODE_solver::RungeKutta, ODE_system(dg_map, {0.2, 0.1, 3.0}),
         ODE_jacobian(dg_map, {0.2, 0.1, 3.0}), ODE_output()));
 #endif
-    return c;
-  };
 
-  int n_cells = 1;
-  ModelInitializer::CreateAgentsRandom(0.0, 0.0001, n_cells, generate_cells);
+    sim.GetExecutionContext()->AddAgent(c);
+  }
 
   for (int s = 0; s < 10; s++)
     sim.GetScheduler()->Simulate(1);

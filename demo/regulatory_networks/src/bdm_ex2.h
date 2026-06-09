@@ -142,10 +142,10 @@ inline int Simulate(int argc, const char** argv) {
     param->output_dir = "ex2";
     param->use_progress_bar = false;
     param->bound_space = Param::BoundSpaceMode::kOpen;
-    param->min_bound = 0.0;
-    param->max_bound = 100.0;
+    param->min_bound = -1000.0;
+    param->max_bound = +1000.0;
     param->export_visualization = true;
-    param->visualization_interval = 10;
+    param->visualization_interval = 1;
     param->visualize_agents["MyCell"] = {"diameter_", "volume_", "trail_"};
     param->statistics = false;
     param->simulation_time_step = 1.0;
@@ -163,7 +163,7 @@ inline int Simulate(int argc, const char** argv) {
     c->SetDiameter(1.0);
     c->SetPosition(xyz);
 #ifndef __ROOTCLING__
-    c->AddBehavior(new Trajectory(dt_RN, 10, {xyz[0], xyz[1], xyz[2]}));
+    c->AddBehavior(new Trajectory(dt_RN, 222, {xyz[0], xyz[1], xyz[2]}));
 #else
     c->AddBehavior(new Trajectory());
 #endif
