@@ -104,7 +104,7 @@ inline int Simulate(int argc, const char** argv) {
     param->statistics = false;
     param->simulation_time_step = 1.0;
     param->visualize_diffusion = {
-        Param::VisualizeDiffusion{"cytokine", true, true}};
+        Param::VisualizeDiffusion{"protein", true, true}};
     param->calculate_gradients = false;
     param->diffusion_method = "euler";
   };
