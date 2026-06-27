@@ -12,7 +12,12 @@
 #  TCMALLOC_LIBRARY_DIRS (not cached)
 #  PPROF_EXECUTABLE
 
-find_path(TCMALLOC_INCLUDE_DIR google/tcmalloc.h)
+# BioDynaMo only links against tcmalloc and never includes its headers, so the
+# include directory is not required for the package to be considered found. We
+# still try to locate a header to use as a hint for finding the pprof binary.
+# Modern gperftools ships <gperftools/tcmalloc.h>; the legacy <google/tcmalloc.h>
+# path has been deprecated for years but is kept as a fallback.
+find_path(TCMALLOC_INCLUDE_DIR NAMES gperftools/tcmalloc.h google/tcmalloc.h)
 foreach(component tcmalloc profiler)
   find_library(TCMALLOC_${component}_LIBRARY NAMES ${component})
   mark_as_advanced(TCMALLOC_${component}_LIBRARY)
@@ -25,9 +30,10 @@ set(TCMALLOC_INCLUDE_DIRS ${TCMALLOC_INCLUDE_DIR})
 set(TCMALLOC_LIBRARIES ${TCMALLOC_tcmalloc_LIBRARY} ${TCMALLOC_profiler_LIBRARY})
 
 # handle the QUIETLY and REQUIRED arguments and set TCMALLOC_FOUND to TRUE if
-# all listed variables are TRUE
+# all listed variables are TRUE. Detection is based on the library alone, since
+# the headers are not needed to build BioDynaMo.
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(tcmalloc DEFAULT_MSG TCMALLOC_INCLUDE_DIR TCMALLOC_LIBRARIES)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(tcmalloc DEFAULT_MSG TCMALLOC_LIBRARIES)
 
 mark_as_advanced(TCMALLOC_FOUND TCMALLOC_INCLUDE_DIR PPROF_EXECUTABLE)
 
