@@ -44,5 +44,11 @@ if [ $? != 0 ]; then
    exit 1
 fi
 
+# Activate mpi on centos/rhel
+if echo "$BDM_DETECTED_OS" | grep -Eiq 'centos|rhel'; then
+  . /etc/profile.d/modules.sh
+  module load mpi/openmpi-x86_64
+fi
+
 # call install script for the detected OS
 $BDM_PROJECT_DIR/util/installation/common/install.sh ${BDM_DETECTED_OS}

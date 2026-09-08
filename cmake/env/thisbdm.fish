@@ -423,11 +423,10 @@ function source_thisbdm
     else # GNU/Linux
         # CentOS specifics (no longer officially supported)
         set -l os_id (grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"'); or return 1
+        set -l os_proc_id (cat /proc/version); or return 1
         if test "$os_id" = 'centos'
             set -gx MESA_GL_VERSION_OVERRIDE "3.3"
-            if test -z "$CXX"; and test -z "$CC"
-                . scl_source enable devtoolset-10; or return 1
-            end
+
 
             . /etc/profile.d/modules.sh; or return 1
             module load mpi; or return 1
@@ -436,7 +435,18 @@ function source_thisbdm
             if test -d "$BDMSYS"/third_party/libroadrunner
                 . scl_source enable llvm-toolset-7; or return 1
             end
+          
         end
+        if string match -iq '*Red Hat*' -- $os_proc_id
+            . scl_source enable gcc-toolset-10 ^ /dev/null ^& /dev/null or true
+            . scl_source enable devtoolset-10 ^ /dev/null ^& /dev/null or true
+            . scl_source enable gcc-toolset-11 ^ /dev/null ^& /dev/null or true
+            . scl_source enable devtoolset-11 ^ /dev/null ^& /dev/null or true
+      
+            . /etc/profile.d/modules.sh or return 1
+            module load mpi or return 1
+        end
+        
     end
     #######
 
