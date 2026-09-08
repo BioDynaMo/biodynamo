@@ -45,7 +45,7 @@ sudo yum install -y \
 
 curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
 chmod +x cmake-3.19.3-Linux-x86_64.sh
-./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
