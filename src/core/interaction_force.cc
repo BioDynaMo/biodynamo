@@ -62,21 +62,21 @@ void InteractionForce::ForceBetweenSpheres(const Agent* sphere_lhs,
                                            Real3* result) const {
   const Real3& ref_mass_location = sphere_lhs->GetPosition();
   real_t ref_diameter = sphere_lhs->GetDiameter();
-  real_t ref_iof_coefficient = 0.15;
   const Real3& nb_mass_location = sphere_rhs->GetPosition();
   real_t nb_diameter = sphere_rhs->GetDiameter();
-  real_t nb_iof_coefficient = 0.15;
+  const auto* sim = Simulation::GetActive();
+  auto* param = sim->GetParam();
 
   auto c1 = ref_mass_location;
   real_t r1 = 0.5 * ref_diameter;
   auto c2 = nb_mass_location;
   real_t r2 = 0.5 * nb_diameter;
   // We take virtual bigger radii to have a distant interaction, to get a
-  // desired density.
-  real_t additional_radius =
-      10.0 * std::min(ref_iof_coefficient, nb_iof_coefficient);
-  r1 += additional_radius;
-  r2 += additional_radius;
+  // desired density. We assume an interaction distance 3% larger then the
+  // agent's radius by default
+
+  r1 *= param->virtual_agent_radius_scale_factor;
+  r2 *= param->virtual_agent_radius_scale_factor;
   // the 3 components of the vector c2 -> c1
   real_t comp1 = c1[0] - c2[0];
   real_t comp2 = c1[1] - c2[1];
