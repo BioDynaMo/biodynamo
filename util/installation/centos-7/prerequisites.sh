@@ -43,9 +43,12 @@ sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm \
 sudo yum install -y \
   $(cat $BDM_PROJECT_DIR/util/installation/centos-7/package_list_required)
 
-curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
-chmod +x cmake-3.19.3-Linux-x86_64.sh
-./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+CMAKE_VER=3.19.3
+CMAKE_SH="cmake-${CMAKE_VER}-linux-x86_64.sh"
+curl -L -O  https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/${CMAKE_SH}
+sudo bash "${CMAKE_SH}" --prefix=/usr/local --skip-license
+rm "${CMAKE_SH}"
+
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
