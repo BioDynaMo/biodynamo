@@ -48,7 +48,18 @@ BDM_REGISTER_OP(MechanicalForcesOpOpenCL, "mechanical forces", kOpenCl);
 struct UpdateStaticnessOp : public AgentOperationImpl {
   BDM_OP_HEADER(UpdateStaticnessOp);
 
-  void operator()(Agent* agent) override { agent->UpdateStaticness(); }
+  void SetUp() override {
+    detect_static_ = Simulation::GetActive()->GetParam()->detect_static_agents;
+  }
+
+  void operator()(Agent* agent) override {
+    if (!detect_static_) {
+      return;
+    }
+    agent->UpdateStaticness();
+  }
+
+  bool detect_static_ = false;
 };
 
 BDM_REGISTER_OP(UpdateStaticnessOp, "update staticness", kCpu);
