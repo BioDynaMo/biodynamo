@@ -170,7 +170,7 @@ class DiffusionGrid : public ScalarField {
   [[deprecated("Use GetValue instead")]] real_t GetConcentration(
       const Real3& position) const {
     return GetValue(position);
-  };
+  }
   /// @brief  Get the concentration at specified index
   /// @param idx Flat index of the grid
   /// @return c1_[idx]
@@ -337,9 +337,7 @@ class DiffusionGrid : public ScalarField {
   void PrintInfo(std::ostream& out = std::cout);
 
   /// Print the information after initialization
-  void PrintInfoWithInitialization() {
-    print_info_with_initialization_ = true;
-  };
+  void PrintInfoWithInitialization() { print_info_with_initialization_ = true; }
 
   /// Returns if the grid has been initialized
   bool IsInitialized() const { return initialized_; }
@@ -370,6 +368,16 @@ class DiffusionGrid : public ScalarField {
   void CopyOldData(const ParallelResizeVector<real_t>& old_c1,
                    const ParallelResizeVector<Real3>& old_gradients,
                    size_t old_resolution);
+
+  /// Apply decay without diffusion (used when diffusion coefficient is 0).
+  void ApplyDecayOnly(real_t dt) {
+    const real_t decay = 1 - mu_ * dt;
+#pragma omp parallel for
+    for (size_t i = 0; i < total_num_boxes_; i++) {
+      c2_[i] = c1_[i] * decay;
+    }
+    c1_.swap(c2_);
+  }
 
   /// The side length of each box
   real_t box_length_ = 0;

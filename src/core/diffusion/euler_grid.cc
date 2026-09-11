@@ -19,12 +19,17 @@
 namespace bdm {
 
 void EulerGrid::DiffuseWithClosedEdge(real_t dt) {
+  const real_t d = 1 - dc_[0];
+  if (d == 0) {
+    ApplyDecayOnly(dt);
+    return;
+  }
+
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
   const real_t ibl2 = 1 / (box_length_ * box_length_);
-  const real_t d = 1 - dc_[0];
 
   constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
@@ -67,12 +72,17 @@ void EulerGrid::DiffuseWithClosedEdge(real_t dt) {
 }
 
 void EulerGrid::DiffuseWithOpenEdge(real_t dt) {
+  const real_t d = 1 - dc_[0];
+  if (d == 0) {
+    ApplyDecayOnly(dt);
+    return;
+  }
+
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
   const real_t ibl2 = 1 / (box_length_ * box_length_);
-  const real_t d = 1 - dc_[0];
   std::array<int, 4> l;
 
   constexpr size_t YBF = 16;
@@ -155,12 +165,17 @@ void EulerGrid::DiffuseWithOpenEdge(real_t dt) {
 }
 
 void EulerGrid::DiffuseWithDirichlet(real_t dt) {
+  const real_t d = 1 - dc_[0];
+  if (d == 0) {
+    ApplyDecayOnly(dt);
+    return;
+  }
+
   const auto nx = resolution_;
   const auto ny = resolution_;
   const auto nz = resolution_;
 
   const real_t ibl2 = 1 / (box_length_ * box_length_);
-  const real_t d = 1 - dc_[0];
 
   const auto sim_time = GetSimulatedTime();
 
@@ -211,13 +226,18 @@ void EulerGrid::DiffuseWithDirichlet(real_t dt) {
 }
 
 void EulerGrid::DiffuseWithNeumann(real_t dt) {
+  const real_t d = 1 - dc_[0];
+  if (d == 0) {
+    ApplyDecayOnly(dt);
+    return;
+  }
+
   const size_t nx = resolution_;
   const size_t ny = resolution_;
   const size_t nz = resolution_;
   const size_t num_boxes = nx * ny * nz;
 
   const real_t ibl2 = 1 / (box_length_ * box_length_);
-  const real_t d = 1 - dc_[0];
 
   const auto sim_time = GetSimulatedTime();
 
@@ -302,12 +322,17 @@ void EulerGrid::DiffuseWithNeumann(real_t dt) {
 }
 
 void EulerGrid::DiffuseWithPeriodic(real_t dt) {
+  const real_t d = 1 - dc_[0];
+  if (d == 0) {
+    ApplyDecayOnly(dt);
+    return;
+  }
+
   const size_t nx = resolution_;
   const size_t ny = resolution_;
   const size_t nz = resolution_;
 
   const real_t dx = box_length_;
-  const real_t d = 1 - dc_[0];
 
   constexpr size_t YBF = 16;
 #pragma omp parallel for collapse(2)
