@@ -218,12 +218,30 @@ sudo yum install -y llvm-toolset-7 llvm-toolset-7-clang-tools-extra \
 
 Requirements to build on macOS are:
 
- * A 64-bit Intel CPU or Apple Silicon CPU
+ * A 64-bit Intel CPU or Apple Silicon CPU  
+    (macOS 26 and later: **Apple Silicon only**, see the note below)
  * macOS 12.0 or higher
  * [Xcode](https://itunes.apple.com/us/app/xcode/id497799835) and the Command Line Tools (CLT) for Xcode: `xcode-select --install`  
     (or from [developer.apple.com/downloads](https://developer.apple.com/downloads))
  * An up to date [Homebrew](https://brew.sh) installation (MacPorts and Fink are not supported)
  * A Bourne-compatible shell for installation (e.g. `bash` or `zsh`)
+
+### Note on macOS 26
+
+BioDynaMo builds and passes its full test suite on macOS 26, with two
+limitations that come from the prebuilt ROOT package we distribute:
+
+ * **Apple Silicon only.** We do not publish an Intel ROOT build for Xcode 26.
+   CMake stops with a clear error if you try on an Intel Mac.
+ * **ROOT's raster image export and `TPython` are unavailable.** Saving a ROOT
+   canvas as PNG, GIF or JPEG (for example via `LineGraph::SaveAs`) does not
+   work; use SVG or PDF instead, which are unaffected. CMake prints a warning
+   naming each affected library at configure time.
+
+You will also see the warning `The C++ standard in this build does not match
+ROOT configuration` repeated during the build. It is expected on macOS 26 and
+harmless: BioDynaMo is a C++17 project, the ROOT package for Xcode 26 happens to
+be built with C++23, and that combination is tested.
 
 ### Required Packages
 
