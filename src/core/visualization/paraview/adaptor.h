@@ -59,7 +59,7 @@ class ParaviewAdaptor : private VisualizationAdaptor {
 
   friend class ParaviewAdaptorTest_GenerateSimulationInfoJson_Test;
   friend class ParaviewAdaptorTest_GenerateParaviewState_Test;
-  friend class ParaviewAdaptorTest_DISABLED_CheckVisualizationSelection_Test;
+  friend class ParaviewAdaptorTest_CheckVisualizationSelection_Test;
   friend class DISABLED_DiffusionTest_ModelInitializer_Test;
 
   /// Parameters might be set after the constructor has been called.

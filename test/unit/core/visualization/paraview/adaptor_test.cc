@@ -13,8 +13,12 @@
 // -----------------------------------------------------------------------------
 #ifdef USE_PARAVIEW
 
+#include <TPluginManager.h>
 #include <gtest/gtest.h>
+#include <cstdlib>
 #include <filesystem>
+#include <memory>
+#include <typeinfo>
 
 #include "biodynamo.h"
 #include "core/util/io.h"
@@ -27,6 +31,43 @@ namespace bdm {
 
 using MyCell = paraview_adaptor_test_internal::MyCell;
 using MyNeuron = paraview_adaptor_test_internal::MyNeuron;
+
+// Run in a fresh process: both ROOT and VisualizationAdaptor cache handlers.
+TEST(VisualizationAdaptorDeathTest, MissingParaviewHandler) {
+  ASSERT_EXIT(
+      {
+        // Simulate an unsuccessful directory scan. ROOT remembers that this
+        // base was scanned and will not rediscover the removed handler.
+        gPluginMgr->LoadHandlersFromPluginDirs("VisualizationAdaptor");
+        gPluginMgr->RemoveHandler("VisualizationAdaptor", "paraview");
+        EXPECT_EQ(nullptr,
+                  gPluginMgr->FindHandler("VisualizationAdaptor", "paraview"));
+        Param* param = nullptr;
+        Simulation sim(TEST_NAME, [&](Param* p) { param = p; });
+        EXPECT_EQ(nullptr, VisualizationAdaptor::Create("paraview"));
+        EXPECT_EQ(nullptr,
+                  gPluginMgr->FindHandler("VisualizationAdaptor", "paraview"));
+
+        param->export_visualization = true;
+        param->visualization_export_generate_pvsm = false;
+        EXPECT_EQ(nullptr, VisualizationAdaptor::Create("unknown-adaptor"));
+        {
+          std::unique_ptr<VisualizationAdaptor> first(
+              VisualizationAdaptor::Create("paraview"));
+          std::unique_ptr<VisualizationAdaptor> second(
+              VisualizationAdaptor::Create("paraview"));
+          EXPECT_NE(nullptr, first);
+          EXPECT_NE(nullptr, second);
+          if (first && second) {
+            EXPECT_EQ(typeid(ParaviewAdaptor), typeid(*first));
+            EXPECT_EQ(typeid(ParaviewAdaptor), typeid(*second));
+            EXPECT_NE(first.get(), second.get());
+          }
+        }
+        std::exit(::testing::Test::HasFailure() ? 1 : 0);
+      },
+      ::testing::ExitedWithCode(0), "");
+}
 
 /// Test fixture for catalyst adaptor test to eliminate side effects
 class ParaviewAdaptorTest : public ::testing::Test {
