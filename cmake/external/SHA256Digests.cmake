@@ -112,6 +112,7 @@ SET(osx-xcode-16.3-arm64-ROOT b525e0d360eb6c1912ab1cfcbf7fe30bfa8d55c48b80bcae65
 SET(osx-xcode-16.4-i386-ROOT 7de1ad1d658363ca13687dddd7164f039d58fb549a4befe4a622a8e60eede62f)
 SET(osx-xcode-16.4-arm64-ROOT 88810d081e0237e2fe436dc937e783bdf3f1c5d86ed7b3ff766d969dfe6bd0b3)
 # Apple Silicon only from Xcode 26 onwards.
+SET(osx-xcode-26.1-arm64-ROOT 81774a6499697bd57dc18eeb7c2537c08b5c308103f43fb0db7064a11b26f0cc)
 SET(osx-xcode-26.6-arm64-ROOT 325f1329bd4af4fe108615d63926d27087ad98ad6a1c359d55f717ca76ef9314)
 
 SET(ubuntu-18.04-Libroadrunner bf9293c1c95d0b65227bd7e08c0048116ba851bcec5028ef72ea13762ef79276)
