@@ -335,6 +335,22 @@ find_package(Git)
 find_package(ROOT COMPONENTS Geom Gui GenVector)
 verify_ROOT()
 
+# The prebuilt macOS ROOT tarballs were built on a host with MacPorts and
+# XQuartz, so some of their libraries carry absolute install names into
+# /opt/local and /opt/X11 and fail to load on a supported (Homebrew) system.
+# Repoint the ones that can be repointed and report the rest. Only ever touches
+# a ROOT we downloaded ourselves; see fix_root_install_names() in cmake/utils.cmake.
+#
+# NOTE: BioDynaMo is compiled as C++17 on every platform, including against the
+# Xcode 26 ROOT build, which is labelled cxx17 but is actually built with C++23.
+# That combination is verified (593/593 targets, 450/450 unit tests) and is the
+# reason verify_ROOT() accepts a C++20/23 ROOT instead of matching its standard.
+if(APPLE AND ROOT_FOUND AND ROOT_INCLUDE_DIRS)
+  list(GET ROOT_INCLUDE_DIRS 0 BDM_ROOT_INCLUDE_DIR)
+  string(REGEX REPLACE "/include$" "" BDM_ROOT_PREFIX "${BDM_ROOT_INCLUDE_DIR}")
+  fix_root_install_names("${BDM_ROOT_PREFIX}")
+endif()
+
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
@@ -389,7 +405,11 @@ if(paraview)
                 if (EXISTS ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256)
                     # check if SHA256 of installed ParaView is the same as the expected one
                     file(READ ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256 TAR_SHA256)
-                    if(NOT "${TAR_SHA256}" STREQUAL "${${DETECTED_OS_VERS}-ParaView}")
+                    # Derive the key exactly the way external/ParaView.cmake
+                    # derives it, so this check cannot disagree with what was
+                    # downloaded and needlessly discard a valid ParaView.
+                    bdm_paraview_platform(PARAVIEW_TAR_FILE PARAVIEW_SHA_KEY)
+                    if(NOT "${TAR_SHA256}" STREQUAL "${${PARAVIEW_SHA_KEY}}")
                         # BDM installed ParaView has wrong SHA256... deleting it
                         message(WARNING "The found ParaView version is not compatible... deleting it...")
                         file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/paraview)

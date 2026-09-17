@@ -84,6 +84,10 @@ SET(osx-15.6-i386-ParaView d2e89df30ab0e2729b28539de37753e09c061b4c434b0a68e8055
 SET(osx-15.6-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
 SET(osx-15.7-i386-ParaView d2e89df30ab0e2729b28539de37753e09c061b4c434b0a68e80554f7fa617ccb)
 SET(osx-15.7-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
+# All macOS 26.x releases share one Apple Silicon ParaView build; see
+# cmake/external/ParaView.cmake, which maps every osx-26.x onto this key.
+SET(osx-26.2-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
+
 SET(osx-xcode-13.1-i386-ROOT be97dd72022c8d082fbe4394f18b55c4920f20b138cfff1b5fc2b41d397ac203)
 SET(osx-xcode-13.1-arm64-ROOT 0a55b91c6df42d152b7943912e134f05c3872a73e73fcc129ee87fd847240ec8)
 SET(osx-xcode-14.1-i386-ROOT 001311608512b24535bb9710b8baf006bd00e9b0595fd6bdf900d28b1e22c395)
@@ -108,6 +112,8 @@ SET(osx-xcode-16.3-i386-ROOT b0be8291d14c0c66f250297e524debc1d6888a95da32e80918f
 SET(osx-xcode-16.3-arm64-ROOT b525e0d360eb6c1912ab1cfcbf7fe30bfa8d55c48b80bcae65b62bf403ca0d9c)
 SET(osx-xcode-16.4-i386-ROOT 7de1ad1d658363ca13687dddd7164f039d58fb549a4befe4a622a8e60eede62f)
 SET(osx-xcode-16.4-arm64-ROOT 88810d081e0237e2fe436dc937e783bdf3f1c5d86ed7b3ff766d969dfe6bd0b3)
+# Apple Silicon only from Xcode 26 onwards.
+SET(osx-xcode-26.6-arm64-ROOT 325f1329bd4af4fe108615d63926d27087ad98ad6a1c359d55f717ca76ef9314)
 
 SET(ubuntu-18.04-Libroadrunner bf9293c1c95d0b65227bd7e08c0048116ba851bcec5028ef72ea13762ef79276)
 SET(ubuntu-18.04-ParaView e3fd74b13e9a4086988c5104c6b8d95c56365d25b491706a8e72018d0e5c76f1)

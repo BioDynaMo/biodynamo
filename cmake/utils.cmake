@@ -51,8 +51,8 @@ function(detect_os)
     endif()
 endfunction()
 
-# Detect the Xcode version, normalised to <major>.<minor> (e.g. 16.4.1 -> 16.4,
-# 16 -> 16.0). Generates the variable named by ${out_var}, or an empty string if
+# Detect the Xcode version, normalised to <major>.<minor> (e.g. 26.1.1 -> 26.1,
+# 26 -> 26.0). Generates the variable named by ${out_var}, or an empty string if
 # Xcode could not be queried. Normalising matters because the version is used to
 # build a SHA256 digest key: a raw three-component version yields a key that
 # does not exist in SHA256Digests.cmake, which invalidates the ROOT cache.
@@ -86,7 +86,7 @@ function(bdm_root_platform out_tar out_key)
     if(APPLE)
         # macOS versions for which we publish per-Xcode ROOT builds. Kept as a
         # single regex over the same version list the OR-chain used before.
-        if("${DETECTED_OS_VERS}" MATCHES "^osx-(15|14|13|12|11\\.6|11\\.7)")
+        if("${DETECTED_OS_VERS}" MATCHES "^osx-(26|15|14|13|12|11\\.6|11\\.7)")
             # set(... PARENT_SCOPE) only propagates one level, so forward the
             # helper's results explicitly instead of passing our own out-names.
             bdm_root_platform_apple(APPLE_ROOT_TAR APPLE_ROOT_KEY)
@@ -104,7 +104,7 @@ endfunction()
 
 # Apple half of bdm_root_platform(). Picks the ROOT build matching the installed
 # Xcode. Note the comparisons use VERSION_GREATER_EQUAL, not GREATER_EQUAL:
-# the latter converts to a double, so "16.10" would compare equal to "16.1".
+# the latter converts to a double, so "26.10" would compare equal to "26.1".
 function(bdm_root_platform_apple out_tar out_key)
     bdm_xcode_version(XCODE_VERS)
     if("${XCODE_VERS}" STREQUAL "")
@@ -113,9 +113,28 @@ function(bdm_root_platform_apple out_tar out_key)
     endif()
     message(STATUS "##### XCODE version: ${XCODE_VERS}")
 
+    # We only publish Apple Silicon builds from Xcode 26 onwards. Scoped to
+    # Xcode 26+ on purpose: Intel remains supported on macOS 12-15.
+    if("${XCODE_VERS}" VERSION_GREATER_EQUAL "26.0" AND NOT "${DETECTED_ARCH}" STREQUAL "arm64")
+        message(FATAL_ERROR "BioDynaMo on macOS 26 is supported on Apple Silicon (arm64) only, "
+            "but the detected architecture is '${DETECTED_ARCH}'. No ROOT build is "
+            "available for Intel with Xcode ${XCODE_VERS}.")
+    endif()
+
     # ROOT version shipped for each Xcode bucket, and the Xcode tag used in both
     # the tarball name and the digest key.
-    if("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.4")
+    if("${XCODE_VERS}" VERSION_GREATER_EQUAL "26.6")
+        # ROOT's bundled cling parses the SDK's libc++ headers to build
+        # dictionaries, so it only works with an SDK close to the one it was
+        # compiled against. Use the package built for the Xcode 26.6 SDK.
+        # The tarball is labelled cxx17 but was built with C++23
+        # (root-config --features reports cxx23).
+        set(ROOT_VERS 6.40.04)
+        set(XCODE_TAG 26.6)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "26.0")
+        message(FATAL_ERROR "This macOS 26 build currently requires Xcode 26.6 or newer. "
+            "Support for the Xcode 26.1 ROOT package is provided separately.")
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.4")
         set(ROOT_VERS 6.36.00)
         set(XCODE_TAG 16.4)
     elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.3")
@@ -158,6 +177,167 @@ function(bdm_root_platform_apple out_tar out_key)
     set(${out_key} "osx-xcode-${XCODE_TAG}-${DETECTED_ARCH}-ROOT" PARENT_SCOPE)
 endfunction()
 
+# Single source of truth for which prebuilt ParaView tarball belongs to the
+# detected platform, for the same reason as bdm_root_platform() above: the
+# download in external/ParaView.cmake and the cache check in the top level
+# CMakeLists.txt must agree on the digest key.
+function(bdm_paraview_platform out_tar out_key)
+    # One Apple Silicon build covers every macOS 26.x release, so map all of
+    # them onto it rather than registering an identical digest per point
+    # release. macOS 26 is Apple Silicon only, so there is no i386 counterpart.
+    set(PARAVIEW_OS_VERS ${DETECTED_OS_VERS})
+    if(APPLE AND "${DETECTED_OS_VERS}" MATCHES "^osx-26\\.")
+        set(PARAVIEW_OS_VERS "osx-26.2-arm64")
+    endif()
+
+    if(APPLE AND "${DETECTED_ARCH}" STREQUAL "i386")
+        # The release of cmake 3.23.0 broke our build of ParaView on MacOSX.
+        # The build was fixed with a reupload and carries the additional tag cm233.
+        set(${out_tar} "paraview_v5.10.0_cm323_${PARAVIEW_OS_VERS}_default.tar.gz" PARENT_SCOPE)
+    elseif(APPLE AND "${DETECTED_ARCH}" STREQUAL "arm64")
+        set(${out_tar} "paraview_v5.10.0_${PARAVIEW_OS_VERS}_default.tar.gz" PARENT_SCOPE)
+    else()
+        set(${out_tar} "paraview_v5.9.0_${PARAVIEW_OS_VERS}_default.tar.gz" PARENT_SCOPE)
+    endif()
+    set(${out_key} "${PARAVIEW_OS_VERS}-ParaView" PARENT_SCOPE)
+endfunction()
+
+# The macOS ROOT tarballs on the LFS server were built on a host with MacPorts
+# and XQuartz installed, so a handful of their libraries carry absolute install
+# names into /opt/local and /opt/X11. BioDynaMo supports Homebrew only, so on
+# every supported machine those libraries fail to load with
+# "Library not loaded: /opt/local/lib/...".
+#
+# This function repoints them at equivalents that do exist. It is deliberately
+# conservative: a dependency is only rewritten when a replacement with the
+# *identical* library basename is available, because the basename carries the
+# soname and hence the ABI major version. Anything else is reported rather than
+# guessed at - see BDM_ROOT_UNFIXABLE_DEPS below for why that matters.
+#
+# Safe to call repeatedly: an already-patched tree has no matching install names
+# left, so subsequent calls are no-ops.
+function(fix_root_install_names ROOT_PREFIX)
+    if(NOT APPLE)
+        return()
+    endif()
+
+    find_program(BDM_OTOOL otool)
+    find_program(BDM_INSTALL_NAME_TOOL install_name_tool)
+    if(NOT BDM_OTOOL OR NOT BDM_INSTALL_NAME_TOOL)
+        message(WARNING "otool and/or install_name_tool were not found. Skipping the "
+            "ROOT install name fixup; some ROOT libraries may fail to load.")
+        return()
+    endif()
+
+    # Never rewrite a ROOT installation that we did not download ourselves. A
+    # user who sources their own ROOT must get it back exactly as they built it.
+    if(NOT CMAKE_THIRD_PARTY_DIR)
+        return()
+    endif()
+    string(FIND "${ROOT_PREFIX}" "${CMAKE_THIRD_PARTY_DIR}" BDM_ROOT_IN_TREE)
+    if(NOT BDM_ROOT_IN_TREE EQUAL 0)
+        message(STATUS "ROOT at ${ROOT_PREFIX} is user provided; leaving its install names untouched.")
+        return()
+    endif()
+
+    # Replacement table. Each entry is "<bad install name>|<formula>|<relative lib path>".
+    # An empty formula means the replacement is provided by macOS itself.
+    #
+    # Every entry here has been checked by loading the affected ROOT library
+    # afterwards; do not add one without doing the same, because a same-named
+    # library is not automatically a compatible one.
+    set(BDM_ROOT_DEP_FIXES
+        "/opt/local/lib/libxml2.2.dylib||/usr/lib/libxml2.2.dylib"
+        "/opt/local/lib/libcurl.4.dylib||/usr/lib/libcurl.4.dylib"
+        "/opt/local/lib/libjpeg.8.dylib|jpeg-turbo|lib/libjpeg.8.dylib"
+        "/opt/local/lib/libtiff.6.dylib|libtiff|lib/libtiff.6.dylib"
+        "/opt/X11/lib/libpng16.16.dylib|libpng|lib/libpng16.16.dylib"
+    )
+
+    # Dependencies we know cannot be repointed, with the user visible effect.
+    # Fixing these requires rebuilding the tarball on a Homebrew host.
+    # NOTE: no semicolons in these strings. A ';' inside a quoted CMake string is
+    # still a list separator once the variable is expanded in foreach(), which
+    # would split an entry and break the list(GET) calls below.
+    set(BDM_ROOT_UNFIXABLE_DEPS
+        "/opt/local/lib/libgif.4.dylib|libASImage|Homebrew ships giflib 6, which removed AddExtensionBlock() and EGifPutExtensionFirst/Last(), so repointing yields a 'Symbol not found' error rather than a working library. Canvas export to PNG, GIF and JPEG is therefore unavailable (SVG and PDF still work)."
+        "/Library/Frameworks/Python.framework/Versions/3.11/Python|libROOTTPython|the tarball links python.org's Python 3.11 framework even though it is labelled python3.9, and CPython's C ABI is version specific. ROOT's TPython bridge is therefore unavailable."
+    )
+
+    find_program(BDM_BREW brew)
+    file(GLOB BDM_ROOT_LIBS "${ROOT_PREFIX}/lib/*.so" "${ROOT_PREFIX}/lib/*.dylib")
+    set(BDM_FIXED_COUNT 0)
+
+    foreach(BDM_FIX ${BDM_ROOT_DEP_FIXES})
+        string(REPLACE "|" ";" BDM_FIX_PARTS "${BDM_FIX}")
+        list(GET BDM_FIX_PARTS 0 BDM_BAD_NAME)
+        list(GET BDM_FIX_PARTS 1 BDM_FORMULA)
+        list(GET BDM_FIX_PARTS 2 BDM_REL_PATH)
+
+        if("${BDM_FORMULA}" STREQUAL "")
+            # Provided by macOS. Note we cannot test this path with EXISTS:
+            # /usr/lib is served from the dyld shared cache and its members are
+            # not present on disk, yet they load fine.
+            set(BDM_NEW_NAME "${BDM_REL_PATH}")
+        else()
+            if(NOT BDM_BREW)
+                continue()
+            endif()
+            execute_process(COMMAND ${BDM_BREW} --prefix ${BDM_FORMULA}
+                            OUTPUT_VARIABLE BDM_FORMULA_PREFIX
+                            OUTPUT_STRIP_TRAILING_WHITESPACE
+                            ERROR_QUIET)
+            if(NOT BDM_FORMULA_PREFIX OR NOT EXISTS "${BDM_FORMULA_PREFIX}/${BDM_REL_PATH}")
+                continue()
+            endif()
+            set(BDM_NEW_NAME "${BDM_FORMULA_PREFIX}/${BDM_REL_PATH}")
+        endif()
+
+        foreach(BDM_LIB ${BDM_ROOT_LIBS})
+            execute_process(COMMAND ${BDM_OTOOL} -L "${BDM_LIB}"
+                            OUTPUT_VARIABLE BDM_OTOOL_OUT
+                            ERROR_QUIET)
+            # Literal search: an install name contains '.' and '/', which
+            # MATCHES would interpret as regex metacharacters.
+            string(FIND "${BDM_OTOOL_OUT}" "${BDM_BAD_NAME}" BDM_DEP_POS)
+            if(BDM_DEP_POS EQUAL -1)
+                continue()
+            endif()
+            execute_process(COMMAND ${BDM_INSTALL_NAME_TOOL}
+                                    -change "${BDM_BAD_NAME}" "${BDM_NEW_NAME}" "${BDM_LIB}"
+                            RESULT_VARIABLE BDM_INT_RESULT
+                            ERROR_VARIABLE BDM_INT_ERROR)
+            if(BDM_INT_RESULT EQUAL 0)
+                math(EXPR BDM_FIXED_COUNT "${BDM_FIXED_COUNT} + 1")
+            else()
+                message(WARNING "Could not repoint ${BDM_BAD_NAME} in ${BDM_LIB}: ${BDM_INT_ERROR}")
+            endif()
+        endforeach()
+    endforeach()
+
+    if(BDM_FIXED_COUNT GREATER 0)
+        message(STATUS "Repointed ${BDM_FIXED_COUNT} MacPorts/XQuartz install name(s) in ROOT at Homebrew and system libraries")
+    endif()
+
+    # Tell the user about the ones we cannot repair, but only if the affected
+    # library is actually still broken in this tree.
+    foreach(BDM_BROKEN ${BDM_ROOT_UNFIXABLE_DEPS})
+        string(REPLACE "|" ";" BDM_BROKEN_PARTS "${BDM_BROKEN}")
+        list(GET BDM_BROKEN_PARTS 0 BDM_BAD_NAME)
+        list(GET BDM_BROKEN_PARTS 1 BDM_AFFECTED)
+        list(GET BDM_BROKEN_PARTS 2 BDM_EFFECT)
+        if(EXISTS "${ROOT_PREFIX}/lib/${BDM_AFFECTED}.so")
+            execute_process(COMMAND ${BDM_OTOOL} -L "${ROOT_PREFIX}/lib/${BDM_AFFECTED}.so"
+                            OUTPUT_VARIABLE BDM_OTOOL_OUT ERROR_QUIET)
+            string(FIND "${BDM_OTOOL_OUT}" "${BDM_BAD_NAME}" BDM_DEP_POS)
+            if(NOT BDM_DEP_POS EQUAL -1)
+                message(WARNING "${BDM_AFFECTED} in the prebuilt ROOT depends on ${BDM_BAD_NAME}, "
+                    "which is not available on a Homebrew system: ${BDM_EFFECT}")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
 # Try to find the ROOT package. It is an hard requirement
 # for the project. If ROOT is not found on the system, it
 # will be downloaded. If the found cached ROOT is not the right
@@ -175,7 +355,8 @@ function(verify_ROOT)
                 if (EXISTS ${CMAKE_THIRD_PARTY_DIR}/root/tar-sha256)
                     # check if SHA256 of installed ROOT is the same as the expected one
                     file(READ ${CMAKE_THIRD_PARTY_DIR}/root/tar-sha256 TAR_SHA256)
-                    # Use the same package selection as the download path.
+                    # Derive the key exactly the way external/ROOT.cmake derives
+                    # it, so this check cannot disagree with what was downloaded.
                     bdm_root_platform(ROOT_TAR_FILE ROOT_SHA_KEY)
                     set(ROOT_SHA ${${ROOT_SHA_KEY}})
                     if(NOT "${TAR_SHA256}" STREQUAL "${ROOT_SHA}")
@@ -213,11 +394,22 @@ function(verify_ROOT)
         SET(ROOTCLING_EXECUTABLE ${ROOTCLING_EXECUTABLE} PARENT_SCOPE)
         SET(GENREFLEX_EXECUTABLE ${GENREFLEX_EXECUTABLE} PARENT_SCOPE)
     else()
-        # When ROOT is found, but it's not C++17 compliant, we exit the installation, because ROOT needs
-        # to be properly sourced prior to invoking CMake (CMake cannot do this for us, because it requires
-        # reverting the previous find_package() call, which is not possible.)
-        if(NOT ROOT_cxx17_FOUND)
-          message(FATAL_ERROR "The ROOT installation found in ${ROOTSYS} is not C++17 compliant. "
+        # When ROOT is found, but it's not C++17 (or newer) compliant, we exit the installation,
+        # because ROOT needs to be properly sourced prior to invoking CMake (CMake cannot do this
+        # for us, because it requires reverting the previous find_package() call, which is not possible.)
+        #
+        # Accept C++17, C++20 or C++23. BioDynaMo itself is a C++17 project and is
+        # always compiled as one; a newer ROOT is only a problem if we tried to
+        # match its standard, which we deliberately do not. This matters because
+        # the ROOT build we ship for Xcode 26 is labelled 'cxx17' on the LFS
+        # server but is actually built with C++23, so ROOT_cxx23_FOUND is what
+        # gets set there. Compiling BioDynaMo at C++17 against it is verified:
+        # 593/593 targets and 450/450 unit tests, identical to a C++23 build.
+        # The cost is that ROOT's RConfigure.h emits a standard-mismatch warning
+        # on every translation unit. That warning is left unsuppressed on
+        # purpose - it is the only visible trace of the mislabelled tarball.
+        if(NOT (ROOT_cxx17_FOUND OR ROOT_cxx20_FOUND OR ROOT_cxx23_FOUND))
+          message(FATAL_ERROR "The ROOT installation found in ${ROOTSYS} is not C++17 (or newer) compliant. "
             "Please unset ROOTSYS and re-run cmake so that a compatible version of ROOT will be downloaded.")
         endif()
 

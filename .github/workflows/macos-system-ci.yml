@@ -21,7 +21,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
 
     runs-on: ${{ matrix.os }}
 
@@ -44,7 +44,8 @@ jobs:
       shell: zsh {0}
       run: |
         brew install curl
-        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912)
+        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912).
+        # 'brew untap' on a tap that was never created is harmless.
         brew uninstall --force cmake || true
         brew untap local/pinned || true
         curl https://raw.githubusercontent.com/${GHA_REPOSITORY}/${GHA_BRANCH_NAME}/util/install | bash
@@ -109,6 +110,7 @@ jobs:
         source $(find /Users -path "*/bin/*" -name "*thisbdm.sh")
         root --version
         root -config
-        git config --system user.name "Test User"
-        git config --system user.email user@test.com
+        git config --global --add safe.directory '*'
+        sudo git config --system user.name "Test User"
+        sudo git config --system user.email user@test.com
         make run-demos
