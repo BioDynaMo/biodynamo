@@ -22,6 +22,22 @@ ExternalProject_Add(
     -DBENCHMARK_ENABLE_INSTALL:BOOL=OFF
     -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
     -DCMAKE_VISIBILITY_INLINES_HIDDEN:BOOL=ON
+    # google/benchmark 1.5.5 compiles itself with -Werror in the optimised
+    # build types and enables -Wthread-safety. Clang's thread-safety analysis
+    # has grown stricter since 1.5.5 was released and now rejects benchmark's
+    # own mutex.h wrappers:
+    #
+    #   mutex.h:79: error: mutex 'mut_' is still held at the end of function
+    #   mutex.h:80: error: releasing mutex 'mut_' that was not held
+    #
+    # which fails the build outright on recent toolchains (seen with AppleClang
+    # 21 on the macOS runners). Turn that one analysis off for the vendored
+    # sub-build. These flags land after benchmark's own -Wthread-safety, so the
+    # negative form wins, and nothing here affects how BioDynaMo itself is
+    # compiled. Drop this once benchmark is updated past 1.5.5.
+    "-DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE} -Wno-thread-safety-analysis"
+    "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Wno-thread-safety-analysis"
+    "-DCMAKE_CXX_FLAGS_MINSIZEREL:STRING=${CMAKE_CXX_FLAGS_MINSIZEREL} -Wno-thread-safety-analysis"
   CMAKE_CACHE_ARGS
     -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
     -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
