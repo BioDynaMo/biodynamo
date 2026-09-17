@@ -17,6 +17,7 @@
 #include <memory>
 #include <sstream>
 
+#include "core/util/io.h"
 #include "core/visualization/paraview/adaptor.h"
 #include "core/visualization/paraview/helper.h"
 #include "core/visualization/paraview/vtk_agents.h"
@@ -254,14 +255,32 @@ void ParaviewAdaptor::GenerateParaviewState() {
   std::string pv_dir = std::getenv("ParaView_DIR");
   std::string bdmsys = std::getenv("BDMSYS");
 
-  python_cmd << pv_dir << "/bin/pvbatch " << bdmsys
+  python_cmd << pv_dir << "/bin/pvbatch --force-offscreen-rendering " << bdmsys
              << "/include/core/visualization/paraview/generate_pv_state.py "
              << sim->GetOutputDir() << "/" << kSimulationInfoJson;
   int ret_code = system(python_cmd.str().c_str());
   if (ret_code) {
-    Log::Fatal("ParaviewAdaptor::GenerateParaviewState",
-               "Error during generation of ParaView state\n", "Command\n",
-               python_cmd.str());
+    // pvbatch can die part way through and still leave a usable state file:
+    // generate_pv_state.py writes the .pvsm before the render pass that crashes
+    // on headless macOS 26 (NSOpenGLContext was removed there). So judge the
+    // outcome by whether the state file exists, rather than by the platform we
+    // happen to be compiled for - a genuine ParaView failure must stay fatal
+    // everywhere, macOS included.
+    auto state_file =
+        Concat(sim->GetOutputDir(), "/", sim->GetUniqueName(), ".pvsm");
+    if (FileExists(state_file)) {
+      Log::Warning("ParaviewAdaptor::GenerateParaviewState",
+                   "pvbatch exited with code ", ret_code,
+                   " but wrote a ParaView state file. It may be incomplete: "
+                   "the animation time range is the most likely omission.\n",
+                   "Command\n", python_cmd.str());
+    } else {
+      Log::Fatal("ParaviewAdaptor::GenerateParaviewState",
+                 "Error during generation of ParaView state. pvbatch exited "
+                 "with code ",
+                 ret_code, " and wrote no state file to ", state_file, "\n",
+                 "Command\n", python_cmd.str());
+    }
   }
 }
 

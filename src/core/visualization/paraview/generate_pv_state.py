@@ -102,21 +102,39 @@ def BuildDefaultPipeline(json_filename):
 
     # get animation scene
     animation_scene = GetAnimationScene()
-    # update animation scene based on data timesteps
-    animation_scene.UpdateAnimationUsingDataTimeSteps()
 
-    return build_info
+    return build_info, animation_scene
 
 # ------------------------------------------------------------------------------
-def WritePvsmFile(build_info):
+def WritePvsmFile(build_info, animation_scene):
     sim_info = build_info['simulation']
     result_dir = sim_info['result_dir']
 
     os.chdir(result_dir)
-    SaveState('{0}.pvsm'.format(sim_info['name']))
+    state_file = '{0}.pvsm'.format(sim_info['name'])
 
-    # This avoid the error: Inconsistency detected by ld.so
+    # Save the state twice, on purpose.
+    #
+    # UpdateAnimationUsingDataTimeSteps() triggers a render pass, which on a
+    # headless macOS 26 machine (the GitHub Actions runners, for instance)
+    # crashes pvbatch outright: NSOpenGLContext was removed in macOS 26. That is
+    # a SIGSEGV, not a Python exception, so it cannot be caught here.
+    #
+    # Writing the state first means such a crash still leaves a loadable .pvsm
+    # behind. Writing it again afterwards means a healthy machine gets the
+    # complete state, including the animation time range - if we only saved
+    # before the update, every platform would lose TimeKeeper.TimeRange and the
+    # timestep slider would not span the simulation when the file is opened in
+    # the ParaView GUI.
+    SaveState(state_file)
+    animation_scene.UpdateAnimationUsingDataTimeSteps()
+    SaveState(state_file)
+
+    # Works around a glibc dynamic linker failure on Linux:
+    #   "Inconsistency detected by ld.so"
     # See: https://discourse.paraview.org/t/inconsistency-detected-by-ld-so/3778
+    # Harmless elsewhere, and it runs after both SaveState calls, so it never
+    # affects the contents of the state file.
     Show(Cone())
 
 # ------------------------------------------------------------------------------
@@ -128,6 +146,6 @@ if __name__ == '__main__':
     json_filename = arguments[0]
 
 
-    build_info = BuildDefaultPipeline(json_filename)
-    WritePvsmFile(build_info)    
+    build_info, animation_scene = BuildDefaultPipeline(json_filename)
+    WritePvsmFile(build_info, animation_scene)    
     
