@@ -51,6 +51,113 @@ function(detect_os)
     endif()
 endfunction()
 
+# Detect the Xcode version, normalised to <major>.<minor> (e.g. 16.4.1 -> 16.4,
+# 16 -> 16.0). Generates the variable named by ${out_var}, or an empty string if
+# Xcode could not be queried. Normalising matters because the version is used to
+# build a SHA256 digest key: a raw three-component version yields a key that
+# does not exist in SHA256Digests.cmake, which invalidates the ROOT cache.
+function(bdm_xcode_version out_var)
+    execute_process(COMMAND xcodebuild -version
+                    OUTPUT_VARIABLE XCODEBUILD_OUTPUT
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_QUIET)
+    set(XCODE_MAJOR_MINOR "")
+    if("${XCODEBUILD_OUTPUT}" MATCHES "Xcode[ \t]+([0-9]+)(\\.([0-9]+))?")
+        set(XCODE_MAJOR "${CMAKE_MATCH_1}")
+        set(XCODE_MINOR "${CMAKE_MATCH_3}")
+        if("${XCODE_MINOR}" STREQUAL "")
+            set(XCODE_MINOR 0)
+        endif()
+        set(XCODE_MAJOR_MINOR "${XCODE_MAJOR}.${XCODE_MINOR}")
+    endif()
+    set(${out_var} "${XCODE_MAJOR_MINOR}" PARENT_SCOPE)
+endfunction()
+
+# Single source of truth for which prebuilt ROOT tarball belongs to the detected
+# platform. Generates the variables named by ${out_tar} (tarball filename) and
+# ${out_key} (key into SHA256Digests.cmake).
+#
+# Both external/ROOT.cmake, which downloads the tarball, and verify_ROOT() below,
+# which validates an already-downloaded copy, MUST derive the digest key from
+# here. When they computed it independently they disagreed for Xcode point
+# releases that were not themselves package boundaries, so the cache check
+# failed and ROOT was deleted and re-downloaded on every cmake run.
+function(bdm_root_platform out_tar out_key)
+    if(APPLE)
+        # macOS versions for which we publish per-Xcode ROOT builds. Kept as a
+        # single regex over the same version list the OR-chain used before.
+        if("${DETECTED_OS_VERS}" MATCHES "^osx-(15|14|13|12|11\\.6|11\\.7)")
+            # set(... PARENT_SCOPE) only propagates one level, so forward the
+            # helper's results explicitly instead of passing our own out-names.
+            bdm_root_platform_apple(APPLE_ROOT_TAR APPLE_ROOT_KEY)
+            set(${out_tar} "${APPLE_ROOT_TAR}" PARENT_SCOPE)
+            set(${out_key} "${APPLE_ROOT_KEY}" PARENT_SCOPE)
+            return()
+        elseif("${DETECTED_OS_VERS}" MATCHES "^osx-11")
+            message(FATAL_ERROR "We officially only support the latest macOS 11 versions 11.6, 11.7.")
+        endif()
+    endif()
+    # Linux, and any macOS release without a per-Xcode build.
+    set(${out_tar} "root_v6.30.02_cxx17_python3.9_${DETECTED_OS_VERS}.tar.gz" PARENT_SCOPE)
+    set(${out_key} "${DETECTED_OS_VERS}-ROOT" PARENT_SCOPE)
+endfunction()
+
+# Apple half of bdm_root_platform(). Picks the ROOT build matching the installed
+# Xcode. Note the comparisons use VERSION_GREATER_EQUAL, not GREATER_EQUAL:
+# the latter converts to a double, so "16.10" would compare equal to "16.1".
+function(bdm_root_platform_apple out_tar out_key)
+    bdm_xcode_version(XCODE_VERS)
+    if("${XCODE_VERS}" STREQUAL "")
+        message(FATAL_ERROR "Could not determine the Xcode version. Please make sure Xcode "
+            "and its command line tools are installed: xcode-select --install")
+    endif()
+    message(STATUS "##### XCODE version: ${XCODE_VERS}")
+
+    # ROOT version shipped for each Xcode bucket, and the Xcode tag used in both
+    # the tarball name and the digest key.
+    if("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.4")
+        set(ROOT_VERS 6.36.00)
+        set(XCODE_TAG 16.4)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.3")
+        set(ROOT_VERS 6.34.08)
+        set(XCODE_TAG 16.3)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.2")
+        set(ROOT_VERS 6.32.08)
+        set(XCODE_TAG 16.2)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.1")
+        set(ROOT_VERS 6.32.06)
+        set(XCODE_TAG 16.1)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.0")
+        set(ROOT_VERS 6.33.01)
+        set(XCODE_TAG 16.0)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "15.4")
+        set(ROOT_VERS 6.30.06)
+        set(XCODE_TAG 15.4)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "15.3")
+        set(ROOT_VERS 6.30.06)
+        set(XCODE_TAG 15.3)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "15.0")
+        set(ROOT_VERS 6.30.02)
+        set(XCODE_TAG 15.2)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "14.3")
+        set(ROOT_VERS 6.30.02)
+        set(XCODE_TAG 14.3)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "14.2")
+        set(ROOT_VERS 6.30.02)
+        set(XCODE_TAG 14.2)
+    elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "14.1")
+        set(ROOT_VERS 6.30.02)
+        set(XCODE_TAG 14.1)
+    else()
+        set(ROOT_VERS 6.30.02)
+        set(XCODE_TAG 13.1)
+    endif()
+    message(STATUS "##### Using ROOT builds for XCODE ${XCODE_TAG}")
+
+    set(${out_tar} "root_v${ROOT_VERS}_cxx17_python3.9_osx-xcode-${XCODE_TAG}-${DETECTED_ARCH}.tar.gz" PARENT_SCOPE)
+    set(${out_key} "osx-xcode-${XCODE_TAG}-${DETECTED_ARCH}-ROOT" PARENT_SCOPE)
+endfunction()
+
 # Try to find the ROOT package. It is an hard requirement
 # for the project. If ROOT is not found on the system, it
 # will be downloaded. If the found cached ROOT is not the right
@@ -68,12 +175,8 @@ function(verify_ROOT)
                 if (EXISTS ${CMAKE_THIRD_PARTY_DIR}/root/tar-sha256)
                     # check if SHA256 of installed ROOT is the same as the expected one
                     file(READ ${CMAKE_THIRD_PARTY_DIR}/root/tar-sha256 TAR_SHA256)
-                    if(APPLE)
-                        execute_process(COMMAND bash "-c" "xcodebuild -version | sed -En 's/Xcode[[:space:]]+([0-9\.]*)/\\1/p' | tr -d '\\n'" OUTPUT_VARIABLE XCODE_VERS)
-                        set(ROOT_SHA_KEY osx-xcode-${XCODE_VERS}-${DETECTED_ARCH}-ROOT)
-                    else()
-                        set(ROOT_SHA_KEY ${DETECTED_OS_VERS}-ROOT)
-                    endif()
+                    # Use the same package selection as the download path.
+                    bdm_root_platform(ROOT_TAR_FILE ROOT_SHA_KEY)
                     set(ROOT_SHA ${${ROOT_SHA_KEY}})
                     if(NOT "${TAR_SHA256}" STREQUAL "${ROOT_SHA}")
                         # BDM installed ROOT has wrong SHA256... deleting it
