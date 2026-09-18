@@ -170,6 +170,7 @@ function source_thisbdm
     set -l bdm_pv_version '5.9'
     if test (uname) = 'Darwin'
         set -l bdm_pv_version '5.9'
+        set -gx PATH "$BDMSYS/third_party/paraview/bin:$PATH"
     end
 
     # Clear the env from previously set ParaView and Qt paths.

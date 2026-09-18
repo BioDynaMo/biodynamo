@@ -253,6 +253,7 @@ _source_thisbdm()
   local bdm_pv_version='5.9'
   if [ "$(uname)" = 'Darwin' ]; then
     bdm_pv_version='5.10'
+    export PATH=${BDMSYS}/third_party/paraview/bin:$PATH
   fi
 
   # Clear the env from previously set ParaView and Qt paths.
@@ -499,6 +500,9 @@ _source_thisbdm()
      if [ "$BDM_CUSTOM_QT" = false ] || [ -z "${Qt5_DIR}" ]; then
        # On Apple devices we use the brew install of Qt5
        if [ "$(uname)" = 'Darwin' ];then
+          if [ "$(arch)" = 'arm64' ]; then 
+    	       export PATH=/opt/homebrew/bin:$PATH
+          fi
           Qt5_DIR=$(brew --prefix)/opt/qt@5
        else
           Qt5_DIR=${BDMSYS}/third_party/qt
