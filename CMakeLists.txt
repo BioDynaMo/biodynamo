@@ -335,6 +335,13 @@ find_package(Git)
 find_package(ROOT COMPONENTS Geom Gui GenVector)
 verify_ROOT()
 
+# Repair MacPorts/XQuartz library paths in downloaded ROOT, including cached copies.
+if(APPLE AND ROOT_FOUND AND ROOT_INCLUDE_DIRS)
+  list(GET ROOT_INCLUDE_DIRS 0 BDM_ROOT_INCLUDE_DIR)
+  string(REGEX REPLACE "/include$" "" BDM_ROOT_PREFIX "${BDM_ROOT_INCLUDE_DIR}")
+  fix_root_install_names("${BDM_ROOT_PREFIX}")
+endif()
+
 if (dict)
   add_definitions("-DUSE_DICT")
 endif()
@@ -389,7 +396,9 @@ if(paraview)
                 if (EXISTS ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256)
                     # check if SHA256 of installed ParaView is the same as the expected one
                     file(READ ${CMAKE_THIRD_PARTY_DIR}/paraview/tar-sha256 TAR_SHA256)
-                    if(NOT "${TAR_SHA256}" STREQUAL "${${DETECTED_OS_VERS}-ParaView}")
+                    # Use the same checksum key as the download path.
+                    bdm_paraview_platform(PARAVIEW_TAR_FILE PARAVIEW_SHA_KEY)
+                    if(NOT "${TAR_SHA256}" STREQUAL "${${PARAVIEW_SHA_KEY}}")
                         # BDM installed ParaView has wrong SHA256... deleting it
                         message(WARNING "The found ParaView version is not compatible... deleting it...")
                         file(REMOVE_RECURSE ${CMAKE_THIRD_PARTY_DIR}/paraview)

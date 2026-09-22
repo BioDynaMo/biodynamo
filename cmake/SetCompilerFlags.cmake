@@ -20,6 +20,7 @@ check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
 if(NOT COMPILER_SUPPORTS_CXX17)
   message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++17 support. Please use a different C++ compiler.")
 endif()
+# Keep BioDynaMo at C++17 even when ROOT uses a newer standard.
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # turn off compiler specific extensions e.g. gnu++17

@@ -14,23 +14,27 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Install dependencies
-      run: |
-        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912)
-        brew uninstall --force cmake || true
-        brew untap local/pinned || true
-        brew install libomp open-mpi python@3.9 wget cmake ninja qt@5 libgit2 boost
-
+    # The dependency step needs the repository's package list.
     - name: Checkout BioDynaMo
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Install dependencies
+      run: |
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+
+        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912)
+        brew uninstall --force cmake || true
+        brew untap local/pinned || true
+
+        # Use the installer dependencies, plus libgit2 and Boost for CI coverage.
+        brew install $(cat util/installation/osx/package_list_required) libgit2 boost
 
     # - name: Cache Third Party Packages
     #   uses: actions/cache@v4

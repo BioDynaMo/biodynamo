@@ -43,6 +43,16 @@ VisualizationAdaptor *VisualizationAdaptor::Create(const std::string &adaptor) {
   if (first_try) {
     // Try to find plugin handler in etc/plugins
     auto *h = gPluginMgr->FindHandler("VisualizationAdaptor", adaptor.c_str());
+#ifdef USE_PARAVIEW
+    // ROOT 6.40.04 can miss plugins after the first directory in Root.PluginPath.
+    // Register the built-in fallback only when no handler was found.
+    if (!h && adaptor == "paraview") {
+      gPluginMgr->AddHandler("VisualizationAdaptor", "paraview",
+                             "bdm::ParaviewAdaptor", "VisualizationAdaptor",
+                             "ParaviewAdaptor()");
+      h = gPluginMgr->FindHandler("VisualizationAdaptor", adaptor.c_str());
+    }
+#endif
     if (h) {
       // Try to load the plugin (dynamically load shared library)
       if (h->LoadPlugin() == 0) {
