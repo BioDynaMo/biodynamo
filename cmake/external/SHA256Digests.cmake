@@ -84,8 +84,7 @@ SET(osx-15.6-i386-ParaView d2e89df30ab0e2729b28539de37753e09c061b4c434b0a68e8055
 SET(osx-15.6-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
 SET(osx-15.7-i386-ParaView d2e89df30ab0e2729b28539de37753e09c061b4c434b0a68e80554f7fa617ccb)
 SET(osx-15.7-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
-# All macOS 26.x releases share one Apple Silicon ParaView build; see
-# cmake/external/ParaView.cmake, which maps every osx-26.x onto this key.
+# All macOS 26.x releases use this Apple Silicon ParaView package.
 SET(osx-26.2-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
 
 SET(osx-xcode-13.1-i386-ROOT be97dd72022c8d082fbe4394f18b55c4920f20b138cfff1b5fc2b41d397ac203)
@@ -142,4 +141,3 @@ SET(centos-7-Libroadrunner a0b49487a28aedc4b909a71c66263d4a388964008e2b23073dd74
 SET(centos-7-ParaView 45d545e75baf32c9fe30944781b4f6b172d4efd7d6cd794dcd19ec671cc5ead0)
 SET(centos-7-Qt 4308621ff9ec84585c3aead92a9d2de787b3c700323333b6e78ed45d04a0d2a4)
 SET(centos-7-ROOT 54298aa5f13dc2942925c10d755768f81f53d7135ac1a3e698e9b7ef1a3dfd1e)
-

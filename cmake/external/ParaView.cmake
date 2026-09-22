@@ -2,9 +2,7 @@ include(utils)
 
 SET(PARAVIEW_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/paraview")
 
-# Which tarball belongs to this platform, and the key to verify it against.
-# The mapping lives in cmake/utils.cmake so that the ParaView cache check in the
-# top level CMakeLists.txt derives the same key.
+# Share package selection with the cache check in CMakeLists.txt.
 bdm_paraview_platform(PARAVIEW_TAR_FILE PARAVIEW_SHA_KEY)
 set(PARAVIEW_SHA ${${PARAVIEW_SHA_KEY}})
 

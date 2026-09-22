@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    # Checkout first: the dependency step reads the package list from the repo.
+    # The dependency step needs the repository's package list.
     - name: Checkout BioDynaMo
       uses: actions/checkout@v4
       with:
@@ -29,19 +29,11 @@ jobs:
       run: |
         export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 
-        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912).
-        # 'brew untap' on a tap that was never created is not an error we care
-        # about, so no need to special case runners that lack local/pinned.
+        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912)
         brew uninstall --force cmake || true
         brew untap local/pinned || true
 
-        # Install exactly what util/installation/osx expects, so that this
-        # workflow and a user following the prerequisites cannot drift apart.
-        # libgit2 and boost are named on top of the required list because they
-        # are optional packages that this job still needs: it builds with
-        # -Dlibgit2=ON, and -Dboost=ON silently turns itself off when Boost is
-        # missing, which would stop the RegulatoryNetwork behaviour from being
-        # exercised at all.
+        # Use the installer dependencies, plus libgit2 and Boost for CI coverage.
         brew install $(cat util/installation/osx/package_list_required) libgit2 boost
 
     # - name: Cache Third Party Packages

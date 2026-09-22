@@ -3,8 +3,7 @@ include(utils)
 # Directory in which ROOT will be downloaded
 SET(ROOT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/root")
 
-# Which tarball belongs to this platform, and the key to verify it against.
-# The mapping lives in cmake/utils.cmake so that verify_ROOT() can reuse it.
+# Shared with verify_ROOT() so the download and cache check agree.
 bdm_root_platform(ROOT_TAR_FILE ROOT_SHA_KEY)
 set(ROOT_SHA ${${ROOT_SHA_KEY}})
 
@@ -25,9 +24,7 @@ download_verify_extract(
   ${ROOT_SHA}
 )
 
-# NOTE: the install name fixup for these tarballs (fix_root_install_names) is
-# invoked from the top level CMakeLists.txt after verify_ROOT(), so that it also
-# repairs a tree that was downloaded by an earlier run of cmake.
+# CMakeLists.txt repairs ROOT library paths after verify_ROOT(), including cached installs.
 
 # Run again find_package in order to find ROOT
 find_package(ROOT COMPONENTS Geom Gui GenVector REQUIRED)

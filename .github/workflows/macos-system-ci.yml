@@ -44,8 +44,7 @@ jobs:
       shell: zsh {0}
       run: |
         brew install curl
-        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912).
-        # 'brew untap' on a tap that was never created is harmless.
+        # GHA macOS: unpin CMake to fix Homebrew conflict (actions/runner-images#12912)
         brew uninstall --force cmake || true
         brew untap local/pinned || true
         curl https://raw.githubusercontent.com/${GHA_REPOSITORY}/${GHA_BRANCH_NAME}/util/install | bash
