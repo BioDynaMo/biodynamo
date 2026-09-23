@@ -128,8 +128,9 @@ function(bdm_root_platform_apple out_tar out_key)
         set(ROOT_VERS 6.40.04)
         set(XCODE_TAG 26.6)
     elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "26.0")
-        message(FATAL_ERROR "This macOS 26 build currently requires Xcode 26.6 or newer. "
-            "Support for the Xcode 26.1 ROOT package is provided separately.")
+        # This package also uses C++23 despite its cxx17 filename.
+        set(ROOT_VERS 6.36.06)
+        set(XCODE_TAG 26.1)
     elseif("${XCODE_VERS}" VERSION_GREATER_EQUAL "16.4")
         set(ROOT_VERS 6.36.00)
         set(XCODE_TAG 16.4)
