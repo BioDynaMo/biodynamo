@@ -18,6 +18,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "core/agent/agent.h"
@@ -39,7 +40,7 @@ class MechanicalForcesOp : public AgentOperationImpl {
   BDM_OP_HEADER(MechanicalForcesOp);
 
  public:
-  MechanicalForcesOp() : force_(new InteractionForce()) {
+  MechanicalForcesOp() : force_(std::make_unique<InteractionForce>()) {
     auto* tinfo = ThreadInfo::GetInstance();
     last_iteration_.resize(tinfo->GetMaxThreads(),
                            std::numeric_limits<uint64_t>::max());
@@ -53,24 +54,17 @@ class MechanicalForcesOp : public AgentOperationImpl {
         delta_time_(other.delta_time_),
         last_iteration_(other.last_iteration_) {
     if (other.force_) {
-      force_ = other.force_->NewCopy();
+      force_.reset(other.force_->NewCopy());
     }
   }
 
-  ~MechanicalForcesOp() override {
-    if (force_) {
-      delete force_;
-    }
-  }
+  ~MechanicalForcesOp() override = default;
 
   void SetInteractionForce(InteractionForce* force) {
-    if (force == force_) {
+    if (force == force_.get()) {
       return;
     }
-    if (force_) {
-      delete force_;
-    }
-    force_ = force;
+    force_.reset(force);
   }
 
   void operator()(Agent* agent) override {
@@ -93,8 +87,8 @@ class MechanicalForcesOp : public AgentOperationImpl {
       last_time_run_[tid] = current_time;
     }
 
-    const auto& displacement =
-        agent->CalculateDisplacement(force_, squared_radius_, delta_time_[tid]);
+    const auto& displacement = agent->CalculateDisplacement(
+        force_.get(), squared_radius_, delta_time_[tid]);
     agent->ApplyDisplacement(displacement);
     if (param->bound_space) {
       ApplyBoundingBox(agent, param->bound_space, param->min_bound,
@@ -103,7 +97,7 @@ class MechanicalForcesOp : public AgentOperationImpl {
   }
 
  private:
-  InteractionForce* force_ = nullptr;
+  std::unique_ptr<InteractionForce> force_;
   real_t squared_radius_ = 0;
   std::vector<real_t> last_time_run_;
   std::vector<real_t> delta_time_;
