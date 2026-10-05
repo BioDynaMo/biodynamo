@@ -17,19 +17,34 @@
 #include <TF2.h>
 #include <TF3.h>
 #include <TRandom3.h>
+#include <cmath>
+#include <random>
 #include "core/simulation.h"
+
 
 namespace bdm {
 
 // -----------------------------------------------------------------------------
-Random::Random() : generator_(new TRandom3()) {}
+// Seed mt_engine_ from a non-deterministic source so each instance starts
+// with a unique sequence by default, matching TRandom3's time-based seeding.
+Random::Random()
+    : mt_engine_(std::random_device{}()), generator_(new TRandom3()) {}
+
 
 // -----------------------------------------------------------------------------
 Random::Random(TRootIOCtor*) {}
 
 // -----------------------------------------------------------------------------
+// In random.cc — the missing definition
+std::mt19937_64& Random::GetEngine() {
+  return mt_engine_;
+}
+
+// -----------------------------------------------------------------------------
 Random::Random(const Random& other)
-    : generator_(static_cast<TRandom*>(other.generator_->Clone())) {}
+    : mt_engine_(other.mt_engine_),
+      generator_(static_cast<TRandom*>(other.generator_->Clone())) {}
+
 
 // -----------------------------------------------------------------------------
 Random::~Random() {
@@ -50,6 +65,7 @@ Random::~Random() {
 // -----------------------------------------------------------------------------
 Random& Random::operator=(const Random& other) {
   if (&other != this) {
+    mt_engine_ = other.mt_engine_;
     if (generator_) {
       delete generator_;
     }
@@ -59,20 +75,32 @@ Random& Random::operator=(const Random& other) {
 }
 
 // -----------------------------------------------------------------------------
-real_t Random::Uniform(real_t max) { return generator_->Uniform(max); }
+real_t Random::Uniform(real_t max) {
+  std::uniform_real_distribution<real_t> dist(static_cast<real_t>(0), max);
+  return dist(mt_engine_);
+}
 
 // -----------------------------------------------------------------------------
 real_t Random::Uniform(real_t min, real_t max) {
-  return generator_->Uniform(min, max);
+  std::uniform_real_distribution<real_t> dist(min, max);
+  return dist(mt_engine_);
 }
 
 // -----------------------------------------------------------------------------
 real_t Random::Gaus(real_t mean, real_t sigma) {
-  return generator_->Gaus(mean, sigma);
+  std::normal_distribution<real_t> dist(mean, sigma);
+  return dist(mt_engine_);
 }
 
+
 // -----------------------------------------------------------------------------
-real_t Random::Exp(real_t tau) { return generator_->Exp(tau); }
+// Uses std::exponential_distribution driven by mt_engine_.
+// ROOT's tau is the mean/scale parameter, while
+// std::exponential_distribution expects the rate parameter lambda = 1 / tau.
+real_t Random::Exp(real_t tau) {
+  std::exponential_distribution<real_t> dist(static_cast<real_t>(1.0) / tau);
+  return dist(mt_engine_);
+}
 
 // -----------------------------------------------------------------------------
 real_t Random::Landau(real_t mean, real_t sigma) {
@@ -80,7 +108,16 @@ real_t Random::Landau(real_t mean, real_t sigma) {
 }
 
 // -----------------------------------------------------------------------------
-real_t Random::PoissonD(real_t mean) { return generator_->PoissonD(mean); }
+// Uses std::poisson_distribution driven by mt_engine_.
+// Note: ROOT's PoissonD may switch to a Gaussian approximation for very large
+// means, while std::poisson_distribution always samples from the true Poisson
+// distribution.  For the mean values typical of BioDynaMo simulations the two
+// are statistically equivalent.  The std distribution returns an integer type
+// (long); the result is cast back to real_t to preserve the original API.
+real_t Random::PoissonD(real_t mean) {
+  std::poisson_distribution<long> dist(static_cast<double>(mean));
+  return static_cast<real_t>(dist(mt_engine_));
+}
 
 // -----------------------------------------------------------------------------
 real_t Random::BreitWigner(real_t mean, real_t gamma) {
@@ -88,37 +125,85 @@ real_t Random::BreitWigner(real_t mean, real_t gamma) {
 }
 
 // -----------------------------------------------------------------------------
-unsigned Random::Integer(int max) { return generator_->Integer(max); }
+// Uses std::uniform_int_distribution driven by mt_engine_.
+// ROOT's Integer(max) returns values in [0, max - 1]; std uses inclusive
+// bounds, so the upper bound is max - 1.
+unsigned Random::Integer(int max) {
+  std::uniform_int_distribution<unsigned> dist(
+      0u, static_cast<unsigned>(max) - 1u);
+  return dist(mt_engine_);
+}
+
 
 // -----------------------------------------------------------------------------
+// Uses std::binomial_distribution driven by mt_engine_.
+// Parameters map directly: ntot = number of trials, prob = success probability.
 int Random::Binomial(int ntot, real_t prob) {
-  return generator_->Binomial(ntot, prob);
+  std::binomial_distribution<int> dist(ntot, static_cast<double>(prob));
+  return dist(mt_engine_);
 }
 
 // -----------------------------------------------------------------------------
-int Random::Poisson(real_t mean) { return generator_->Poisson(mean); }
+// Uses std::poisson_distribution driven by mt_engine_.
+// ROOT's Poisson(mean) and std::poisson_distribution both take the mean
+// directly, so no parameter transformation is required.
+int Random::Poisson(real_t mean) {
+  std::poisson_distribution<int> dist(static_cast<double>(mean));
+  return dist(mt_engine_);
+}
 
 // -----------------------------------------------------------------------------
+// Generates a point uniformly distributed on the circumference of a circle
+// with radius r by sampling theta ~ Uniform(0, 2*pi) and returning
+// (r*cos(theta), r*sin(theta)).  Pi is defined locally because M_PI is not
+// portable across platforms / compilers.
 MathArray<real_t, 2> Random::Circle(real_t r) {
-  MathArray<double, 2> ret_double;
-  generator_->Circle(ret_double[0], ret_double[1], static_cast<double>(r));
-  return {static_cast<real_t>(ret_double[0]),
-          static_cast<real_t>(ret_double[1])};
+  constexpr real_t kPi =
+      static_cast<real_t>(3.141592653589793238462643383279502884);
+  constexpr real_t kTwoPi = static_cast<real_t>(2) * kPi;
+
+  std::uniform_real_distribution<real_t> dist(static_cast<real_t>(0), kTwoPi);
+  const real_t theta = dist(mt_engine_);
+
+  return {r * std::cos(theta), r * std::sin(theta)};
 }
 
 // -----------------------------------------------------------------------------
+// Generates a point uniformly distributed on the surface of a sphere with
+// radius r using the standard Gaussian-vector normalisation method:
+// a 3D vector with i.i.d. standard normal components is rotationally
+// symmetric, so normalising it produces a direction uniformly distributed
+// on the sphere.  Scaling by r places the point on the requested surface.
+// Resample in the (statistically vanishing) case norm == 0 to avoid 0/0.
 MathArray<real_t, 3> Random::Sphere(real_t r) {
-  MathArray<double, 3> ret;
-  generator_->Sphere(ret[0], ret[1], ret[2], r);
-  return {static_cast<real_t>(ret[0]), static_cast<real_t>(ret[1]),
-          static_cast<real_t>(ret[2])};
+  std::normal_distribution<real_t> dist(static_cast<real_t>(0),
+                                        static_cast<real_t>(1));
+
+  real_t x = 0;
+  real_t y = 0;
+  real_t z = 0;
+  real_t norm = 0;
+
+  do {
+    x = dist(mt_engine_);
+    y = dist(mt_engine_);
+    z = dist(mt_engine_);
+    norm = std::sqrt(x * x + y * y + z * z);
+  } while (norm == static_cast<real_t>(0));
+
+  const real_t scale = r / norm;
+  return {x * scale, y * scale, z * scale};
 }
 
 // -----------------------------------------------------------------------------
-void Random::SetSeed(uint64_t seed) { generator_->SetSeed(seed); }
+void Random::SetSeed(uint64_t seed) {
+  last_seed_ = seed;
+  mt_engine_.seed(seed);
+  generator_->SetSeed(seed);
+}
 
 // -----------------------------------------------------------------------------
-uint64_t Random::GetSeed() const { return generator_->GetSeed(); }
+uint64_t Random::GetSeed() const { return last_seed_; }
 
 // -----------------------------------------------------------------------------
 void Random::SetGenerator(TRandom* new_generator) {
@@ -175,8 +260,14 @@ template MathArray<int, 3> DistributionRng<int>::Sample3Impl(TRandom*);
 // -----------------------------------------------------------------------------
 UniformRng::UniformRng(real_t min, real_t max) : min_(min), max_(max) {}
 UniformRng::~UniformRng() = default;
-real_t UniformRng::SampleImpl(TRandom* rng) { return rng->Uniform(min_, max_); }
-
+// Uses std::uniform_real_distribution driven by Random::GetEngine().
+// The TRandom* parameter is ignored; it exists only to satisfy the virtual
+// interface, which will be updated in a future refactor step.
+real_t UniformRng::SampleImpl(TRandom* /*rng*/) {
+  auto& engine = Simulation::GetActive()->GetRandom()->GetEngine();
+  std::uniform_real_distribution<real_t> dist(min_, max_);
+  return dist(engine);
+}
 UniformRng Random::GetUniformRng(real_t min, real_t max) const {
   return UniformRng(min, max);
 }
@@ -184,7 +275,14 @@ UniformRng Random::GetUniformRng(real_t min, real_t max) const {
 // -----------------------------------------------------------------------------
 GausRng::GausRng(real_t mean, real_t sigma) : mean_(mean), sigma_(sigma) {}
 GausRng::~GausRng() = default;
-real_t GausRng::SampleImpl(TRandom* rng) { return rng->Gaus(mean_, sigma_); }
+// Uses std::normal_distribution driven by Random::GetEngine().
+// The TRandom* parameter is ignored; it exists only to satisfy the virtual
+// interface, which will be updated in a future refactor step.
+real_t GausRng::SampleImpl(TRandom* /*rng*/) {
+  auto& engine = Simulation::GetActive()->GetRandom()->GetEngine();
+  std::normal_distribution<real_t> dist(mean_, sigma_);
+  return dist(engine);
+}
 
 GausRng Random::GetGausRng(real_t mean, real_t sigma) const {
   return GausRng(mean, sigma);
@@ -193,7 +291,14 @@ GausRng Random::GetGausRng(real_t mean, real_t sigma) const {
 // -----------------------------------------------------------------------------
 ExpRng::ExpRng(real_t tau) : tau_(tau) {}
 ExpRng::~ExpRng() = default;
-real_t ExpRng::SampleImpl(TRandom* rng) { return rng->Exp(tau_); }
+// Uses std::exponential_distribution driven by Random::GetEngine().
+// The TRandom* parameter is ignored; it exists only to satisfy the virtual
+// interface, which will be updated in a future refactor step.
+real_t ExpRng::SampleImpl(TRandom* /*rng*/) {
+  auto& engine = Simulation::GetActive()->GetRandom()->GetEngine();
+  std::exponential_distribution<real_t> dist(static_cast<real_t>(1.0) / tau_);
+  return dist(engine);
+}
 
 ExpRng Random::GetExpRng(real_t tau) const { return ExpRng(tau); }
 
@@ -211,7 +316,16 @@ LandauRng Random::GetLandauRng(real_t mean, real_t sigma) const {
 // -----------------------------------------------------------------------------
 PoissonDRng::PoissonDRng(real_t mean) : mean_(mean) {}
 PoissonDRng::~PoissonDRng() = default;
-real_t PoissonDRng::SampleImpl(TRandom* rng) { return rng->PoissonD(mean_); }
+// Uses std::poisson_distribution driven by Random::GetEngine().
+// The TRandom* parameter is ignored; it exists only to satisfy the virtual
+// interface, which will be updated in a future refactor step.
+// See Random::PoissonD for notes on the large-mean Gaussian approximation
+// used by ROOT.
+real_t PoissonDRng::SampleImpl(TRandom* /*rng*/) {
+  auto& engine = Simulation::GetActive()->GetRandom()->GetEngine();
+  std::poisson_distribution<long> dist(static_cast<double>(mean_));
+  return static_cast<real_t>(dist(engine));
+}
 
 PoissonDRng Random::GetPoissonDRng(real_t mean) const {
   return PoissonDRng(mean);
@@ -351,8 +465,13 @@ UserDefinedDistRng3D Random::GetUserDefinedDistRng3D(
 // -----------------------------------------------------------------------------
 BinomialRng::BinomialRng(int ntot, real_t prob) : ntot_(ntot), prob_(prob) {}
 BinomialRng::~BinomialRng() = default;
-int BinomialRng::SampleImpl(TRandom* rng) {
-  return rng->Binomial(ntot_, prob_);
+// Uses std::binomial_distribution driven by Random::GetEngine().
+// The TRandom* parameter is ignored; it exists only to satisfy the virtual
+// interface, which will be updated in a future refactor step.
+int BinomialRng::SampleImpl(TRandom* /*rng*/) {
+  auto& engine = Simulation::GetActive()->GetRandom()->GetEngine();
+  std::binomial_distribution<int> dist(ntot_, static_cast<double>(prob_));
+  return dist(engine);
 }
 
 BinomialRng Random::GetBinomialRng(int ntot, real_t prob) const {
@@ -362,7 +481,14 @@ BinomialRng Random::GetBinomialRng(int ntot, real_t prob) const {
 // -----------------------------------------------------------------------------
 PoissonRng::PoissonRng(real_t mean) : mean_(mean) {}
 PoissonRng::~PoissonRng() = default;
-int PoissonRng::SampleImpl(TRandom* rng) { return rng->Poisson(mean_); }
+// Uses std::poisson_distribution driven by Random::GetEngine().
+// The TRandom* parameter is ignored; it exists only to satisfy the virtual
+// interface, which will be updated in a future refactor step.
+int PoissonRng::SampleImpl(TRandom* /*rng*/) {
+  auto& engine = Simulation::GetActive()->GetRandom()->GetEngine();
+  std::poisson_distribution<int> dist(static_cast<double>(mean_));
+  return dist(engine);
+}
 
 PoissonRng Random::GetPoissonRng(real_t mean) const { return PoissonRng(mean); }
 
