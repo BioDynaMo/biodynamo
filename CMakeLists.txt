@@ -253,6 +253,12 @@ else()
          "eval \"$(pyenv init -)\" \n"
          "pyenv shell ${pythonvers}")
    endif()
+   # ParaView/VTK call find_package(Python3 ...) internally, unconstrained by
+   # version. Pin it to the same pyenv interpreter found above so it doesn't
+   # discover a newer system Python instead (e.g. Ubuntu 26.04 ships Python
+   # 3.14 by default, without its -dev headers installed).
+   set(Python3_EXECUTABLE ${Python_EXECUTABLE} CACHE FILEPATH
+       "Pin ParaView/VTK's Python3 lookup to the pyenv interpreter" FORCE)
 endif()
 
 # Check if OpenMPI is present
