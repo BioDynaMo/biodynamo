@@ -37,7 +37,16 @@ int RunAllTests() {
   if (all_passed == 0) {
     return 0;
   }
-  return ::testing::UnitTest::GetInstance()->failed_test_suite_count();
+  auto unit_test = ::testing::UnitTest::GetInstance();
+  // HandleFlakyTests subtracts individual tests, so count tests, not suites.
+  int failed_cnt = unit_test->failed_test_count();
+  // Failures outside test bodies cannot be resolved by retrying flaky tests.
+  failed_cnt += unit_test->ad_hoc_test_result().Failed();
+  for (int i = 0; i < unit_test->total_test_suite_count(); ++i) {
+    failed_cnt += unit_test->GetTestSuite(i)->ad_hoc_test_result().Failed();
+  }
+  // Preserve a failed run even when no individual failure remains recorded.
+  return failed_cnt == 0 ? 1 : failed_cnt;
 }
 
 int main(int argc, char** argv) {
@@ -61,5 +70,5 @@ int main(int argc, char** argv) {
     }
     failed_cnt += failed_flaky_cnt;
   }
-  return failed_cnt;
+  return failed_cnt != 0;
 }
