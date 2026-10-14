@@ -15,7 +15,9 @@
 #include "unit/core/container/inline_vector_test.h"
 #include <new>
 
-size_t operator_new_calls_ = 0;
+// Keep counter reads observable across calls to the replacement operator new[]
+// in optimized builds.
+volatile size_t operator_new_calls_ = 0;
 
 /// overload new[] operator to test how often heap memory is allocated
 void* operator new[](std::size_t sz) {
