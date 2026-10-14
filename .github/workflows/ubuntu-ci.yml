@@ -14,10 +14,23 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     runs-on: ${{ matrix.os }}
 
     steps:
+    - name: Checkout BioDynaMo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Select Python version
+      run: |
+        BDM_PYTHON_VERSION=3.9.1
+        if [ -f "util/installation/${{ matrix.os }}/environment.sh" ]; then
+          . "util/installation/${{ matrix.os }}/environment.sh"
+        fi
+        echo "BDM_PYTHON_VERSION=$BDM_PYTHON_VERSION" >> "$GITHUB_ENV"
+
     - name: Set python openssl package
       run: |
         if [ "${{ env.OSVERS }}" = "ubuntu-20.04" ]; then
@@ -29,8 +42,9 @@ jobs:
         if [ "${{ env.OSVERS }}" = "ubuntu-24.04" ]; then
           echo "PYOPENSSL=python3-openssl" >> $GITHUB_ENV
         fi
-        
+
     - name: Install dependencies
+      if: matrix.os != 'ubuntu-26.04'
       run: |
         sudo apt-get update
         sudo apt-get install -y libopenmpi-dev gcc-11 g++-11 libomp5 libomp-dev libnuma-dev freeglut3-dev \
@@ -60,10 +74,10 @@ jobs:
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.9.1
+        key: ${{ env.OSVERS }}-pyenv-${{ env.BDM_PYTHON_VERSION }}
 
     - name: Install pyenv dependency
-      if: steps.pyenv-cache.outputs.cache-hit != 'true'
+      if: matrix.os != 'ubuntu-26.04' && steps.pyenv-cache.outputs.cache-hit != 'true'
       run: |
         if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
           curl https://pyenv.run | bash
@@ -74,10 +88,9 @@ jobs:
         PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.1
         pyenv shell 3.9.1
 
-    - name: Checkout BioDynaMo
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+    - name: Install Ubuntu 26.04 prerequisites
+      if: matrix.os == 'ubuntu-26.04'
+      run: SILENT_INSTALL=1 ./prerequisites.sh required
 
     - name: Cache Third Party Packages
       uses: actions/cache@v4
@@ -91,7 +104,8 @@ jobs:
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
-        pyenv shell 3.9.1
+        pyenv shell "$BDM_PYTHON_VERSION"
+        cmake -P test/cmake/ubuntu-platforms.cmake
         cmake -G Ninja \
           -Dparaview=ON \
           -Dbenchmark=ON \

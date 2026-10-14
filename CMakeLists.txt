@@ -238,8 +238,12 @@ if(NOPYENV)
          "is required in order to successfully use BioDynaMo.")      
    endif()
 else()
-   # Check if Python 3.9.1 from PyEnv is installed
+   # Check if the platform-specific Python 3.9 from PyEnv is installed
    set(pythonvers "3.9.1")
+   if(DETECTED_OS STREQUAL "ubuntu-26.04")
+      # Same Python ABI as the reused Ubuntu 24.04 archives; supports OpenSSL 3.
+      set(pythonvers "3.9.25")
+   endif()
    find_package(Python ${pythonvers} EXACT COMPONENTS Interpreter Development)
    if (NOT Python_FOUND)
       message(FATAL_ERROR "We did not find the Python ${pythonvers} interpreter from PyEnv. "

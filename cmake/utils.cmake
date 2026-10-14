@@ -73,6 +73,16 @@ function(bdm_xcode_version out_var)
     set(${out_var} "${XCODE_MAJOR_MINOR}" PARENT_SCOPE)
 endfunction()
 
+# Ubuntu 26.04 compatibility trial: reuse the published Ubuntu 24.04 x86_64
+# archives, while keeping separate 26.04 checksum entries and cache keys.
+function(bdm_third_party_os out_os)
+    if("${DETECTED_OS_VERS}" STREQUAL "ubuntu-26.04")
+        set(${out_os} "ubuntu-24.04" PARENT_SCOPE)
+    else()
+        set(${out_os} "${DETECTED_OS_VERS}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Single source of truth for which prebuilt ROOT tarball belongs to the detected
 # platform. Generates the variables named by ${out_tar} (tarball filename) and
 # ${out_key} (key into SHA256Digests.cmake).
@@ -98,7 +108,8 @@ function(bdm_root_platform out_tar out_key)
         endif()
     endif()
     # Linux, and any macOS release without a per-Xcode build.
-    set(${out_tar} "root_v6.30.02_cxx17_python3.9_${DETECTED_OS_VERS}.tar.gz" PARENT_SCOPE)
+    bdm_third_party_os(ROOT_PACKAGE_OS)
+    set(${out_tar} "root_v6.30.02_cxx17_python3.9_${ROOT_PACKAGE_OS}.tar.gz" PARENT_SCOPE)
     set(${out_key} "${DETECTED_OS_VERS}-ROOT" PARENT_SCOPE)
 endfunction()
 
@@ -177,7 +188,7 @@ endfunction()
 # Select the ParaView tarball and checksum key for downloads and cache checks.
 function(bdm_paraview_platform out_tar out_key)
     # All macOS 26.x releases share one Apple Silicon package.
-    set(PARAVIEW_OS_VERS ${DETECTED_OS_VERS})
+    bdm_third_party_os(PARAVIEW_OS_VERS)
     if(APPLE AND "${DETECTED_OS_VERS}" MATCHES "^osx-26\\.")
         set(PARAVIEW_OS_VERS "osx-26.2-arm64")
     endif()
@@ -191,7 +202,11 @@ function(bdm_paraview_platform out_tar out_key)
     else()
         set(${out_tar} "paraview_v5.9.0_${PARAVIEW_OS_VERS}_default.tar.gz" PARENT_SCOPE)
     endif()
-    set(${out_key} "${PARAVIEW_OS_VERS}-ParaView" PARENT_SCOPE)
+    if("${DETECTED_OS_VERS}" STREQUAL "ubuntu-26.04")
+        set(${out_key} "${DETECTED_OS_VERS}-ParaView" PARENT_SCOPE)
+    else()
+        set(${out_key} "${PARAVIEW_OS_VERS}-ParaView" PARENT_SCOPE)
+    endif()
 endfunction()
 
 # Replace downloaded ROOT's MacPorts/XQuartz paths with Homebrew or system libraries.

@@ -2,7 +2,8 @@ include(utils)
 
 SET(QT_SOURCE_DIR "${CMAKE_THIRD_PARTY_DIR}/qt")
 
-set(QT_TAR_FILE qt_v5.12.10_${DETECTED_OS_VERS}.tar.gz)
+bdm_third_party_os(QT_PACKAGE_OS)
+set(QT_TAR_FILE qt_v5.12.10_${QT_PACKAGE_OS}.tar.gz)
 
 download_verify_extract(
   http://cern.ch/biodynamo-lfs/third-party/${QT_TAR_FILE}

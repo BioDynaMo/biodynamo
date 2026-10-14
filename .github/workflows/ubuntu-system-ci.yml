@@ -21,7 +21,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04]
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-26.04]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -79,15 +79,23 @@ jobs:
           echo "INSTALL_DIR=$(echo ${HOME}/biodynamo-*)" >> $GITHUB_ENV
         fi
 
+    - name: Select Python version
+      run: |
+        BDM_PYTHON_VERSION=3.9.1
+        if [ -f "util/installation/${{ matrix.os }}/environment.sh" ]; then
+          . "util/installation/${{ matrix.os }}/environment.sh"
+        fi
+        echo "BDM_PYTHON_VERSION=$BDM_PYTHON_VERSION" >> "$GITHUB_ENV"
+
     - name: Cache pyenv
       uses: actions/cache@v4
       id: pyenv-cache
       with:
         path: ~/.pyenv
-        key: ${{ env.OSVERS }}-pyenv-3.9.1
+        key: ${{ env.OSVERS }}-pyenv-${{ env.BDM_PYTHON_VERSION }}
 
     - name: Install pyenv dependency
-      if: steps.pyenv-cache.outputs.cache-hit != 'true'
+      if: matrix.os != 'ubuntu-26.04' && steps.pyenv-cache.outputs.cache-hit != 'true'
       run: |
         if [ ! -f "$HOME/.pyenv/bin/pyenv" ]; then
           curl https://pyenv.run | bash
@@ -118,6 +126,9 @@ jobs:
         if [ "${{ env.OSVERS }}" = "ubuntu-24.04" ]; then
           echo "REALT=double" >> $GITHUB_ENV
         fi
+        if [ "${{ env.OSVERS }}" = "ubuntu-26.04" ]; then
+          echo "REALT=double" >> $GITHUB_ENV
+        fi
 
     # Don't do this in the `Build BioDynaMo step`, because notebooks might time out in GHA
     # runners, while waiting for other targets to be compiled. Run notebooks only
@@ -146,7 +157,8 @@ jobs:
         export PATH="$HOME/.pyenv/bin:$PATH"
         eval "$(pyenv init --path)"
         eval "$(pyenv init -)"
-        pyenv shell 3.9.1
+        pyenv shell "$BDM_PYTHON_VERSION"
+        cmake -P test/cmake/ubuntu-platforms.cmake
         cmake \
           -Dnotebooks=OFF \
           -Dparaview=ON \
