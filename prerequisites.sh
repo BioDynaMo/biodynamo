@@ -66,7 +66,11 @@ CompileListOfPackages $1 $BDM_PROJECT_DIR/util/installation ${BDM_DETECTED_OS}
 
 EchoInfo "This script installs the following packages with sudo:"
 EchoInfo ""
-column ${BDM_PKG_LIST}
+if command -v column >/dev/null 2>&1; then
+  column ${BDM_PKG_LIST}
+else
+  cat ${BDM_PKG_LIST}
+fi
 EchoInfo ""
 
 if [ -z $SILENT_INSTALL ] && [ -z $GITHUB_ACTIONS ]; then
