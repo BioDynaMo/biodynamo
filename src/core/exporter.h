@@ -15,6 +15,7 @@
 #ifndef CORE_EXPORTER_H_
 #define CORE_EXPORTER_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
