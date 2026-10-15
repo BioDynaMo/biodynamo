@@ -15,6 +15,7 @@
 #ifndef CORE_UTIL_RANDOM_H_
 #define CORE_UTIL_RANDOM_H_
 
+#include <random>
 #include <unordered_map>
 #include "core/container/fixed_size_vector.h"
 #include "core/container/math_array.h"
@@ -256,9 +257,10 @@ class PoissonRng : public DistributionRng<int> {
 };
 
 // -----------------------------------------------------------------------------
-/// Decorator for ROOT's TRandom
-/// Uses TRandom3 as default random number generator
-/// \see https://root.cern/doc/master/classTRandom.html
+/// Random number generator class for BioDynaMo.
+/// Uses std::mt19937_64 as the primary engine for Uniform and Gaus.
+/// All other distributions continue to delegate to ROOT's TRandom3 and will
+/// be migrated incrementally.
 class Random {
  public:
   Random();
@@ -267,13 +269,12 @@ class Random {
   ~Random();
   Random& operator=(const Random& other);
 
-  /// Forwards call to ROOT's `TRandom`.\n
+
   /// Returns a uniform deviate on the interval (0, max).
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Uses std::uniform_real_distribution backed by std::mt19937_64.
   real_t Uniform(real_t max = 1.0);
-  /// Forwards call to ROOT's `TRandom`.\n
   /// Returns a uniform deviate on the interval (min, max).
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Uses std::uniform_real_distribution backed by std::mt19937_64.
   real_t Uniform(real_t min, real_t max);
 
   /// Returns an array of uniform random numbers in the interval (0, max)
@@ -296,51 +297,63 @@ class Random {
     return ret;
   }
 
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns a Gaussian (normal) deviate with given mean and sigma.
+  /// Uses std::normal_distribution backed by std::mt19937_64.
   real_t Gaus(real_t mean = 0.0, real_t sigma = 1.0);
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+   /// Returns an exponentially distributed deviate with mean `tau`.
+  /// Uses std::exponential_distribution backed by std::mt19937_64.
   real_t Exp(real_t tau);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
   real_t Landau(real_t mean = 0, real_t sigma = 1);
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns a Poisson-distributed deviate with the given `mean`, returned as
+  /// real_t for API compatibility with ROOT's `PoissonD`.
+  /// Uses std::poisson_distribution backed by std::mt19937_64.
   real_t PoissonD(real_t mean);
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
   real_t BreitWigner(real_t mean = 0, real_t gamma = 1);
 
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns a uniformly distributed integer in [0, max - 1].
+  /// Uses std::uniform_int_distribution backed by std::mt19937_64.
   unsigned Integer(int max);
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns a binomially distributed integer in [0, ntot].
+  /// Uses std::binomial_distribution backed by std::mt19937_64.
   int Binomial(int ntot, real_t prob);
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns a Poisson-distributed integer with the given mean.
+  /// Uses std::poisson_distribution backed by std::mt19937_64.
   int Poisson(real_t mean);
 
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns a random point uniformly distributed on the circumference
+  /// of a circle with the given radius.
+  /// Uses std::uniform_real_distribution backed by std::mt19937_64.
   MathArray<real_t, 2> Circle(real_t radius);
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns a random point uniformly distributed on the surface
+  /// of a sphere with the given radius.
+  /// Uses normal-vector normalization backed by std::mt19937_64.
   MathArray<real_t, 3> Sphere(real_t radius);
 
   /// Forwards call to ROOT's `TRandom`.\n
   /// \see https://root.cern/doc/master/classTRandom.html
   void SetSeed(uint64_t seed);
 
-  /// Forwards call to ROOT's `TRandom`.\n
-  /// \see https://root.cern/doc/master/classTRandom.html
+  /// Returns the last seed passed to SetSeed().
+  /// Stored internally rather than delegating to TRandom3, so the value
+  /// remains correct even if GetEngine() was used to seed mt_engine_ via a
+  /// different path.
   uint64_t GetSeed() const;
 
   /// Updates the internal random number generator
   /// \see https://root.cern/doc/master/classTRandom.html
   /// for a list of available choices
   void SetGenerator(TRandom* new_rng);
+
+    /// Returns a reference to the underlying std::mt19937_64 engine.
+  /// Distribution Rng subclasses use this to draw samples without requiring
+  /// friend access or direct member exposure.  Prefer this over any direct
+  /// access to mt_engine_ so that adding new distributions never requires
+  /// touching the private section of this class.
+  std::mt19937_64& GetEngine();
 
   /// Returns a random number generator that draws samples from a
   /// uniform distribution with given parameters.
@@ -421,6 +434,19 @@ class Random {
  private:
   friend class DistributionRng<real_t>;
   friend class DistributionRng<int>;
+
+  /// Stores the last seed passed to SetSeed().
+  /// Returned by GetSeed() so the value is authoritative regardless of whether
+  /// GetEngine() was used to seed mt_engine_ directly.
+  uint64_t last_seed_ = 0;
+
+  /// Primary RNG engine for Uniform and Gaus distributions.
+  /// Replaces TRandom3 for these two distributions as a first refactor step.
+  std::mt19937_64 mt_engine_;  //!
+
+  /// Legacy ROOT RNG retained for distributions not yet migrated to std.
+  /// Will be removed incrementally as each distribution is ported.
+
 
   TRandom* generator_ = nullptr;
   /// Stores TF1 pointers that have been created for a specific user-defined
