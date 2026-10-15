@@ -54,6 +54,43 @@ On macOS the prerequisites script will use `brew` to install the needed packages
 If you do not have `brew` on your system, do yourself a favour and install it.
 Please have a look in the [prerequisites](https://biodynamo.org/docs/userguide/prerequisites/) page for more details.
 
+## Ubuntu 26.04
+
+Ubuntu 26.04 x86_64 support initially reuses the published Ubuntu 24.04 ROOT,
+ParaView, Qt and Libroadrunner archives. The 26.04 checksum entries must match
+those archives. This is a compatibility trial: run both Ubuntu CI workflows
+before treating the platform as validated. SBML remains disabled in CI.
+
+From a checkout containing this support:
+
+```bash
+./prerequisites.sh all
+source util/installation/ubuntu-26.04/environment.sh
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+pyenv shell "$BDM_PYTHON_VERSION"
+
+cmake -G Ninja -S . -B build -DCMAKE_BUILD_TYPE=Release -Dsbml=OFF
+cmake --build build --parallel
+source build/bin/thisbdm.sh
+cmake --build build --target run-unit-tests
+```
+
+BioDynaMo itself still builds with the platform's default compiler, same as on
+Ubuntu 22.04/24.04; gcc-11 is installed (see prerequisites) only so ROOT's
+Cling interpreter finds the matching headers it was built against. Python
+3.9.25 retains the libraries' Python 3.9 ABI and supports the system OpenSSL 3.
+Moving to a newer Python minor version requires rebuilding the third-party
+libraries. CMake 3.31.10 is installed inside pyenv because bundled dependencies
+still require compatibility removed in CMake 4. Always activate this
+environment before configuring or rebuilding.
+
+`./install.sh` activates the same environment automatically and installs to
+`$HOME/biodynamo-v<version>`. Use a fresh build directory when changing Ubuntu
+versions or compilers.
+
 ## Rebuilding BioDynaMo
 
 If you make developments in the BioDynaMo code you will typically create a new branch and recompile after making your code changes:

@@ -60,7 +60,13 @@ curl https://biodynamo.github.io/install | bash
 ## Supported platforms
 
 *  Ubuntu 20.04, 22.04, 24.04
+*  Ubuntu 26.04 (x86_64, experimental compatibility with the Ubuntu 24.04 libraries)
 *  MacOS > 12.0 (Intel and ARM)
+
+Ubuntu 26.04 support requires a checkout containing the new installation scripts;
+the release installer above may still point to an older version. From that checkout,
+run `./install.sh`. See the [Ubuntu 26.04 build notes](/docs/devguide/build/#ubuntu-2604)
+for the toolchain and validation requirements.
 
 Currently, we do **not** support Windows or Windows subsystem for Linux.
 

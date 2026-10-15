@@ -56,7 +56,10 @@ if [ "$BDM_OS" != "osx" ]; then
   export PATH="$PYENV_ROOT/bin:$PATH"
   eval "$(pyenv init --path)"
   eval "$(pyenv init -)"
-  pyenv shell 3.9.1
+  if [ -f "$BDM_PROJECT_DIR/util/installation/$BDM_OS/environment.sh" ]; then
+    . "$BDM_PROJECT_DIR/util/installation/$BDM_OS/environment.sh"
+  fi
+  pyenv shell "${BDM_PYTHON_VERSION:-3.9.1}"
 fi
 set -e
 
