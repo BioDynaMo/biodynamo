@@ -600,7 +600,7 @@ void DiffusionGrid::ParametersCheck(real_t dt) {
       ((mu_ + 12.0 * (1 - dc_[0]) / (box_length_ * box_length_)) * dt <= 2.0);
   if (!stability) {
     const double max_dt =
-        2.0 / (mu_ + 12.0 * (1 - dc_[0])) * (box_length_ * box_length_);
+        2.0 / (mu_ + (12.0 * (1 - dc_[0])) / (box_length_ * box_length_));
     Log::Fatal(
         "DiffusionGrid", "Stability condition violated. ",
         "The specified parameters of the diffusion grid with substance [",
@@ -618,7 +618,7 @@ void DiffusionGrid::ParametersCheck(real_t dt) {
   // concentration values of the previous time step are positive and demanding
   // the same for the next time step. We arrive at the following condition:
   const bool decay_safety =
-      (1 - (mu_ + 6 * (1 - dc_[0]) / (box_length_ * box_length_) * dt) >= 0);
+      (1 - (mu_ + 6 * (1 - dc_[0]) / (box_length_ * box_length_)) * dt >= 0);
   if (!decay_safety) {
     Log::Fatal(
         "DiffusionGrid", "Decay may overstep into negative regime. ",
