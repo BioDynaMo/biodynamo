@@ -699,6 +699,37 @@ TEST(DiffusionTest, WrongDecay) {
       ".*unphysical behavior*");
 }
 
+// Regression test for https://github.com/BioDynaMo/biodynamo/pull/498.
+// With a zero diffusion coefficient, the stability condition reduces to
+// `mu_ * dt <= 2` while the correct decay safety condition reduces to the
+// stricter `mu_ * dt <= 1`. With decay = 0.6 and dt = 2, stability holds
+// (0.6 * 2 = 1.2 <= 2) but decay safety is violated (1.2 > 1), so this
+// isolates the decay_safety branch of ParametersCheck. Using dt != 1 also
+// matters: the pre-#498 formula forgot to scale the decay constant by dt,
+// so at dt = 1 both the buggy and fixed formulas coincide and the bug would
+// go unnoticed.
+TEST(DiffusionTest, WrongDecaySafetyButStable) {
+  ASSERT_DEATH(
+      {
+        auto set_param = [](auto* param) {
+          param->bound_space = Param::BoundSpaceMode::kClosed;
+          param->min_bound = -100;
+          param->max_bound = 100;
+          param->diffusion_boundary_condition = "closed";
+        };
+        Simulation simulation(TEST_NAME, set_param);
+        simulation.GetEnvironment()->Update();
+
+        real_t diff_coef = 0.0;
+        real_t decay = 0.6;
+        DiffusionGrid* dgrid = new EulerGrid(0, "Kalium", diff_coef, decay, 10);
+        dgrid->Initialize();
+        dgrid->SetUpperThreshold(1e15);
+        dgrid->Diffuse(2.0);
+      },
+      ".*Decay may overstep.*");
+}
+
 TEST(DiffusionTest, CorrectParameters) {
   auto set_param = [](auto* param) {
     param->bound_space = Param::BoundSpaceMode::kClosed;
