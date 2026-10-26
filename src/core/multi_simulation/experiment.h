@@ -18,7 +18,7 @@
 #include <functional>
 #include <vector>
 
-#include "TMath.h"
+#include <numeric>
 
 #include "core/analysis/time_series.h"
 #include "core/functor.h"
@@ -63,7 +63,8 @@ inline real_t Experiment(
                     [](const std::vector<real_t> all_y_values, real_t* y,
                        real_t* eh, real_t* el) {
                       *y =
-                          TMath::Mean(all_y_values.begin(), all_y_values.end());
+                          std::accumulate(all_y_values.begin(), all_y_values.end(), 0.0) /
+                              static_cast<double>(all_y_values.size());
                     });
 
   // Execute post-simulation lambda (e.g. plotting or exporting of simulated

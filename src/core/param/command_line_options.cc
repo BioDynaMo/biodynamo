@@ -146,7 +146,7 @@ void CommandLineOptions::HandleCoreOptions() {
   // Handle "verbose" argument
   // If set in etc/bdm.rootrc use that value, command line argument will
   // override it
-  Int_t ll = kWarning;
+  int ll = kLogWarning;
   TString slevel = "Warning";
   TEnvRec* rec = gEnv->Lookup("Root.ErrorIgnoreLevel");
   if (rec) {
@@ -154,11 +154,11 @@ void CommandLineOptions::HandleCoreOptions() {
       slevel = rec->GetValue();
   }
   if (!slevel.CompareTo("Print", TString::kIgnoreCase))
-    ll = kPrint;
+    ll = kLogPrint;
   else if (!slevel.CompareTo("Info", TString::kIgnoreCase))
-    ll = kInfo;
+    ll = kLogInfo;
   else if (!slevel.CompareTo("Warning", TString::kIgnoreCase))
-    ll = kWarning;
+    ll = kLogWarning;
   else if (!slevel.CompareTo("Error", TString::kIgnoreCase))
     ll = kError;
 
@@ -168,21 +168,22 @@ void CommandLineOptions::HandleCoreOptions() {
     switch (verbosity) {
       // case 0 can never occur; we wouldn't go into this if statement
       case 1:
-        ll = kWarning;
+        ll = kLogWarning;
         break;
       case 2:
-        ll = kInfo;
+        ll = kLogInfo;
         break;
       case 3:
-        ll = kPrint;
+        ll = kLogPrint;
         break;
       default:
-        ll = kPrint;
+        ll = kLogPrint;
         break;
     }
   }
   // Global variable of ROOT that determines verbosity of logging functions
-  gErrorIgnoreLevel = ll;
+  Log::SetLevel(ll);
+  gErrorIgnoreLevel = ll;  // ROOT's own messages, until ROOT is gone
 
   if (parser_->count("output-default-json")) {
     Param param;

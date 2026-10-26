@@ -153,6 +153,7 @@ option(valgrind  "Enable valgrind tests and make build compatible with valgrind 
 option(rpath     "Link libraries with built-in RPATH (run-time search path)." OFF)
 option(real_t    "Define data type for real numbers. Currently supported: float, double" double)
 option(boost     "Enable Boost-based behaviors (e.g. RegulatoryNetwork)." ON)
+option(BDM_ANY_PYTHON "Accept any Python >= 3.9 (needed when ROOT does not come from the pinned prebuilt bundle)" OFF)
 
 if(APPLE)
   # ParaView on Apple devices
@@ -244,7 +245,11 @@ else()
       # Same Python ABI as the reused Ubuntu 24.04 archives; supports OpenSSL 3.
       set(pythonvers "3.9.25")
    endif()
-   find_package(Python ${pythonvers} EXACT COMPONENTS Interpreter Development)
+   if(BDM_ANY_PYTHON)
+     find_package(Python 3.9 COMPONENTS Interpreter Development)
+   else()
+     find_package(Python ${pythonvers} EXACT COMPONENTS Interpreter Development)
+   endif()
    if (NOT Python_FOUND)
       message(FATAL_ERROR "We did not find the Python ${pythonvers} interpreter from PyEnv. "
          "Make sure you executed \"pyenv shell ${pythonvers}\" before running cmake. "

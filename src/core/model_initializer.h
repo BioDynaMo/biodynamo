@@ -15,7 +15,6 @@
 #ifndef CORE_MODEL_INITIALIZER_H_
 #define CORE_MODEL_INITIALIZER_H_
 
-#include <Math/DistFunc.h>
 #include <omp.h>
 #include <ctime>
 #include <string>

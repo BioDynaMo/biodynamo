@@ -20,7 +20,7 @@
 #include <numeric>
 #include <vector>
 
-#include <TMath.h>
+#include <cmath>
 
 #include "core/container/math_array.h"
 #include "core/util/log.h"
@@ -30,7 +30,7 @@ namespace bdm {
 
 struct Math {
   /// value of pi
-  static constexpr real_t kPi = static_cast<real_t>(TMath::Pi());
+  static constexpr real_t kPi = static_cast<real_t>(3.14159265358979323846);
   /// Helpful constant to identify 'infinity'
   static constexpr real_t kInfinity = 1e20;
 
@@ -132,6 +132,27 @@ struct Math {
     return error / v1.size();
   }
 };
+
+/// Normal probability density, same definition as ROOT::Math::normal_pdf(x, sigma, mean).
+inline real_t NormalPdf(real_t x, real_t sigma, real_t mean) {
+  const real_t z = (x - mean) / sigma;
+  return std::exp(static_cast<real_t>(-0.5) * z * z) /
+         (std::abs(sigma) * std::sqrt(static_cast<real_t>(2) * Math::kPi));
+}
+
+/// Poisson probability of floor(x) events, as ROOT::Math::poisson_pdf(unsigned n, mu)
+/// for x >= 0. Returns 0 for x < 0, where the ROOT call converted a negative value
+/// to unsigned (undefined behaviour).
+inline real_t PoissonPdf(real_t x, real_t mu) {
+  if (x < 0) {
+    return 0;
+  }
+  const real_t n = std::floor(x);
+  if (n == 0) {
+    return std::exp(-mu);
+  }
+  return std::exp(n * std::log(mu) - std::lgamma(n + 1) - mu);
+}
 
 }  // namespace bdm
 

@@ -20,6 +20,7 @@
 
 #include "Math/DistFunc.h"
 
+#include "core/util/math.h"
 #include "core/diffusion/diffusion_grid.h"
 
 namespace bdm {
@@ -108,11 +109,11 @@ class GaussianBand {
   real_t operator()(real_t x, real_t y, real_t z) {
     switch (axis_) {
       case Axis::kXAxis:
-        return scaling_ * ROOT::Math::normal_pdf(x, sigma_, mean_);
+        return scaling_ * NormalPdf(x, sigma_, mean_);
       case Axis::kYAxis:
-        return scaling_ * ROOT::Math::normal_pdf(y, sigma_, mean_);
+        return scaling_ * NormalPdf(y, sigma_, mean_);
       case Axis::kZAxis: {
-        return scaling_ * ROOT::Math::normal_pdf(z, sigma_, mean_);
+        return scaling_ * NormalPdf(z, sigma_, mean_);
       }
       default:
         throw std::logic_error("You have chosen an non-existing axis!");
@@ -127,7 +128,7 @@ class GaussianBand {
 };
 
 /// An initializer that follows a Poisson (normal) distribution along one axis
-/// The function ROOT::Math::poisson_pdfd(X, lambda) follows the normal
+/// The function PoissonPdf(X, lambda) follows the normal
 /// probability density function:
 /// {e^( - lambda ) * lambda ^x )} / x!
 class PoissonBand {
@@ -153,11 +154,11 @@ class PoissonBand {
   real_t operator()(real_t x, real_t y, real_t z) {
     switch (axis_) {
       case Axis::kXAxis:
-        return ROOT::Math::poisson_pdf(x, lambda_);
+        return PoissonPdf(x, lambda_);
       case Axis::kYAxis:
-        return ROOT::Math::poisson_pdf(y, lambda_);
+        return PoissonPdf(y, lambda_);
       case Axis::kZAxis:
-        return ROOT::Math::poisson_pdf(z, lambda_);
+        return PoissonPdf(z, lambda_);
       default:
         throw std::logic_error("You have chosen an non-existing axis!");
     }
