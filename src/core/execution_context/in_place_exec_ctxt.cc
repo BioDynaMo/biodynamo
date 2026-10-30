@@ -276,6 +276,7 @@ void InPlaceExecutionContext::ForEachNeighbor(
   // Store the search radius to check validity of cache in consecutive use of
   // ForEachNeighbor
   cached_squared_search_radius_ = squared_radius;
+  neighbor_cache_.clear();
 
   // Populate the cache and execute the lambda for each neighbor
   auto for_each = L2F([&](Agent* agent, real_t squared_distance) {
