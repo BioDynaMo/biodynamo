@@ -1,0 +1,50 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: BioDynaMo
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Lukas
+    family-names: Breitwieser
+    orcid: 'https://orcid.org/0000-0003-2265-8615'
+    affiliation: ETH Zürich
+    email: lukas.breitwieser@inf.ethz.ch
+identifiers:
+  - type: doi
+    value: 10.1093/bioinformatics/btab649
+repository-code: 'https://github.com/BioDynaMo/biodynamo'
+url: 'https://www.biodynamo.org/'
+abstract: >
+  BioDynaMo is a software platform to easily create, run,
+  and visualise 3D agent-based simulations.
+
+
+  - Blazing fast: The core of the platform is written in C++
+  and is highly optimized to harness the computational power
+  of modern hardware.
+
+  - Modular: Reuse, adapt, or create modules that represents
+  a specific biological behavior or entity. With BioDynaMo
+  you don't need to start from scratch anymore!
+
+  - Visual: Effortlessly create astonishing images and
+  animations of your simulations. Your publications and
+  presentations will stand out even more!
+keywords:
+  - simulation
+  - cancer
+  - biology
+  - high-performance
+  - parallel
+  - neuroscience
+  - epidemiology
+  - agent-based
+  - large-scale
+  - modular-design
+  - agent-based-framework
+  - agent-based-modelling
+license: Apache-2.0
