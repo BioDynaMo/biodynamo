@@ -84,6 +84,8 @@ SET(osx-15.6-i386-ParaView d2e89df30ab0e2729b28539de37753e09c061b4c434b0a68e8055
 SET(osx-15.6-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
 SET(osx-15.7-i386-ParaView d2e89df30ab0e2729b28539de37753e09c061b4c434b0a68e80554f7fa617ccb)
 SET(osx-15.7-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
+SET(osx-15.8-i386-ParaView d2e89df30ab0e2729b28539de37753e09c061b4c434b0a68e80554f7fa617ccb)
+SET(osx-15.8-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
 # All macOS 26.x releases use this Apple Silicon ParaView package.
 SET(osx-26.2-arm64-ParaView 5e89b785ac0c56bbca31e2ae101a8986953e90227fe42a1ef7adcc70a0ff6fc4)
 
