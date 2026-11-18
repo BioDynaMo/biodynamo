@@ -187,11 +187,8 @@ endfunction()
 
 # Select the ParaView tarball and checksum key for downloads and cache checks.
 function(bdm_paraview_platform out_tar out_key)
-    # All macOS 26.x releases share one Apple Silicon package.
+    # macOS packages are named per version and architecture (osx-<version>-<arch>).
     bdm_third_party_os(PARAVIEW_OS_VERS)
-    if(APPLE AND "${DETECTED_OS_VERS}" MATCHES "^osx-26\\.")
-        set(PARAVIEW_OS_VERS "osx-26.2-arm64")
-    endif()
 
     if(APPLE AND "${DETECTED_ARCH}" STREQUAL "i386")
         # The release of cmake 3.23.0 broke our build of ParaView on MacOSX.
