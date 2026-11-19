@@ -45,7 +45,7 @@ sudo yum install -y \
 
 curl -L -O https://github.com/Kitware/CMake/releases/download/v3.19.3/cmake-3.19.3-Linux-x86_64.sh
 chmod +x cmake-3.19.3-Linux-x86_64.sh
-./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
+sudo ./cmake-3.19.3-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
 if [ -n "${PYENV_ROOT}" ]; then
   unset PYENV_ROOT
@@ -73,7 +73,7 @@ pyenv shell $PYVERS
 
 # Install optional packages
 if [ $1 == "all" ]; then
-  PIP_PACKAGES="markupsafe==2.0.1 nbformat jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6"
+  PIP_PACKAGES="markupsafe==2.0.1 jupyter metakernel jupyterlab nbformat==5.4.0 nbconvert==6.5.3 nbclient==0.6.6"
   # Don't install --user: the packages should end up in the PYENV_ROOT directory
   python -m pip install $PIP_PACKAGES
   # SBML integration
