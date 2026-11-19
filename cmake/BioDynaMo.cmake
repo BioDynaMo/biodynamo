@@ -108,7 +108,7 @@ function(build_shared_library TARGET)
   # We always need dictionaries for the plugins (plugin manager requires class
   # information)
   if(dict OR DEFINED ARG_PLUGIN)
-    # generate dictionary using genreflex
+    # generate dictionary using rootcling reflex
     set(DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_dict")
     set(BDM_DICT_FILE "${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}_bdm_dict.cc")
 
