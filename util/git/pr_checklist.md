@@ -37,8 +37,6 @@ First time contributor? Make sure to review our contributing guidelines:
   - [ ] Follows the 
         [C++ style guide](https://google.github.io/styleguide/cppguide.html)
         (must be checked by reviewer)
-  - [ ] Address all (or at least the vast majority) of the code smells flagged
-        by `SonarCloud`
   - [ ] New code should not break backward compatibility
 
 - [ ] **New dependencies**
