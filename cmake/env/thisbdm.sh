@@ -551,19 +551,26 @@ _source_thisbdm()
     # CentOS specifics (no longer officially supported)
     local os_id
     os_id=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"') || return 1
+    os_proc_id=$(cat /proc/version) || return 1
+    
     if [ "$os_id" = 'centos' ]; then
         export MESA_GL_VERSION_OVERRIDE=3.3
-        if [ -z "${CXX}" ] && [ -z "${CC}" ] ; then
-            . scl_source enable devtoolset-10 || return 1
-        fi
-        . /etc/profile.d/modules.sh || return 1
-        module load mpi || return 1
-
         # load llvm 6 required for libroadrunner
         if [ -d "${BDMSYS}"/third_party/libroadrunner ]; then
           . scl_source enable llvm-toolset-7 || return 1
         fi
     fi
+    if echo "$os_proc_id" | grep -Eiq 'Red Hat'; then
+      . scl_source enable gcc-toolset-10 > /dev/null 2> /dev/null || true
+      . scl_source enable devtoolset-10 > /dev/null 2> /dev/null || true
+      . scl_source enable gcc-toolset-11 > /dev/null 2> /dev/null || true
+      . scl_source enable devtoolset-11 > /dev/null 2> /dev/null || true
+      
+      . /etc/profile.d/modules.sh || return 1
+      module load mpi || return 1
+    fi
+    
+
   fi
   #######
 
