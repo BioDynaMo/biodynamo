@@ -98,6 +98,7 @@ struct AgentHandleIterator : public Iterator<AgentHandle> {
   AgentHandle Next() override {
     while (box_it.IsAtEnd()) {
       box_index++;
+      assert(box_index < grid_->GetNumBoxes() && "box_index out of bounds. This should not happen");
       box_it = sorted_boxes[box_index]->begin(grid_);
     }
     auto ret = *box_it;
