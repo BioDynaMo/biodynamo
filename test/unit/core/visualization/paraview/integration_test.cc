@@ -135,6 +135,30 @@ TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_SlicesGtNumThreads) {
 }
 
 // -----------------------------------------------------------------------------
+// We observed in #285 that the pvsm file is not created correctly for certain
+// combinations of number of threads and number of slices. This test is to
+// ensure that this does not happen again.
+TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGrid_PrimeNumberSlice) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  if (!(max_threads == 4 || max_threads == 8)) {
+    Log::Warning("ExportDiffusionGrid_PrimeNumberSlice",
+                 "This test needs to be executed with 4 or 8 threads.");
+  }
+  LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, 19));
+}
+
+// -----------------------------------------------------------------------------
+// Stress test scanning different grid resolutions. Used to run through GHA
+// once, disabled afterwards. Also related to #285.
+TEST(DISABLED_FLAKY_ParaviewIntegrationTest,
+     ExportDiffusionGrid_ScanResolutionForFailure) {
+  auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
+  for (size_t i = 3; i < 25; i++) {
+    LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(3 * max_threads + 1, i));
+  }
+}
+
+// -----------------------------------------------------------------------------
 TEST(FLAKY_ParaviewIntegrationTest, ExportDiffusionGridLoadWithoutPVSM) {
   auto max_threads = ThreadInfo::GetInstance()->GetMaxThreads();
   LAUNCH_IN_NEW_PROCESS(RunDiffusionGridTest(

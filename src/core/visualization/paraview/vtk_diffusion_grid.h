@@ -55,9 +55,7 @@ class VtkDiffusionGrid {
   // vtkImageData objects for parallel processing.
   // ParaView calls the partition pieces.
 
-  uint64_t num_pieces_;
-  uint64_t piece_boxes_z_;
-  uint64_t piece_boxes_z_last_;
+  std::vector<uint64_t> piece_boxes_z_;
   std::array<int, 6> whole_extent_;
   std::vector<std::array<int, 6>> piece_extents_;
 
